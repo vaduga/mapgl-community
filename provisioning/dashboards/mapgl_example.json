@@ -1,0 +1,152 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-googlesheets-datasource",
+        "uid": "9CThojbVY"
+      },
+      "gridPos": {
+        "h": 26,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "basemap": {
+          "config": {},
+          "type": "default"
+        },
+        "dataLayer": {
+          "config": {
+            "jitterPoints": true
+          },
+          "displayProperties": [
+            "switchIp",
+            "parentSwitchIp",
+            "city",
+            "event",
+            "message",
+            "severity"
+          ],
+          "locName": "switchIp",
+          "location": {
+            "geojson": "geojson",
+            "mode": "geojson"
+          },
+          "metricName": "severity",
+          "parentName": "parentSwitchIp",
+          "type": "markers"
+        },
+        "globalThresholdsConfig": [
+          {
+            "color": "rgb(87, 148, 242)",
+            "label": "info",
+            "lineWidth": 1,
+            "overrides": [],
+            "selColor": "rgb(31, 96, 196)",
+            "value": 1
+          },
+          {
+            "color": "rgb(255, 120, 10)",
+            "label": "warning",
+            "lineWidth": 2,
+            "overrides": [],
+            "selColor": "rgb(250, 100, 0)",
+            "value": 3
+          },
+          {
+            "color": "rgb(224, 47, 68)",
+            "label": "critical",
+            "lineWidth": 1,
+            "overrides": [],
+            "selColor": "rgb(196, 22, 42)",
+            "value": 4
+          },
+          {
+            "color": "rgb(184, 119, 217)",
+            "label": "null override",
+            "lineWidth": 1,
+            "overrides": [],
+            "selColor": "rgb(124, 46, 163)",
+            "value": 0
+          }
+        ],
+        "seriesCountSize": "sm",
+        "showSeriesCount": false,
+        "text": "Default value of text input option",
+        "view": {
+          "id": "auto",
+          "lat": 0,
+          "lon": 0,
+          "zoom": 1
+        }
+      },
+      "targets": [
+        {
+          "cacheDurationSeconds": 300,
+          "datasource": {
+            "type": "grafana-googlesheets-datasource",
+            "uid": "9CThojbVY"
+          },
+          "fields": [
+            {
+              "jsonPath": ""
+            }
+          ],
+          "method": "GET",
+          "queryParams": "",
+          "refId": "A",
+          "spreadsheet": "1aPPnPRXNk0b8sd8MJ6J8jKgWBZEc7PGp2mEvNchrgS4",
+          "urlPath": ""
+        }
+      ],
+      "title": "Mapgl example",
+      "transformations": [],
+      "type": "vaduga-mapgl-panel"
+    }
+  ],
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Mapgl example (provisioned)",
+  "uid": "FBGTOCb4z",
+  "version": 5,
+  "weekStart": ""
+}
