@@ -10,21 +10,16 @@
     "rootDir": "../src",
     "baseUrl": "../src",
     "typeRoots": ["../node_modules/@types"],
-    "resolveJsonModule": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitAny": false,
-    "strictNullChecks": true
+    "resolveJsonModule": true
   },
   "ts-node": {
     "compilerOptions": {
       "module": "commonjs",
       "target": "es5",
-      "esModuleInterop": true,
-      "sourceMap": false
+      "esModuleInterop": true
     },
     "transpileOnly": true
   },
-  "include": ["../src", "./types"],
+  "include": ["../src", "./types", "./config/webpack"],
   "extends": "@grafana/tsconfig"
 }

@@ -46,7 +46,6 @@ function getThresholdForValue(
 
   for (let i = thresholdCount - 1; i >= 0; i--) {
     const threshold = thresholds[i];
-    console.log('th', threshold)
     if (threshold.value <= value) {
       currentColor = threshold.color;
       currentSelColor = threshold.selColor;

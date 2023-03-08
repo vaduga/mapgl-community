@@ -7,17 +7,6 @@ import {css} from "@emotion/css";
 import {useStyles2} from "@grafana/ui";
 import {GrafanaTheme2} from "@grafana/data";
 
-const getStyles = (theme: GrafanaTheme2) => ({
-
-    checkBoxes: css`
-      color: ${theme.colors.text}; 
-      display: inline-block;
-      padding: 0;
-      pointer-events: all;
-      //margin: 1em 0em;
-      //marginLeft: 1em;    
-    `
-    })
 
 const LayerSelect: FC = observer(() => {
   const s = useStyles2(getStyles);
@@ -60,3 +49,19 @@ const LayerSelect: FC = observer(() => {
 });
 
 export { LayerSelect };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+
+    checkBoxes: css`
+      color: ${theme.colors.text}; 
+      display: inline-block;
+      padding: 0;
+      pointer-events: all;
+      width: 100%;
+      position: relative;            
+      box-sizing: border-box;
+      
+      //margin: 1em 0em;
+      //marginLeft: 1em;    
+    `
+})
