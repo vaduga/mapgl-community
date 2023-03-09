@@ -111,7 +111,7 @@
       },
       "targets": [
         {
-          "cacheDurationSeconds": 300,
+          "cacheDurationSeconds": 0,
           "datasource": {
             "type": "grafana-googlesheets-datasource",
             "uid": "9CThojbVY"

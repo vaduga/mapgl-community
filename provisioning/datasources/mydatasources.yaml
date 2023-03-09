@@ -10,4 +10,4 @@ datasources:
     secureJsonData:
       apiKey: 'AIzaSyD3O4Y_ABRC6qRWC-_lsXLtNxQvG-mAseY'
     version: 1
-    editable: true
+    editable: false
