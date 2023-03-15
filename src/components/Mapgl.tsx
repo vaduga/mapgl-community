@@ -191,7 +191,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
 
             loadPoints(data)
         }
-    }, [data]);
+    }, [data, width, height, options]);
 
 
     const onMapLoad = useCallback(()=> {

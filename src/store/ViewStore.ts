@@ -8,10 +8,18 @@ class ViewStore {
     longitude: number,
     latitude: number,
     zoom: number,
-    maxPitch: number,
+    maxPitch?: number,
     pitch?: number,
     bearing?: number,
-  } | undefined =  undefined
+  } | undefined =
+      {
+        longitude: -74.012321,
+        latitude: 40.712861,
+        zoom: 2
+
+      }
+
+      //undefined
 
   constructor(root: RootStore) {
     this.root = root;

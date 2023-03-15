@@ -78,17 +78,17 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
           showIf: (opts) => opts.location?.mode === ExtendFrameGeometrySourceMode.Geojson,
         })
         .addFieldNamePicker({
+            path: 'location.longitude',
+            name: 'Longitude field',
+            settings: {
+              filter: (f: Field) => f.type === FieldType.number,
+              noFieldsMessage: 'No numeric fields found',
+            },
+            showIf: (opts) => opts.location?.mode === ExtendFrameGeometrySourceMode.Coords,
+          })
+        .addFieldNamePicker({
           path: 'location.latitude',
           name: 'Latitude field',
-          settings: {
-            filter: (f: Field) => f.type === FieldType.number,
-            noFieldsMessage: 'No numeric fields found',
-          },
-          showIf: (opts) => opts.location?.mode === ExtendFrameGeometrySourceMode.Coords,
-        })
-        .addFieldNamePicker({
-          path: 'location.longitude',
-          name: 'Longitude field',
           settings: {
             filter: (f: Field) => f.type === FieldType.number,
             noFieldsMessage: 'No numeric fields found',
