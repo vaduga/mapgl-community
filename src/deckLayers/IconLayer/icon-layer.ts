@@ -9,7 +9,7 @@ const ICON_MAPPING = {
   marker: { x: 0, y: 0, width: 128, height: 128, mask: true },
 };
 
-const GeoJsonLayer = (props) => {
+const MyIconLayer = (props) => {
   const {
     data,
     getSelectedFeIndexes,
@@ -24,7 +24,7 @@ const GeoJsonLayer = (props) => {
   return new IconLayer({
     highlightColor,
     onHover,
-    id: 'geojson-layer',
+    id: 'icon-layer',
     iconAtlas,
     iconMapping,
     data,
@@ -54,4 +54,4 @@ const GeoJsonLayer = (props) => {
   });
 };
 
-export { GeoJsonLayer };
+export { MyIconLayer };

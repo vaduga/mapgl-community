@@ -12,7 +12,7 @@ import {
   DataLayerOptions
 } from '../../extension';
 import {Feature} from '../../store/interfaces';
-import {Point} from "geojson";
+import {Geometry, Point} from "geojson";
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
 
 export interface MarkersConfig {
@@ -90,22 +90,23 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
 
         const dataFrame = new DataFrameView(frame).toArray()
 
-        const points: Feature[] = info.points.map((coord, id) => {
+        console.log('info', info)
+        const points: Array<{ geometry: Point; id: number; type: string; properties: any }> = info.points.map((geom, id) => {
+          const {type, coordinates} = geom
               const point = dataFrame[id]
               const metric = point[metricName]
               const threshold = getThresholdForValue(point, metric, thresholds)
               const iconColor = threshold.color
               const colorLabel = threshold.label
               const lineWidth = threshold.lineWidth
-              const coordinates = coord
 
               const geometry: Point = {
-                type: 'Point',
+                type,
                 coordinates //.slice(),
               }
-
+          console.log('geom', geometry)
               /// 'Jitter points' grouping
-              if (isJitterPoints) {
+              if (isJitterPoints && coordinates?.length === 2) {
                 const [longitude, latitude] = coordinates // .slice();
 
                 /// Create a string key for the coordinates

@@ -15,7 +15,7 @@ import {
     useRootStore,
 } from '../utils';
 
-import {GeoJsonLayer} from '../deckLayers/GeoJsonLayer/geo-json-layer';
+import {MyIconLayer} from '../deckLayers/IconLayer/icon-layer';
 import {Tooltip} from './Tooltips/Tooltip';
 import {MapViewConfig} from "../types";
 import {Point, Position} from "geojson";
@@ -72,7 +72,8 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
 
             } else if (getisShowCluster) {
                 // zoom on cluster click
-                const featureGeometry = switchMap && switchMap.get(info.objects[0].properties.locName)?.geometry as Point;
+                if (info?.object.from) {return}
+                const featureGeometry = switchMap && switchMap.get(info?.objects[0].properties.locName)?.geometry as Point;
                 if (featureGeometry && Array.isArray(featureGeometry.coordinates)) {
 
                     const point = switchMap?.get(info.objects[0].properties.locName)?.geometry as Point
@@ -209,9 +210,9 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         if (!data.length) {
             return layers;
         }
-        layers.push(getisShowLines ? MyLineLayer({ data: getLines, type: 'lines' }) : null);
+        layers.push(getisShowLines ? MyLineLayer({ setHoverInfo, data: getLines, type: 'lines' }) : null);
 
-        layers.push(getpLines?.length > 0 ? MyLineLayer({ data: getpLines, type: 'pline' }) : null);
+        layers.push(getpLines?.length > 0 ? MyLineLayer({ setHoverInfo, data: getpLines, type: 'pline' }) : null);
 
         const layerProps = {
             pickable: true,
@@ -270,7 +271,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
          if (iconLayerData && getisShowPoints) {
              console.log('getisShowPoints', getisShowPoints)
             layers.push(
-                GeoJsonLayer({
+                MyIconLayer({
                     ...layerProps,
                     data: iconLayerData.slice(),
                     getSelectedFeIndexes,

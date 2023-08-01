@@ -2,6 +2,7 @@ import { FieldMatcher, getFieldMatcher, FieldMatcherID, DataFrame, Field, getFie
 import { getGazetteer, Gazetteer } from '../gazetteer/gazetteer';
 import { decodeGeohash } from './geohash';
 import { ExtendFrameGeometrySource, ExtendFrameGeometrySourceMode } from '../extension';
+import {Geometry, Position} from "geojson";
 export type FieldFinder = (frame: DataFrame) => Field | undefined;
 function getFieldFinder(matcher: FieldMatcher): FieldFinder {
   return (frame: DataFrame) => {
@@ -148,7 +149,7 @@ export function getLocationFields(frame: DataFrame, location: LocationFieldMatch
 
 export interface LocationInfo {
   warning?: string;
-  points: number[][];
+  points: Position[] | Geometry[];
 }
 
 export function dataFrameToPoints(frame: DataFrame, location: LocationFieldMatchers): LocationInfo {
@@ -202,22 +203,23 @@ export function dataFrameToPoints(frame: DataFrame, location: LocationFieldMatch
   return info;
 }
 
-function getGeometryFromGeoJSON(geojson: Field<String>): number[][] {
+function getGeometryFromGeoJSON(geojson: Field<String>): Geometry[] {
   const count = geojson.values.length;
   const points = new Array(count);
   for (let i = 0; i < geojson.values.length; i++) {
 
-  const [lon, lat] = JSON.parse(geojson.values.get(i) as string).coordinates
-  points[i] = [lon,lat]
+  const feature = JSON.parse(geojson.values.get(i) as string)
+  points[i] = {type: feature.type, coordinates: feature.coordinates}
   }
   return points;
 }
 
-function getPointsFromLonLat(lon: Field<number>, lat: Field<number>): number[][] {
+function getPointsFromLonLat(lon: Field<number>, lat: Field<number>): Geometry[] {
   const count = lat.values.length;
-  const points = new Array<number[]>(count);
+  const points = new Array<Geometry>(count);
   for (let i = 0; i < count; i++) {
-    points[i] = [lon.values.get(i), lat.values.get(i)];
+    points[i] = {type: "Point", coordinates: [lon.values.get(i), lat.values.get(i)]}
+
   }
   return points;
 }
