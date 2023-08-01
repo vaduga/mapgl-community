@@ -39,7 +39,8 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         getSelectedFeIndexes,
         setSelectedIp,setTooltipObject,
         getpLinePoints,
-        getTooltipObject
+        getTooltipObject,
+        getisShowPoints
         //</editor-fold>
     } = pointStore;
     const {
@@ -47,7 +48,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         setViewState,
     } = viewStore;
 
-    const { getisShowLines, getLines } = lineStore;
+    const { getisShowLines, getpLines, getLines } = lineStore;
 
     const deckRef = useRef(null);
     const mapRef = useRef(null);
@@ -191,6 +192,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
 
             loadPoints(data)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data, width, height, options]);
 
 
@@ -207,7 +209,9 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         if (!data.length) {
             return layers;
         }
-        layers.push(getisShowLines ? MyLineLayer({ data: getLines }) : null);
+        layers.push(getisShowLines ? MyLineLayer({ data: getLines, type: 'lines' }) : null);
+
+        layers.push(getpLines?.length > 0 ? MyLineLayer({ data: getpLines, type: 'pline' }) : null);
 
         const layerProps = {
             pickable: true,
@@ -263,7 +267,8 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
             );
         }
 
-         if (iconLayerData) {
+         if (iconLayerData && getisShowPoints) {
+             console.log('getisShowPoints', getisShowPoints)
             layers.push(
                 GeoJsonLayer({
                     ...layerProps,
@@ -286,11 +291,13 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
     useEffect(() => {
         getLayers();
 
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         getPoints,
         getpLinePoints,
         getisShowCluster,
         getisShowLines,
+        getisShowPoints
     ]);
 
     return (

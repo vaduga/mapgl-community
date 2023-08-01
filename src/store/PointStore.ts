@@ -5,11 +5,9 @@ import {Feature, Info} from './interfaces';
 class PointStore {
   root: RootStore;
   points: Array<Feature | null> = [];
-  pLinePoints: { actual: Array<Feature | null >; prev: Array<Feature | null > } = {
-    actual: [],
-    prev: [],
-  };
+  pLinePoints: Array<Feature | null > = [];
   isShowCluster = true;
+  isShowPoints = true;
   selectedIp = '';
   tooltipObject: Info = {
   x: -3000,
@@ -38,13 +36,16 @@ class PointStore {
     };
   };
   get getSelectedFeIndexes(): number[] {
-    const plinePts = this.pLinePoints.actual;
+    const plinePts = this.pLinePoints
     const selId = plinePts.length && plinePts[0] ? plinePts[0].id : null;
     return (selId || selId === 0) ? [Number(selId)] : [];
   }
 
   get getisShowCluster() {
     return this.isShowCluster;
+  }
+  get getisShowPoints() {
+    return this.isShowPoints;
   }
   get getPoints() {
     return this.points;
@@ -69,6 +70,9 @@ class PointStore {
   toggleShowCluster = (flag: boolean) => {
     this.isShowCluster = flag;
   };
+  toggleShowPoints = (flag: boolean) => {
+    this.isShowPoints = flag;
+  };
 
   setSelectedIp = (ip) => {
     this.selectedIp = ip;
@@ -78,9 +82,9 @@ class PointStore {
 
   setpLinePoints = (activeHostName = '') => {
      const pathPoints: Array<Feature | null> = [];
-     const updatedFeatures = new Set<Feature | null>(this.pLinePoints.actual);
+     const updatedFeatures = new Set<Feature | null>(this.pLinePoints);
 
-     let prev = this.pLinePoints.actual.slice();
+     let prev = this.pLinePoints.slice();
 
      prev.forEach((p) => {
       if (p && p.properties.isInParentLine) {
@@ -94,7 +98,7 @@ class PointStore {
 
       if (!initPoint) {
         // Clear the current path if there is no selected locName
-        this.pLinePoints = { actual: [], prev };
+        this.pLinePoints = prev;
         return;
       }
       let nextPoint: Feature | undefined = initPoint;
@@ -121,7 +125,7 @@ class PointStore {
         updatedFeatures.add(p);
       }
     });
-    this.pLinePoints = { actual: pathPoints, prev };
+    this.pLinePoints = pathPoints;
   };
 
   setPoints = (payload: Feature[]) => {

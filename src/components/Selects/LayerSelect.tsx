@@ -13,7 +13,9 @@ const LayerSelect: FC = observer(() => {
     const {pointStore} = useRootStore()
   const {
     toggleShowCluster,
+    toggleShowPoints,
     getisShowCluster,
+    getisShowPoints
   } = pointStore;
 
 
@@ -23,6 +25,20 @@ const LayerSelect: FC = observer(() => {
     <>
       <div className={s.checkBoxes}
       >
+          {<Checkbox
+              disabled={false}
+              value={getisShowPoints}
+              title="pts"
+              onChange={() => {
+                  if (getisShowPoints) {
+                      toggleShowCluster(false)
+                  }
+                  toggleShowPoints(!getisShowPoints);
+              }}
+          >
+              &nbsp;Pts
+          </Checkbox>}
+
         {parentName && <Checkbox
               disabled={false}
               value={isShowLines}

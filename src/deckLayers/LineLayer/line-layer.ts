@@ -2,9 +2,9 @@ import {toRGB4Array} from '../../utils';
 import { LineLayer } from '@deck.gl/layers/typed';
 import {DeckLine} from "../../store/interfaces";
 
-function MyLineLayer({ data }: { data: Array<DeckLine | null>}) {
+function MyLineLayer({ data, type }: { data: Array<DeckLine | null>, type: string}) {
   return new LineLayer({
-    id: 'line-layer',
+    id: 'line-layer'+type,
     data,
     pickable: false,
     getWidth: (d) =>{
