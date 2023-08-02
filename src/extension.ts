@@ -39,11 +39,11 @@ export const ExtendFrameGeometrySourceMode = {
 export type ExtendFrameGeometrySourceMode = FrameGeometrySourceMode | GeojsonFrameGeometrySourceMode;
 
 export interface DataLayerOptions<TConfig = any> {
-
   globalThresholdsConfig
-  dataLayer: TConfig
+  config: TConfig
 }
 export interface ExtendMapLayerOptions<TConfig = any> {
+  name?: string;
   type: string;
   locName?: string;
   parentName?: string;
@@ -55,7 +55,6 @@ export interface ExtendMapLayerOptions<TConfig = any> {
   displayProperties?: string[];
   searchProperties?: string[];
   titleField?: string;
-  timeField?: string;
   apiKey?: string;
 }
 
@@ -76,7 +75,7 @@ export interface ExtendMapLayerRegistryItem<TConfig = ExtendMapLayerOptions> ext
    * Function that configures transformation and returns points for Deck.gl render
    * @param options
    */
-  pointsUp?: (data: PanelData, options: DataLayerOptions<ExtendMapLayerOptions<TConfig>>) =>  Promise<any[] | Feature[]>;
+  pointsUp?: (data: PanelData, options: ExtendMapLayerOptions<TConfig>) =>  Promise<any[] | Feature[]>;
   create?: (options: ExtendMapLayerOptions<TConfig>, theme: GrafanaTheme2) => {init?: any} | undefined;
   /**
    * Show custom elements in the panel edit UI

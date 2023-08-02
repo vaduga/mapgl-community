@@ -8,7 +8,7 @@ import Map from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
 import {MyLineLayer} from '../deckLayers/LineLayer/line-layer';
 import {IconClusterLayer} from '../deckLayers/IconClusterLayer/icon-cluster-layer';
-import {DeckFeature} from '../store/interfaces';
+import {DeckFeature, Feature} from '../store/interfaces';
 import Menu from '../components/Menu';
 import {
     getBounds,
@@ -23,6 +23,8 @@ import {WebMercatorViewport} from "@deck.gl/core/typed";
 import {DEFAULT_BASEMAP_CONFIG, defaultBaseLayer, geomapLayerRegistry} from "../layers/registry";
 import {ExtendMapLayerOptions} from "../extension";
 import {centerPointRegistry, MapCenterID} from "../view";
+import {MyPolygonsLayer} from "../deckLayers/PolygonsLayer/polygons-layer";
+import {toJS} from "mobx";
 
 export let lastMapPanelInstance
 const Mapgl = ({ options, data, width, height, replaceVariables }) => {
@@ -32,7 +34,8 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
     const {
         //<editor-fold desc="store imports">
         getPoints,
-        setPoints,
+        setPoints, setType, getType,
+        setPolygons,
         getSelectedIp,
         switchMap,
         getisShowCluster,
@@ -40,7 +43,8 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         setSelectedIp,setTooltipObject,
         getpLinePoints,
         getTooltipObject,
-        getisShowPoints
+        getisShowPoints,
+        getPolygons
         //</editor-fold>
     } = pointStore;
     const {
@@ -154,16 +158,31 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
     }
 
     const loadPoints = async (data)=> {
-        const layer = geomapLayerRegistry.getIfExists('markers')
-        const transformed = layer?.pointsUp ? await layer.pointsUp(data, options) : []
+
+
+                const transformed =  await Promise.all(options?.dataLayers.map(async (dataLayer)=>{
+
+                const layer = geomapLayerRegistry.getIfExists(dataLayer.type)
+
+                const extOptions = {...dataLayer, config: {...options.config,globalThresholdsConfig: options?.globalThresholdsConfig}}
+                 return {type: dataLayer.type, features: layer?.pointsUp ? await layer.pointsUp(data, extOptions) : []
+        }
+        }))
+
         const view = initMapView(options.view)
 
             let longitude, latitude, zoom;
             if (view.id === MapCenterID.Auto) {
                 if (transformed?.length) {
                     const viewport = new WebMercatorViewport({width, height});
-                    const [minLng, minLat, maxLng, maxLat] = getBounds(transformed);
+                    const boundsCoords = transformed[0].features.map(el=> (
+                        {
+                        type: 'Feature', geometry: {type: 'Point', coordinates: transformed[0].type === 'polygons' ? el?.contour[0][0] : el.geometry.coordinates
+                    }}))
+                    const [minLng, minLat, maxLng, maxLat] = getBounds(boundsCoords);
                     const bounds: [[number, number], [number, number]] = [[minLng, minLat], [maxLng, maxLat]];
+
+
                     ({longitude, latitude, zoom} = viewport.fitBounds(bounds));
                 }
                 // when there's no query points in auto mode
@@ -177,7 +196,26 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
             }
 
         initBasemap(options.basemap)
-        setPoints(transformed ?? [])
+        const markers: Feature[] = []
+        const polygons: Feature[] = []
+        transformed.forEach(el=> {
+            switch (el.type){
+                case 'markers':
+                    if (el?.features.length) {
+                        markers.push(el?.features)
+                    }
+                    break;
+                case 'polygons':
+                    if (el?.features.length) {
+                        polygons.push(el?.features)
+                    }
+                    break
+            }
+
+        })
+        setPoints(markers)
+        setPolygons(polygons)
+
         setZoom(zoom)
         const deckInitViewState = {
             longitude,
@@ -206,13 +244,13 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
     } , [])
     const getLayers = () => {
         const layers: any = [];
-        const data = getPoints;
-        if (!data.length) {
+        const markers = getPoints;
+        const polygons = getPolygons
+        if (markers.length < 1 && polygons.length < 1) {
             return layers;
         }
-        layers.push(getisShowLines ? MyLineLayer({ setHoverInfo, data: getLines, type: 'lines' }) : null);
 
-        layers.push(getpLines?.length > 0 ? MyLineLayer({ setHoverInfo, data: getpLines, type: 'pline' }) : null);
+        let lines, icons, pathLine, unames, list1, list2, nums
 
         const layerProps = {
             pickable: true,
@@ -222,78 +260,92 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
             zoom: zoomGlobal,
         };
 
-        let clusterLayerData;
-        let iconLayerData;
-
-        if (getisShowCluster) {
-            clusterLayerData = data
-                .map((el): DeckFeature | undefined => {
-                    if (el) {
-                        const pointGeometry = el.geometry as Point;
-                        return {
-                            id: el.id,
-                            coordinates: pointGeometry.coordinates,
-                            properties: el.properties,
-                        };
-                    }
-                    return undefined;
-                })
-                .filter((val): val is DeckFeature => val !== undefined);
-        } else {
-            iconLayerData = data
+        if (polygons.length>0) {
+            polygons.forEach((p,i)=> {
+                console.log('polygons', toJS(getPolygons))
+                layers.push(MyPolygonsLayer({ ...layerProps,data: p, idx: i }));
+            })
         }
 
-        if (clusterLayerData) {
-            layers.push(
-                new IconClusterLayer({
-                    ...layerProps,
-                    getPosition: (d) => d.coordinates,
-                    selectedIp: getSelectedIp,
-                    data: clusterLayerData,
-                    id: 'icon-cluster',
-                    sizeScale: 30,
-                    onClick: (info, event) => {
-                        setHoverInfo({
-                            x: -3000,
-                            y: -3000,
-                            cluster: false,
-                            object: {
-                                cluster: false
+        if (markers.length>0) {
+            markers.forEach((m, i)=>{
+                layers.push(getisShowLines ? MyLineLayer({ setHoverInfo, data: getLines[i], type: 'lines'+i }) : null);
+                // layers.push(getpLines?.length > 0 ? MyLineLayer({ setHoverInfo, data: getpLines[i], type: 'pline' }) : null);
+
+                let clusterLayerData;
+                let iconLayerData;
+
+                if (getisShowCluster) {
+                    clusterLayerData = m
+                        .map((el): DeckFeature | undefined => {
+                            if (el) {
+                                const pointGeometry = el.geometry as Point;
+                                return {
+                                    id: el.id,
+                                    coordinates: pointGeometry.coordinates,
+                                    properties: el.properties,
+                                };
+                            }
+                            return undefined;
+                        })
+                        .filter((val): val is DeckFeature => val !== undefined);
+                } else {
+                    iconLayerData = m
+                }
+
+                if (clusterLayerData) {
+                    layers.push(
+                        new IconClusterLayer({
+                            ...layerProps,
+                            getPosition: (d) => d.coordinates,
+                            selectedIp: getSelectedIp,
+                            data: clusterLayerData,
+                            id: 'icon-cluster' + i,
+                            sizeScale: 30,
+                            onClick: (info, event) => {
+                                setHoverInfo({
+                                    x: -3000,
+                                    y: -3000,
+                                    cluster: false,
+                                    object: {
+                                        cluster: false
+                                    },
+                                    objects: []
+                                });
                             },
-                            objects: []
-                        });
-                    },
-                    thresholds: []
-                })
-            );
+                            thresholds: []
+                        })
+                    );
+                }
+
+                if (iconLayerData && getisShowPoints) {
+                    layers.push(
+                        MyIconLayer({
+                            ...layerProps,
+                            data: iconLayerData.slice(),
+                            getSelectedFeIndexes,
+                            getSelectedIp,
+                            setClosedHint,
+                            setSelectedIp,
+                            zoom: zoomGlobal,
+                            idx: i
+                        })
+                    );
+                }
+            })
         }
 
-         if (iconLayerData && getisShowPoints) {
-             console.log('getisShowPoints', getisShowPoints)
-            layers.push(
-                MyIconLayer({
-                    ...layerProps,
-                    data: iconLayerData.slice(),
-                    getSelectedFeIndexes,
-                    getSelectedIp,
-                    setClosedHint,
-                    setSelectedIp,
-                    zoom: zoomGlobal,
-                })
-            );
-        }
         setLayers(layers)
-
     };
 
  const [layers, setLayers] = useState([])
-
 
     useEffect(() => {
         getLayers();
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
+        getPolygons,
         getPoints,
         getpLinePoints,
         getisShowCluster,

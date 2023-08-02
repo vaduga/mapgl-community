@@ -3,8 +3,10 @@ import { useRootStore } from '../../utils';
 import {css} from "@emotion/css";
 import {useStyles2} from "@grafana/ui";
 import {GrafanaTheme2} from "@grafana/data";
-import {displayProperties, locName, parentName, timeField} from "../../layers/data/markersLayer";
+import {displayProperties as markersDP, locName, parentName} from "../../layers/data/markersLayer";
+import {displayProperties as polygonsDP} from "../../layers/data/polygonsLayer";
 import {Info} from '../../store/interfaces'
+import {toJS} from "mobx";
 const getStyles = (theme: GrafanaTheme2) => ({
     tooltip: css`
       pointer-events: all;      
@@ -45,8 +47,9 @@ function displayItem(item: any) {
 
 function renderTooltipContent(object, pinned = false) {
     const props = object?.properties ?? object ?? {}; // #todo no obj in editmode
-    const filteredProps = displayProperties?.length ? displayProperties.reduce((obj, field: string) => {
-            if (props.hasOwnProperty(field) && ![locName, parentName, timeField].includes(field) ) {
+    const DP = object?.contour? polygonsDP : markersDP
+    const filteredProps = DP?.length ? DP.reduce((obj, field: string) => {
+            if (props.hasOwnProperty(field) && ![locName, parentName].includes(field) ) {
                 obj[field] = props[field];
             }
             return obj;
@@ -62,12 +65,10 @@ function renderTooltipContent(object, pinned = false) {
         <>
              <ul>
                  {locName && <li key="locName"><b>{`name: ${displayItem(props.locName)}`}{pinned && '    [Pinned]'}</b></li>}
-                 {parentName && displayProperties?.includes(parentName) && <li key="pName"><b>{`parent: ${displayItem(props.parentName)}`}</b></li>}
+                 {parentName && DP?.includes(parentName) && <li key="pName"><b>{`parent: ${displayItem(props.parentName)}`}</b></li>}
                 {Object.entries(filteredProps).map(([key, value]) => (
                     <li key={key}>{`${key}: ${displayItem(value)}`}</li>
                 ))}
-                 {timeField && displayProperties?.includes(timeField) && <li key="pName"><b>{`time: ${displayTime(props[timeField])}`}</b></li>}
-
             </ul>
         </>
     );

@@ -18,13 +18,14 @@ const MyIconLayer = (props) => {
     onHover,
     highlightColor,
     iconMapping = ICON_MAPPING,
+      idx
   } = props;
 
   // @ts-ignore
   return new IconLayer({
     highlightColor,
     onHover,
-    id: 'icon-layer',
+    id: 'icon-layer'+idx,
     iconAtlas,
     iconMapping,
     data,

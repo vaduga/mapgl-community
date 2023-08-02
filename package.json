@@ -75,6 +75,7 @@
     "@turf/bbox": "^6.5.0",
     "debounce-promise": "^3.1.2",
     "deck.gl": "^8.8.23",
+    "lodash": "^4.17.21",
     "maplibre-gl": "^2.4.0",
     "mobx-react-lite": "^3.4.0",
     "react": "17.0.2",

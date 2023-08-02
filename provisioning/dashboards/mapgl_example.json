@@ -44,7 +44,7 @@
           "config": {},
           "type": "default"
         },
-        "dataLayer": {
+        "dataLayers": [{
           "config": {
             "jitterPoints": true
           },
@@ -64,7 +64,7 @@
           "metricName": "severity",
           "parentName": "parentSwitchIp",
           "type": "markers"
-        },
+        }],
         "globalThresholdsConfig": [
           {
             "color": "rgb(87, 148, 242)",

@@ -4,7 +4,9 @@ import {Feature, Info} from './interfaces';
 
 class PointStore {
   root: RootStore;
-  points: Array<Feature | null> = [];
+  type: 'icons'|'polygons' = 'icons'
+  points: Array<Array<Feature | null>> = [];
+  polygons: Array<Array<Feature | null>> = []
   pLinePoints: Array<Feature | null > = [];
   isShowCluster = true;
   isShowPoints = true;
@@ -41,6 +43,10 @@ class PointStore {
     return (selId || selId === 0) ? [Number(selId)] : [];
   }
 
+  get getType() {
+    return this.type;
+  }
+
   get getisShowCluster() {
     return this.isShowCluster;
   }
@@ -50,6 +56,9 @@ class PointStore {
   get getPoints() {
     return this.points;
   }
+  get getPolygons() {
+    return this.polygons;
+  }
   get getSelectedIp() {
     return this.selectedIp;
   }
@@ -58,12 +67,16 @@ class PointStore {
   }
 
   get switchMap(): Map<string, Feature> | undefined {
-    const relArr = this.points.map((point): [string, Feature] | undefined => {
+    const relArr = this.points.length>0 && this.points.flat().concat(this.polygons.flat()).map((point): [string, Feature] | undefined => {
       if (point && point.properties) {
         return [point.properties.locName, point];
       }
       return
     });
+
+    if (!relArr) {
+      return
+    }
 
     return new Map(relArr.filter((val): val is [string, Feature] => val !== undefined));
   }
@@ -79,6 +92,10 @@ class PointStore {
     this.setpLinePoints(ip);
 
   };
+
+  setType = (type) => {
+    this.type = type
+  }
 
   setpLinePoints = (activeHostName = '') => {
      const pathPoints: Array<Feature | null> = [];
@@ -130,6 +147,9 @@ class PointStore {
 
   setPoints = (payload: Feature[]) => {
     this.points = payload;
+  };
+  setPolygons = (payload: Feature[]) => {
+    this.polygons = payload;
   };
 
 }

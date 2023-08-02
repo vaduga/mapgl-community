@@ -35,7 +35,7 @@ const ReactSelectSearch: FC<MapRefProps> = ({wait = 300,
           name: `${locName} ${nameComposite}`,
           value: locName,
           color: point.properties.iconColor,
-          coord: pointGeometry.coordinates
+          coord: pointGeometry? pointGeometry.coordinates : point?.contour[0][0]
         };
       })
       : [];

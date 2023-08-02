@@ -46,6 +46,12 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
 
     if (layer.showLocation) {
       builder
+         .addTextInput({
+            path: 'name',
+            name: 'Name',
+            description: 'Layer name',
+            settings: {},
+          })
         .addCustomEditor({
           id: 'query',
           path: 'query',
@@ -137,6 +143,7 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
               filter: (f: Field) => f.type === FieldType.string,
               noFieldsMessage: 'No string fields found',
             },
+            showIf: (opts) => opts.type === 'markers',
           })
           .addFieldNamePicker({
             path: 'metricName',
@@ -144,14 +151,6 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
             settings: {
               filter: (f: Field) => f.type === FieldType.number,
               noFieldsMessage: 'No number fields found',
-            },
-          })
-          .addFieldNamePicker({
-            path: 'timeField',
-            name: 'Tooltip Time',
-            settings: {
-              filter: (f: Field) => f.type === FieldType.time,
-              noFieldsMessage: 'No time fields found',
             },
           })
         .addMultiSelect({
@@ -167,19 +166,20 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
           //showIf: (opts) => typeof opts.query !== 'undefined',
           defaultValue: '',
         })
-         .addMultiSelect({
-        path: 'searchProperties',
-        name: 'Search by',
-        description: 'Select properties for search options',
-        settings: {
-          allowCustomValue: false,
-          options: [],
-          placeholder: 'Search by location name only',
-          getOptions: getQueryFields,
-        },
-        //showIf: (opts) => typeof opts.query !== 'undefined',
-        defaultValue: '',
-      });
+          .addMultiSelect({
+            path: 'searchProperties',
+            name: 'Search by',
+            description: 'Select properties for search options',
+            settings: {
+              allowCustomValue: false,
+              options: [],
+              placeholder: 'Search by location name only',
+              getOptions: getQueryFields,
+            },
+            showIf: (opts) => opts.type === 'markers',
+            //showIf: (opts) => typeof opts.query !== 'undefined',
+            defaultValue: '',
+          })
     }
     if (layer.registerOptionsUI) {
       layer.registerOptionsUI(builder);

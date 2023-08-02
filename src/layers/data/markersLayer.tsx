@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   PanelData,
-  DataFrameView,
+  DataFrameView, Field, FieldType,
 } from '@grafana/data';
 
 import { dataFrameToPoints, getLocationMatchers } from '../../utils/location';
@@ -14,13 +14,20 @@ import {
 import {Feature} from '../../store/interfaces';
 import {Geometry, Point} from "geojson";
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
+import {getQueryFields} from "../../editor/getQueryFields";
+import {toJS} from "mobx";
 
 export interface MarkersConfig {
+  globalThresholdsConfig: [],
+  searchProperties?: string[],
+  parentName?: string,
   jitterPoints?: boolean;
 
 }
 
 const defaultOptions: MarkersConfig = {
+  globalThresholdsConfig: [],
+  searchProperties: [],
   jitterPoints: true,
 };
 export const MARKERS_LAYER_ID = 'markers';
@@ -28,12 +35,13 @@ export const MARKERS_LAYER_ID = 'markers';
 // Used by default when nothing is configured
 export const defaultMarkersConfig: ExtendMapLayerOptions<MarkersConfig> = {
   type: MARKERS_LAYER_ID,
+  name: 'markers layer',
   config: defaultOptions,
   location: {
-    mode: ExtendFrameGeometrySourceMode.Auto,
-  },
+    mode: ExtendFrameGeometrySourceMode.Auto
+  }
 };
-export let locName, parentName, metricName, timeField, displayProperties, searchProperties, thresholds
+export let locName, parentName, metricName, displayProperties, searchProperties, thresholds
 
 /**
  * Map data layer configuration for icons overlay
@@ -49,26 +57,25 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
    * Function that configures transformation and returns transformed points for mobX
    * @param options
    */
-  pointsUp: async (data: PanelData, options: DataLayerOptions<ExtendMapLayerOptions<MarkersConfig>>) => {
+  pointsUp: async (data: PanelData, options: ExtendMapLayerOptions<MarkersConfig>) => {
     // Assert default values
     const config = {
-      ...defaultOptions,
-      ...options.dataLayer?.config,
+      ...defaultOptions, ...options.config
     };
 
-    const matchers = await getLocationMatchers(options.dataLayer?.location);
+    const matchers = await getLocationMatchers(options?.location);
 
     if (!data.series.length) {
       return []
     }
 
-    locName = options.dataLayer?.locName
-    parentName = options.dataLayer?.parentName
-    metricName = options.dataLayer?.metricName
-    timeField = options.dataLayer?.timeField
-    displayProperties = options.dataLayer?.displayProperties
-    searchProperties = options.dataLayer?.searchProperties
-    thresholds = options.globalThresholdsConfig
+    locName = options.locName
+    parentName = options?.parentName
+    metricName = options.metricName
+    displayProperties = options.displayProperties
+    console.log('markeroptions', toJS(options))
+    searchProperties = options?.searchProperties
+    thresholds = options?.config?.globalThresholdsConfig
 
     const isJitterPoints = config.jitterPoints
 
@@ -76,7 +83,9 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
     const groupedByCoordinates = new Map();
 
     for (const frame of data.series) {
-      if ((options.dataLayer?.query && options.dataLayer.query.options === frame.refId || !options.dataLayer?.query) || (frame.meta)) {
+
+      if ((options.query && options.query.options === frame.refId)) {
+        //console.log('macth', options.query.options, frame.refId, frame)
         const info = dataFrameToPoints(frame, matchers);
         if (info.warning) {
           console.log('Could not find locations', info.warning);
@@ -104,7 +113,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
                 type,
                 coordinates //.slice(),
               }
-          console.log('geom', geometry)
+
               /// 'Jitter points' grouping
               if (isJitterPoints && coordinates?.length === 2) {
                 const [longitude, latitude] = coordinates // .slice();
@@ -173,7 +182,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
         return points
       }
 
-      break; // Only the first frame for now!
+      //break; // Only the first frame for now!
             }
 
     return []
@@ -183,6 +192,27 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
   registerOptionsUI: (builder) => {
 
     builder
+        // .addFieldNamePicker({
+        //   path: 'config.parentName',
+        //   name: 'Parent name field',
+        //   settings: {
+        //     filter: (f: Field) => f.type === FieldType.string,
+        //     noFieldsMessage: 'No string fields found',
+        //   },
+        // })
+        // .addMultiSelect({
+        //   path: 'config.searchProperties',
+        //   name: 'Search by',
+        //   description: 'Select properties for search options',
+        //   settings: {
+        //     allowCustomValue: false,
+        //     options: [],
+        //     placeholder: 'Search by location name only',
+        //     getOptions: getQueryFields,
+        //   },
+        //   //showIf: (opts) => typeof opts.query !== 'undefined',
+        //   defaultValue: '',
+        // })
       .addBooleanSwitch({
         path: 'config.jitterPoints',
         name: 'Jitter points',

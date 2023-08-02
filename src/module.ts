@@ -31,8 +31,8 @@ export const plugin = new PanelPlugin<PanelOptions>(Panel)
 
         builder.addCustomEditor({
             category: ['Data layer'],
-            id: 'dataLayer',
-            path: 'dataLayer',
+            id: 'dataLayers',
+            path: 'dataLayers',
             name: 'Data layer',
             editor: DataLayersEditor,
         })
