@@ -6,7 +6,8 @@ class PointStore {
   root: RootStore;
   type: 'icons'|'polygons' = 'icons'
   points: Array<Array<Feature | null>> = [];
-  polygons: Array<Array<Feature | null>> = []
+  polygons: Array<Array<Feature | null>> = [];
+  path: Array<Array<Feature | null>> = [];
   pLinePoints: Array<Feature | null > = [];
   isShowCluster = true;
   isShowPoints = true;
@@ -59,6 +60,10 @@ class PointStore {
   get getPolygons() {
     return this.polygons;
   }
+  get getPath() {
+    return this.path;
+  }
+
   get getSelectedIp() {
     return this.selectedIp;
   }
@@ -67,7 +72,12 @@ class PointStore {
   }
 
   get switchMap(): Map<string, Feature> | undefined {
-    const relArr = this.points.length>0 && this.points.flat().concat(this.polygons.flat()).map((point): [string, Feature] | undefined => {
+    const {points, polygons, path} = this
+    const features = [points.flat(), polygons.flat(), path.flat()]
+    const mergedFeatures = features.reduce((r, curr) => {
+      return r.concat(curr);
+    }, []);
+    const relArr = this.points.length>0 && mergedFeatures.map((point): [string, Feature] | undefined => {
       if (point && point.properties) {
         return [point.properties.locName, point];
       }
@@ -152,6 +162,9 @@ class PointStore {
     this.polygons = payload;
   };
 
+  setPath = (payload: Feature[]) => {
+    this.path = payload;
+  };
 }
 
 export default PointStore;

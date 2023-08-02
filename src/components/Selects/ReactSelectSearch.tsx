@@ -31,12 +31,15 @@ const ReactSelectSearch: FC<MapRefProps> = ({wait = 300,
         const paneProps = searchProperties && searchProperties.length ? searchProperties : []
         const nameComposite = paneProps.map(field=> point.properties[field]).join(' ')
 
+
+
         return {
           name: `${locName} ${nameComposite}`,
           value: locName,
           color: point.properties.iconColor,
-          coord: pointGeometry? pointGeometry.coordinates : point?.contour[0][0]
-        };
+          coord: pointGeometry?.coordinates ?? (Array.isArray(point?.contour) ? point?.contour?.[0]?.[0] : undefined) ??
+              point?.path[0]
+        }
       })
       : [];
 

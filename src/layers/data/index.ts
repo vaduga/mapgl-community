@@ -1,5 +1,6 @@
 import { markersLayer } from './markersLayer';
 import { polygonsLayer } from './polygonsLayer';
+import { pathLayer } from './pathLayer';
 
 
 /**
@@ -7,5 +8,6 @@ import { polygonsLayer } from './polygonsLayer';
  */
 export const dataLayers = [
     markersLayer,
-    polygonsLayer
+    polygonsLayer,
+    pathLayer
 ];

@@ -15,19 +15,19 @@ import {Feature} from '../../store/interfaces';
 import {Geometry, Point, Position} from "geojson";
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
 
-export interface PolygonsConfig {
+export interface PathConfig {
     globalThresholdsConfig: [],
 }
 
-const defaultOptions: PolygonsConfig = {
+const defaultOptions: PathConfig = {
     globalThresholdsConfig: [],
 };
-export const POLYGONS_LAYER_ID = 'polygons';
+export const PATH_LAYER_ID = 'path';
 
 // Used by default when nothing is configured
-export const defaultPolygonsConfig: ExtendMapLayerOptions<PolygonsConfig> = {
-    type: POLYGONS_LAYER_ID,
-    name: 'polygons layer',
+export const defaultPathConfig: ExtendMapLayerOptions<PathConfig> = {
+    type: PATH_LAYER_ID,
+    name: 'path layer',
     config: defaultOptions,
     location: {
         mode: ExtendFrameGeometrySourceMode.Auto,
@@ -38,10 +38,10 @@ export let locName, parentName, metricName, displayProperties, thresholds
 /**
  * Map data layer configuration for icons overlay
  */
-export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
-    id: POLYGONS_LAYER_ID,
-    name: 'Polygons layer',
-    description: 'render polygons from geojson geometry',
+export const pathLayer: ExtendMapLayerRegistryItem<PathConfig> = {
+    id: PATH_LAYER_ID,
+    name: 'path layer',
+    description: 'render path from Geojson LineStrings',
     isBaseMap: false,
     showLocation: true,
 
@@ -49,7 +49,7 @@ export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
      * Function that configures transformation and returns transformed points for mobX
      * @param options
      */
-    pointsUp: async (data: PanelData, options: ExtendMapLayerOptions<PolygonsConfig>) => {
+    pointsUp: async (data: PanelData, options: ExtendMapLayerOptions<PathConfig>) => {
         // Assert default values
         const config = {
             ...defaultOptions,
@@ -67,11 +67,9 @@ export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
         displayProperties = options.displayProperties
         thresholds = options?.config?.globalThresholdsConfig
 
-
-
         for (const frame of data.series) {
 //|| !options.query) || (frame.meta)
-            console.log('options.query.options === frame.refId', options?.query?.options, frame.refId)
+           // console.log('options.query.options === frame.refId', options?.query?.options, frame.refId)
             if ((options.query && options.query.options === frame.refId )) {
 
                 const info = dataFrameToPoints(frame, matchers);
@@ -86,7 +84,7 @@ export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
                     return []}
 
                 const dataFrame = new DataFrameView(frame).toArray()
-                const points: Array<{ contour: Position[]; id: number; type: string; properties: any }> = info.points.map((geom, id) => {
+                const points: Array<{ path: Position[]; id: number; type: string; properties: any }> = info.points.map((geom, id) => {
                         const {type, coordinates} = geom
                         const point = dataFrame[id]
                         const metric = point[metricName]
@@ -95,17 +93,17 @@ export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
                         const colorLabel = threshold.label
                         const lineWidth = threshold.lineWidth
 
-                        const contour = coordinates
+                        const path = coordinates
 
                         const entries = Object.entries(point);
 
                         return {
                             id: id,
                             type: "Feature",
-                            contour,
+                            path,
                             properties: {
                                 ...point,
-                                contour,
+                                path,
                                 locName: entries.length > 0 ? point[locName] ?? entries[0][1] : undefined,
                                 parentName: point[parentName],
                                 [metricName ?? 'metric']: point[metricName],
@@ -117,26 +115,26 @@ export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
                     }
                 );
 
-
+                console.log('points in path layer', points)
                 return points
             }
 
-            break; // Only the first frame for now!
+            //break; // Only the first frame for now!
         }
 
         return []
     },
 
-    // Polygons overlay options
+    // Path overlay options
     registerOptionsUI: (builder) => {
 
-        builder
-            .addBooleanSwitch({
-                path: 'config.jitterPoints',
-                name: 'exmaple',
-                description: 'exmpale swithc',
-                defaultValue: true,//defaultOptions.jitterPoints,
-            })
+        // builder
+        //     .addBooleanSwitch({
+        //         path: 'config.jitterPoints',
+        //         name: 'exmaple',
+        //         description: 'exmpale swithc',
+        //         defaultValue: true,//defaultOptions.jitterPoints,
+        //     })
     },
 
     // fill in the default values

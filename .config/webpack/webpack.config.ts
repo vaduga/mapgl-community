@@ -15,6 +15,7 @@ import { Configuration } from 'webpack';
 
 import { getPackageJson, getPluginJson, hasReadme, getEntries } from './utils';
 import { SOURCE_DIR, DIST_DIR } from './constants';
+import {CleanWebpackPlugin} from "clean-webpack-plugin";
 
 const pluginJson = getPluginJson();
 
@@ -138,6 +139,7 @@ const config = async (env): Promise<Configuration> => ({
   },
 
   plugins: [
+    new CleanWebpackPlugin(),
     new CopyWebpackPlugin({
       patterns: [
         // If src/README.md exists use it; otherwise the root README

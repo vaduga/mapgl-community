@@ -7,6 +7,7 @@ import DeckGL from '@deck.gl/react';
 import Map from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
 import {MyLineLayer} from '../deckLayers/LineLayer/line-layer';
+import {MyPathLayer} from '../deckLayers/PathLayer/path-layer';
 import {IconClusterLayer} from '../deckLayers/IconClusterLayer/icon-cluster-layer';
 import {DeckFeature, Feature} from '../store/interfaces';
 import Menu from '../components/Menu';
@@ -36,6 +37,8 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         getPoints,
         setPoints, setType, getType,
         setPolygons,
+        setPath,
+        getPath,
         getSelectedIp,
         switchMap,
         getisShowCluster,
@@ -162,8 +165,6 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                 const transformed =  await Promise.all(options?.dataLayers.map(async (dataLayer)=>{
 
                 const layer = geomapLayerRegistry.getIfExists(dataLayer.type)
-
-                    console.log('th', options?.globalThresholdsConfig , options )
                 const extOptions = {...dataLayer, config: {...dataLayer.config, globalThresholdsConfig: options?.globalThresholdsConfig}}
                  return {type: dataLayer.type, features: layer?.pointsUp ? await layer.pointsUp(data, extOptions) : []
         }
@@ -198,6 +199,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         initBasemap(options.basemap)
         const markers: Feature[] = []
         const polygons: Feature[] = []
+        const path: Feature[] = []
         transformed.forEach(el=> {
             switch (el.type){
                 case 'markers':
@@ -209,12 +211,20 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                     if (el?.features.length) {
                         polygons.push(el?.features)
                     }
-                    break
+                    break;
+                case 'path':
+                    console.log('elfeatpath', el)
+                    if (el?.features.length) {
+                        path.push(el?.features)
+                    }
+                    break;
+
             }
 
         })
         setPoints(markers)
         setPolygons(polygons)
+        setPath(path)
 
         setZoom(zoom)
         const deckInitViewState = {
@@ -245,12 +255,11 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
     const getLayers = () => {
         const layers: any = [];
         const markers = getPoints;
-        const polygons = getPolygons
+        const polygons = getPolygons;
+        const path = getPath;
         if (markers.length < 1 && polygons.length < 1) {
             return layers;
         }
-
-        let lines, icons, pathLine, unames, list1, list2, nums
 
         const layerProps = {
             pickable: true,
@@ -266,9 +275,17 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
             })
         }
 
+        if (path.length>0) {
+            path.forEach((p,i)=> {
+                console.log('pfeats', p)
+                layers.push(MyPathLayer({ ...layerProps, data: p, idx: i, type: 'path' }));
+            })
+        }
+
+
         if (markers.length>0) {
             markers.forEach((m, i)=>{
-                layers.push(getisShowLines ? MyLineLayer({ setHoverInfo, data: getLines[i], type: 'lines'+i }) : null);
+                layers.push(getisShowLines ? MyPathLayer({ ...layerProps, data: getLines[i], idx: i, type: 'connections' }) : null);
                 // layers.push(getpLines?.length > 0 ? MyLineLayer({ setHoverInfo, data: getpLines[i], type: 'pline' }) : null);
 
                 let clusterLayerData;
