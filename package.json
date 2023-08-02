@@ -1,6 +1,6 @@
 {
   "name": "vaduga-mapgl-panel",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Geomap for large datasets using deck.gl",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
