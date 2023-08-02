@@ -31,14 +31,32 @@ const ReactSelectSearch: FC<MapRefProps> = ({wait = 300,
         const paneProps = searchProperties && searchProperties.length ? searchProperties : []
         const nameComposite = paneProps.map(field=> point.properties[field]).join(' ')
 
+        function getFirstCoordinate(geojson) {
+          if (!geojson) {return undefined;}
+
+          if (geojson.type === 'Point') {
+            return geojson.coordinates;
+          } else if (geojson.type === 'MultiPoint' || geojson.type === 'LineString') {
+            return geojson.coordinates[0];
+          } else if (geojson.type === 'Polygon' || geojson.type === 'MultiLineString') {
+            return geojson.coordinates[0][0];
+          } else if (geojson.type === 'MultiPolygon') {
+            return geojson.coordinates[0][0][0];
+          }
+
+          return undefined;
+        }
+
+        const geojsonFirstCoord = getFirstCoordinate(point?.geometry);
 
 
         return {
           name: `${locName} ${nameComposite}`,
           value: locName,
           color: point.properties.iconColor,
-          coord: pointGeometry?.coordinates ?? (Array.isArray(point?.contour) ? point?.contour?.[0]?.[0] : undefined) ??
-              point?.path[0]
+          coord: geojsonFirstCoord ?? (Array.isArray(point?.contour) ? point?.contour?.[0]?.[0] : undefined) ??
+              // @ts-ignore
+              (point?.path ? point.path[0] : undefined)
         }
       })
       : [];
@@ -47,6 +65,7 @@ const ReactSelectSearch: FC<MapRefProps> = ({wait = 300,
 
   const selectHandler = async (value, option) => {
     setSelectedIp(value);
+    console.log('option.coord', option.coord)
     const [longitude, latitude] = option.coord
     setViewState({
       longitude,

@@ -5,6 +5,7 @@ import {useStyles2} from "@grafana/ui";
 import {GrafanaTheme2} from "@grafana/data";
 import {displayProperties as markersDP, locName, parentName} from "../../layers/data/markersLayer";
 import {displayProperties as polygonsDP} from "../../layers/data/polygonsLayer";
+import {displayProperties as geojsonDP} from "../../layers/data/geojsonLayer";
 import {Info} from '../../store/interfaces'
 import {toJS} from "mobx";
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -47,19 +48,13 @@ function displayItem(item: any) {
 
 function renderTooltipContent(object, pinned = false) {
     const props = object?.properties ?? object ?? {}; // #todo no obj in editmode
-    const DP = object?.contour? polygonsDP : markersDP
+    const DP = geojsonDP//object?.contour? polygonsDP : markersDP
     const filteredProps = DP?.length ? DP.reduce((obj, field: string) => {
             if (props.hasOwnProperty(field) && ![locName, parentName].includes(field) ) {
                 obj[field] = props[field];
             }
             return obj;
         }, {}) : props
-
-    const displayTime= (unixTimestamp) => {
-        const date = new Date(unixTimestamp);
-        const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' } as Intl.DateTimeFormatOptions;
-        return date.toLocaleString('en-US', options);
-    }
 
     return (
         <>

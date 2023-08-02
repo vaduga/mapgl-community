@@ -1,7 +1,7 @@
 import {toRGB4Array} from '../../utils';
 import { PolygonLayer } from '@deck.gl/layers/typed';
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
-import { metricName, thresholds } from '../../layers/data/markersLayer';
+import { thresholds } from '../../layers/data/markersLayer';
 import {toJS} from "mobx";
 import iconAtlas from '/img/location-icon-atlas.png';
 
@@ -42,7 +42,7 @@ const MyPolygonsLayer = (props) => {
             const isSelected = d.properties.locName === getSelectedIp
             if (isSelected) {
 
-                const selColor = getThresholdForValue(d.properties, d.properties[metricName], thresholds).selColor
+                const selColor = getThresholdForValue(d.properties, d.properties.metricName, thresholds).selColor
                 return toRGB4Array(selColor)
             }
             return toRGB4Array(iconColor)

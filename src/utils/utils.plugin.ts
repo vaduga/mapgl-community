@@ -1,4 +1,5 @@
 import turfbbox from "@turf/bbox";
+import {DEFAULT_NO_DATA_COLOR_RGBA} from "../components/defaults";
 
 function toHex(rgbaColor) {
     // Parse the rgbaColor string to extract the red, green, blue, and alpha values
@@ -38,6 +39,48 @@ function invertColor(color){
     const colorArr = color.match(/\d+/g); // extract the RGB values as an array
     const invertedColorArr = colorArr.map(value => 255 - Number(value)); // invert each value by subtracting it from 255
     return `rgb(${invertedColorArr.join(", ")})`; // convert the array back to a string and return it
+}
+
+// Interface to define RGB object
+interface RGB {
+    r: number;
+    g: number;
+    b: number;
+}
+
+// Dictionary of color names and their corresponding RGB values
+const colorNames: { [name: string]: RGB } = {
+    black: { r: 0, g: 0, b: 0 },
+    white: { r: 255, g: 255, b: 255 },
+    red: { r: 255, g: 0, b: 0 },
+    green: { r: 0, g: 255, b: 0 },
+    blue: { r: 0, g: 0, b: 255 },
+    // Add more colors as needed
+};
+
+// Function to convert a color to RGBA string
+function colorToRGBA(color: string, alpha: number = 1): string | null {
+    // Check if the input color is a valid hexadecimal value
+    if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color)) {
+        // If it's a valid hex color, convert it to RGB
+        const hexValue = color.length === 4 ? color.substring(1).repeat(2) : color.substring(1);
+        const rgb: RGB = {
+            r: parseInt(hexValue.substring(0, 2), 16),
+            g: parseInt(hexValue.substring(2, 4), 16),
+            b: parseInt(hexValue.substring(4, 6), 16),
+        };
+        return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+    }
+
+    // If the color is not a valid hex, check if it's a valid color name
+    const lowercaseColor = color.toLowerCase();
+    if (colorNames[lowercaseColor]) {
+        const { r, g, b } = colorNames[lowercaseColor];
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    // If neither hex nor color name is valid, return null
+    return null;
 }
 
 const toRGB4Array = (rgbStr: string) => {
@@ -98,5 +141,5 @@ function getBounds(points) {
 
 
 export {
-    toRGB4Array, toHex, hexToRgba, getBounds
+    toRGB4Array, toHex, hexToRgba, getBounds, colorToRGBA
 }

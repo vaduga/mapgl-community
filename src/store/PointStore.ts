@@ -1,3 +1,6 @@
+// @ts-nocheck
+
+
 import {autorun, makeAutoObservable, toJS} from 'mobx';
 import RootStore from './RootStore';
 import {Feature, Info} from './interfaces';
@@ -8,6 +11,7 @@ class PointStore {
   points: Array<Array<Feature | null>> = [];
   polygons: Array<Array<Feature | null>> = [];
   path: Array<Array<Feature | null>> = [];
+  geojson: any = [];
   pLinePoints: Array<Feature | null > = [];
   isShowCluster = true;
   isShowPoints = true;
@@ -57,6 +61,10 @@ class PointStore {
   get getPoints() {
     return this.points;
   }
+  get getGeoJson() {
+    return this.geojson;
+  }
+
   get getPolygons() {
     return this.polygons;
   }
@@ -72,8 +80,8 @@ class PointStore {
   }
 
   get switchMap(): Map<string, Feature> | undefined {
-    const {points, polygons, path} = this
-    const features = [points.flat(), polygons.flat(), path.flat()]
+    const {points, polygons, path, geojson} = this
+    const features = [points.flat(), polygons.flat(), path.flat(), geojson.flat()]
     const mergedFeatures = features.reduce((r, curr) => {
       return r.concat(curr);
     }, []);
@@ -164,6 +172,10 @@ class PointStore {
 
   setPath = (payload: Feature[]) => {
     this.path = payload;
+  };
+
+  setGeoJson = (payload: Feature[]) => {
+    this.geojson = payload;
   };
 }
 

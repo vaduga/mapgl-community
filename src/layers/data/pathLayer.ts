@@ -106,7 +106,7 @@ export const pathLayer: ExtendMapLayerRegistryItem<PathConfig> = {
                                 path,
                                 locName: entries.length > 0 ? point[locName] ?? entries[0][1] : undefined,
                                 parentName: point[parentName],
-                                [metricName ?? 'metric']: point[metricName],
+                                metricName: point[metricName],
                                 iconColor: iconColor || 'rgb(0, 0, 0)',
                                 colorLabel,
                                 lineWidth: lineWidth || 1,
@@ -115,7 +115,6 @@ export const pathLayer: ExtendMapLayerRegistryItem<PathConfig> = {
                     }
                 );
 
-                console.log('points in path layer', points)
                 return points
             }
 

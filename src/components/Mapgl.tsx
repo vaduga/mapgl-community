@@ -26,6 +26,7 @@ import {ExtendMapLayerOptions} from "../extension";
 import {centerPointRegistry, MapCenterID} from "../view";
 import {MyPolygonsLayer} from "../deckLayers/PolygonsLayer/polygons-layer";
 import {toJS} from "mobx";
+import {MyGeoJsonLayer} from "../deckLayers/GeoJsonLayer/geojson-layer";
 
 export let lastMapPanelInstance
 const Mapgl = ({ options, data, width, height, replaceVariables }) => {
@@ -39,6 +40,8 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         setPolygons,
         setPath,
         getPath,
+        setGeoJson,
+        getGeoJson,
         getSelectedIp,
         switchMap,
         getisShowCluster,
@@ -200,6 +203,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         const markers: Feature[] = []
         const polygons: Feature[] = []
         const path: Feature[] = []
+        const geojson: Feature[] = []
         transformed.forEach(el=> {
             switch (el.type){
                 case 'markers':
@@ -213,9 +217,13 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                     }
                     break;
                 case 'path':
-                    console.log('elfeatpath', el)
                     if (el?.features.length) {
                         path.push(el?.features)
+                    }
+                    break;
+                case 'geojson':
+                    if (el?.features.length) {
+                        geojson.push(el?.features)
                     }
                     break;
 
@@ -225,6 +233,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         setPoints(markers)
         setPolygons(polygons)
         setPath(path)
+        setGeoJson(geojson)
 
         setZoom(zoom)
         const deckInitViewState = {
@@ -257,6 +266,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         const markers = getPoints;
         const polygons = getPolygons;
         const path = getPath;
+        const geojson = getGeoJson;
         if (markers.length < 1 && polygons.length < 1) {
             return layers;
         }
@@ -277,8 +287,17 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
 
         if (path.length>0) {
             path.forEach((p,i)=> {
-                console.log('pfeats', p)
                 layers.push(MyPathLayer({ ...layerProps, data: p, idx: i, type: 'path' }));
+            })
+        }
+
+        if (geojson.length>0) {
+            geojson.forEach((p,i)=> {
+                const featCollection = {
+                    type: 'FeatureCollection',
+                    features: p
+                }
+                layers.push(MyGeoJsonLayer({ ...layerProps, data: featCollection, idx: i }));
             })
         }
 
@@ -363,6 +382,8 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
     }, [
         getPolygons,
         getPoints,
+        getPath,
+        getGeoJson,
         getpLinePoints,
         getisShowCluster,
         getisShowLines,

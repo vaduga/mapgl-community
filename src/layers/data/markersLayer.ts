@@ -72,7 +72,6 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
     parentName = options?.parentName
     metricName = options.metricName
     displayProperties = options.displayProperties
-    console.log('markeroptions', toJS(options))
     searchProperties = options?.searchProperties
     thresholds = options?.config?.globalThresholdsConfig
 
@@ -137,7 +136,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
                   geometry,
                   locName: entries.length > 0 ? point[locName] ?? entries[0][1] : undefined,
                   parentName: point[parentName],
-                  [metricName ?? 'metric']: point[metricName],
+                  metricName: point[metricName],
                   iconColor: iconColor || 'rgb(0, 0, 0)',
                   colorLabel,
                   lineWidth: lineWidth || 1,

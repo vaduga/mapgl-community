@@ -23,7 +23,6 @@ export const DataLayersEditor: React.FC<StandardEditorProps<ExtendMapLayerOption
   onChange,
   context,
 }) => {
-    console.log('value', value)
     const onAddLayer = () => {
         let newData: ExtendMapLayerOptions[] = value ? _.cloneDeep(value) : [];
         newData.push(defaultMarkersConfig);

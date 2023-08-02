@@ -1,5 +1,6 @@
 import { markersLayer } from './markersLayer';
 import { polygonsLayer } from './polygonsLayer';
+import { geojsonLayer } from './geojsonLayer';
 import { pathLayer } from './pathLayer';
 
 
@@ -9,5 +10,6 @@ import { pathLayer } from './pathLayer';
 export const dataLayers = [
     markersLayer,
     polygonsLayer,
-    pathLayer
+    pathLayer,
+    geojsonLayer
 ];

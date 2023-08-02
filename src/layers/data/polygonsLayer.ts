@@ -63,13 +63,13 @@ export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
         locName = options.locName
         metricName = options.metricName
         displayProperties = options.displayProperties
+        // @ts-ignore
         thresholds = options?.config?.globalThresholdsConfig
 
 
 
         for (const frame of data.series) {
 //|| !options.query) || (frame.meta)
-            console.log('options.query.options === frame.refId', options?.query?.options, frame.refId)
             if ((options.query && options.query.options === frame.refId )) {
 
                 const info = dataFrameToPoints(frame, matchers);
@@ -106,7 +106,7 @@ export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
                                 contour,
                                 locName: entries.length > 0 ? point[locName] ?? entries[0][1] : undefined,
                                 parentName: point[parentName],
-                                [metricName ?? 'metric']: point[metricName],
+                                metricName: point[metricName],
                                 iconColor: iconColor || 'rgb(0, 0, 0)',
                                 colorLabel,
                                 lineWidth: lineWidth || 1,

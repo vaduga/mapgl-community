@@ -1,11 +1,11 @@
-import React, { FC, useMemo } from 'react';
+import React, {FC, useCallback, useMemo} from 'react';
 import { Select } from '@grafana/ui';
 import {
   DataFrame,
   PanelOptionsEditorBuilder,
   StandardEditorContext,
   FieldType,
-  Field,
+  Field, SelectableValue,
 } from '@grafana/data';
 import { DEFAULT_BASEMAP_CONFIG, geomapLayerRegistry } from '../layers/registry';
 import { OptionsPaneCategoryDescriptor } from './PanelEditor/OptionsPaneCategoryDescriptor';
@@ -15,6 +15,7 @@ import { GazetteerPathEditor } from './GazetteerPathEditor';
 import { ExtendMapLayerRegistryItem, ExtendMapLayerOptions, ExtendFrameGeometrySourceMode } from '../extension';
 import { FrameSelectionEditor } from './FrameSelectionEditor';
 import {getQueryFields} from "./getQueryFields";
+import {DEFAULT_OK_COLOR_RGBA} from "../components/defaults";
 
 export interface LayerEditorProps<TConfig = any> {
   options?: ExtendMapLayerOptions<TConfig>;
@@ -35,6 +36,24 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
     );
   }, [options?.type, filter]);
 
+  const getGeoJsonProps = useCallback(async (e)=> {
+    if (!options?.geojsonurl) {return []}
+    const url = options?.geojsonurl
+    if (!url) {return}
+
+    let ds = await fetch(url, {
+      method: "GET",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).catch((er) => {
+      console.log(er);
+    })
+    if (!ds) {return []}
+    let geoData = await ds.json()
+    return Object.keys(geoData.features[0].properties).map(el=> ({value: el, label: el} ))
+  }, [options?.geojsonurl])
+
   // The options change with each layer type
   const optionsEditorBuilder = useMemo(() => {
     const layer = geomapLayerRegistry.getIfExists(options?.type);
@@ -48,8 +67,8 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
       builder
          .addTextInput({
             path: 'name',
-            name: 'Name',
-            description: 'Layer name',
+            name: 'Layer name',
+            //description: '',
             settings: {},
           })
         .addCustomEditor({
@@ -58,6 +77,7 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
           name: 'Query',
           editor: FrameSelectionEditor,
           defaultValue: undefined,
+          showIf: (opts) => opts.type !== 'geojson',
         })
         .addRadio({
           path: 'location.mode',
@@ -73,6 +93,7 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
               { value: ExtendFrameGeometrySourceMode.Geojson, label: 'Geojson' },
             ],
           },
+          showIf: (opts) => opts.type !== 'geojson',
         })
         .addFieldNamePicker({
           path: 'location.geojson',
@@ -135,6 +156,21 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
               filter: (f: Field) => f.type === FieldType.string,
               noFieldsMessage: 'No string fields found',
             },
+            showIf: (opts) => opts.type !== 'geojson',
+          })
+          .addSelect({
+            path: 'geojsonLocName',
+            name: 'Location name GeoJson property',
+            //description: 'Select location name from GeoJson properties',
+            settings: {
+              allowCustomValue: true,
+              options: [],
+              placeholder: 'GeoJson properties',
+              //@ts-ignore
+              getOptions: getGeoJsonProps
+            },
+            showIf: (opts) => opts.type === 'geojson',
+            defaultValue: '',
           })
           .addFieldNamePicker({
             path: 'parentName',
@@ -152,7 +188,27 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
               filter: (f: Field) => f.type === FieldType.number,
               noFieldsMessage: 'No number fields found',
             },
+            showIf: (opts) => opts.type !== 'geojson',
           })
+          .addColorPicker({
+            path: 'geojsonColor',
+      name: 'Default GeoJson Color',
+      //defaultValue :  [255, 0, 0, 1], //DEFAULT_OK_COLOR_RGBA,
+                showIf: (opts) => opts.type === 'geojson',
+              }
+          )
+           .addSelect({
+            path: 'geojsonMetricName',
+            name: 'Metric name GeoJson property',
+            description: 'Select Metric GeoJson property with numeric values',
+            settings: {
+              allowCustomValue: true,
+              options: [],
+              placeholder: 'GeoJson properties',
+              //@ts-ignore
+              getOptions: getGeoJsonProps,
+              showIf: (opts) => opts.type === 'geojson',
+            }})
         .addMultiSelect({
           path: 'displayProperties',
           name: 'Tooltip properties',
@@ -163,9 +219,31 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
             placeholder: 'All Properties',
             getOptions: getQueryFields,
           },
+          showIf: (opts) => opts.type !== 'geojson',
           //showIf: (opts) => typeof opts.query !== 'undefined',
           defaultValue: '',
         })
+          .addTextInput({
+            path: 'geojsonurl',
+            name: 'GeoJson Url',
+            description: 'Url to a file with valid GeoJSON FeatureCollection object',
+            settings: {},
+            showIf: (opts) => opts.type === 'geojson',
+          })
+          .addMultiSelect({
+            path: 'geojsonDisplayProperties',
+            name: 'Tooltip properties',
+            description: 'Select properties to be displayed from GeoJson properties',
+            settings: {
+              allowCustomValue: true,
+              options: [],
+              placeholder: 'All Properties',
+              //@ts-ignore
+              getOptions: getGeoJsonProps
+            },
+            showIf: (opts) => opts.type === 'geojson',
+            defaultValue: '',
+          })
           .addMultiSelect({
             path: 'searchProperties',
             name: 'Search by',
@@ -185,7 +263,8 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
       layer.registerOptionsUI(builder);
     }
     return builder;
-  }, [options?.type]);
+
+  }, [options?.type, getGeoJsonProps]);
 
   // The react components
   const layerOptions = useMemo(() => {

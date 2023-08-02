@@ -43,6 +43,10 @@ export interface DataLayerOptions<TConfig = any> {
   config: TConfig
 }
 export interface ExtendMapLayerOptions<TConfig = any> {
+  geojsonColor?: string;
+  geojsonLocName?: string;
+  geojsonMetricName?: string;
+  geojsonurl?: string;
   globalThresholdsConfig?: [];
   name?: string;
   type: string;
@@ -54,6 +58,7 @@ export interface ExtendMapLayerOptions<TConfig = any> {
   opacity?: number;
   query?: MatcherConfig;
   displayProperties?: string[];
+  geojsonDisplayProperties?: string[] ;
   searchProperties?: string[];
   titleField?: string;
   apiKey?: string;
@@ -76,7 +81,7 @@ export interface ExtendMapLayerRegistryItem<TConfig = ExtendMapLayerOptions> ext
    * Function that configures transformation and returns points for Deck.gl render
    * @param options
    */
-  pointsUp?: (data: PanelData, options: ExtendMapLayerOptions<TConfig>) =>  Promise<any[] | Feature[]>;
+  pointsUp?: (data: PanelData, options: ExtendMapLayerOptions<TConfig>) =>  Promise<any[] | Feature[] | string>;
   create?: (options: ExtendMapLayerOptions<TConfig>, theme: GrafanaTheme2) => {init?: any} | undefined;
   /**
    * Show custom elements in the panel edit UI

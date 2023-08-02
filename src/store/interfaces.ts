@@ -1,6 +1,6 @@
 import {Geometry, Position, GeoJsonProperties} from 'geojson'
 
-type PointFeatureProperties = GeoJsonProperties & {
+export type PointFeatureProperties = GeoJsonProperties & {
   locName: string;
   parentName: string;
   iconColor: string,
@@ -30,6 +30,8 @@ export interface DeckFeature<G extends Geometry | null = Geometry, P = PointFeat
 }
 
 export interface Feature<G extends Geometry | null = Geometry, P = PointFeatureProperties> {
+  path?: [];
+  contour?: string;
   id: number;
   type: 'Feature';
   geometry: G;

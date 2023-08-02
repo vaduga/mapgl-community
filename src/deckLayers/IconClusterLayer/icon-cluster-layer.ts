@@ -4,7 +4,7 @@ import Supercluster from 'supercluster';
 import { svgToDataURL, createDonutChart } from './donutChart';
 import {Feature} from "geojson";
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
-import {metricName, thresholds} from "../../layers/data/markersLayer";
+import {thresholds} from "../../layers/data/markersLayer";
 import {toJS} from "mobx";
 
 type params =
@@ -108,7 +108,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
             // single point, not a cluster
             const {locName, colorLabel } = d.properties
             const isSelected = locName === this.selectedIp
-            const color = isSelected ? getThresholdForValue(d.properties, d.properties[metricName], thresholds).selColor : d.properties.iconColor;
+            const color = isSelected ? getThresholdForValue(d.properties, d.properties.metricName, thresholds).selColor : d.properties.iconColor;
             colorCounts[color] =   {
               count : 1,
               label : colorLabel
