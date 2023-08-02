@@ -4,7 +4,7 @@ import {
   DEFAULT_NO_DATA_COLOR_RGBA,
   DEFAULT_NO_DATA_COLOR_SELECTED_RGBA
 } from '../../../components/defaults';
-import {OverField, Threshold} from '../types';
+import {OverField} from '../types';
 import {FieldType} from "@grafana/data";
 
 
@@ -92,7 +92,6 @@ function getThresholdForValue(
 
   for (let i = thresholdCount - 1; i >= 0; i--) {
     const threshold = thresholds[i];
-    //console.log('th', threshold)
     if (threshold.value <= value) {
       currentLevel = threshold.overrides;
       currentColor = threshold.color;

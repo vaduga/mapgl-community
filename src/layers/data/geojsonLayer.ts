@@ -1,18 +1,15 @@
-import React from 'react';
 import {
     PanelData,
-    DataFrameView
 } from '@grafana/data';
 
-import { dataFrameToPoints, getLocationMatchers } from '../../utils/location';
+import { getLocationMatchers } from '../../utils/location';
 import {
     ExtendMapLayerRegistryItem,
     ExtendFrameGeometrySourceMode,
     ExtendMapLayerOptions,
-    DataLayerOptions
 } from '../../extension';
 import {Feature} from '../../store/interfaces';
-import {Geometry, Point, Position} from "geojson";
+import {Position} from "geojson";
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
 import {colorToRGBA} from "../../utils";
 
@@ -32,7 +29,7 @@ export const defaultPolygonsConfig: ExtendMapLayerOptions<GeoJsonConfig> = {
         mode: ExtendFrameGeometrySourceMode.Auto,
     },
 };
-export let locName, parentName, metricName, displayProperties, thresholds, geoColor
+export let locName, parentName, metricName, searchProperties, isShowTooltip, thresholds, geoColor
 
 /**
  * Map data layer configuration for icons overlay
@@ -55,22 +52,18 @@ export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
             ...options.config,
         };
 
-
-        const matchers = await getLocationMatchers(options.location);
-
         if (!data.series.length) {
             return []
         }
 
         locName = options.geojsonLocName
         metricName = options.geojsonMetricName
-        displayProperties = options.geojsonDisplayProperties
+        isShowTooltip = options.isShowTooltip
+        const displayProperties = options.geojsonDisplayProperties
 //@ts-ignore
         geoColor = colorToRGBA(options?.geojsonColor);
-        console.log('options?.geojsonColor', options?.geojsonColor)
-
-
-        // @ts-ignore
+        searchProperties = options?.searchProperties
+// @ts-ignore
         thresholds = options?.config?.globalThresholdsConfig
 
 
@@ -111,9 +104,11 @@ export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
                             locName: locName ? props[locName] : undefined,
                             parentName: props[parentName],
                             metricName: metric,
-                            iconColor: iconColor || 'rgb(350, 220, 20)',
+                            iconColor: iconColor ?? 'rgb(350, 220, 20)',
                             colorLabel,
-                            lineWidth: lineWidth || 1,
+                            lineWidth: lineWidth ?? 1,
+                            isShowTooltip,
+                            displayProperties: isShowTooltip ? displayProperties : null
                         },
                     }}
                 )
@@ -125,18 +120,6 @@ export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
 
 
         return []
-    },
-
-    // Polygons overlay options
-    registerOptionsUI: (builder) => {
-
-        // builder
-        //     .addBooleanSwitch({
-        //         path: 'config.jitterPoints',
-        //         name: 'exmaple',
-        //         description: 'exmpale swithc',
-        //         defaultValue: true,//defaultOptions.jitterPoints,
-        //     })
     },
 
     // fill in the default values

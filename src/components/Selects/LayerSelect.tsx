@@ -1,7 +1,7 @@
-import React, {FC, useState, useEffect} from 'react';
+import React, {FC} from 'react';
 import { observer } from 'mobx-react-lite';
 import { useRootStore } from '../../utils';
-import { parentName } from '../../layers/data/markersLayer';
+import { locName, parentName } from '../../layers/data/markersLayer';
 import Checkbox from '../Checkboxes/Checkbox';
 import {css} from "@emotion/css";
 import {useStyles2} from "@grafana/ui";
@@ -39,7 +39,7 @@ const LayerSelect: FC = observer(() => {
               &nbsp;Pts
           </Checkbox>}
 
-        {parentName && <Checkbox
+        {locName && parentName && <Checkbox
               disabled={false}
               value={isShowLines}
               title="lines"

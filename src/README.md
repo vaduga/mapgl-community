@@ -1,8 +1,6 @@
-<!-- This README file is going to be the one displayed on the Grafana.com website for your plugin -->
-
 # Map.gl panel plugin
 
-Geospatial map for large datasets using deck.gl
+Geospatial map for large datasets using Deck.gl
 
 [![Telegram Url](https://img.shields.io/badge/Telegram-chat-blue?logo=telegram)](https://t.me/grafanista)
 [![Change Log](https://img.shields.io/badge/Change-log-blue.svg?style=flat)](https://github.com/vaduga/mapgl-community/blob/main/CHANGELOG.md)
@@ -15,12 +13,15 @@ with different data layer rendering technology.
 This plugin uses [Deck.gl](https://deck.gl/) framework at its core and features:
 
 * Optimized rendering of large datasets using WebGL
+* New: Multi layers support
+* New: Clusters, Polygons, Path (LineStrings)
+* New: static GeoJson from file url
 * Composite donut-chart cluster icons layer with fallback to icon layer
-* Pop up for a specific point or cluster with customizable fields 
-* Colored thresholds for metrics with pop up labels
-* Parent/child connections line layer with path to root on select
-* Selectable properties for pop up 
-* Search for your points by customized fields 
+* Tooltips with customizable fields. Aggregated threshold labels for clusters 
+* New: color thresholds parameterized by set of properties 
+* Parent/child relation lines with path to root
+* Customizable tooltip properties 
+* Customizable features search 
 
 ## Required fields: 
 * Coordinates for points in any popular format

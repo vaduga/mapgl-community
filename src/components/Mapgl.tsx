@@ -6,13 +6,13 @@ import {observer} from 'mobx-react-lite';
 import DeckGL from '@deck.gl/react';
 import Map from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
-import {MyLineLayer} from '../deckLayers/LineLayer/line-layer';
+//import {MyLineLayer} from '../deckLayers/LineLayer/line-layer';
 import {MyPathLayer} from '../deckLayers/PathLayer/path-layer';
 import {IconClusterLayer} from '../deckLayers/IconClusterLayer/icon-cluster-layer';
 import {DeckFeature, Feature} from '../store/interfaces';
 import Menu from '../components/Menu';
 import {
-    getBounds,
+    getBounds, getFirstCoordinate,
     useRootStore,
 } from '../utils';
 
@@ -113,6 +113,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                 y: -3000,
                 cluster: false,
                 object: {
+                    isShowTooltip: false,
                     cluster: false
                 },
                 objects: []
@@ -165,24 +166,32 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
     const loadPoints = async (data)=> {
 
 
-                const transformed =  await Promise.all(options?.dataLayers.map(async (dataLayer)=>{
+                const transformed =  options?.dataLayers?.length ? await Promise.all(options.dataLayers.map(async (dataLayer)=>{
 
                 const layer = geomapLayerRegistry.getIfExists(dataLayer.type)
                 const extOptions = {...dataLayer, config: {...dataLayer.config, globalThresholdsConfig: options?.globalThresholdsConfig}}
                  return {type: dataLayer.type, features: layer?.pointsUp ? await layer.pointsUp(data, extOptions) : []
         }
-        }))
+        })) : []
 
         const view = initMapView(options.view)
 
             let longitude, latitude, zoom;
             if (view.id === MapCenterID.Auto) {
-                if (transformed?.length) {
+                if (transformed?.length > 0) {
                     const viewport = new WebMercatorViewport({width, height});
-                    const boundsCoords = transformed[0].features.map(el=> (
-                        {
-                        type: 'Feature', geometry: {type: 'Point', coordinates: transformed[0].type === 'polygons' ? el?.contour[0][0] : el.geometry.coordinates
-                    }}))
+                    const boundsCoords = transformed[0].features.map(el=> {
+
+                        const normalCoord = getFirstCoordinate(el.geometry)
+                        return (
+                            {
+                                type: 'Feature', geometry: {
+                                    type: 'Point',
+                                    coordinates: normalCoord ?? el?.contour?.[0]?.[0] ?? el?.path?.[0]
+                                }
+                            }
+                        )
+                    })
                     const [minLng, minLat, maxLng, maxLat] = getBounds(boundsCoords);
                     const bounds: [[number, number], [number, number]] = [[minLng, minLat], [maxLng, maxLat]];
 
@@ -267,14 +276,17 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         const polygons = getPolygons;
         const path = getPath;
         const geojson = getGeoJson;
-        if (markers.length < 1 && polygons.length < 1) {
+
+        const allFeatures = [markers, polygons,path, geojson].filter(el=> el?.length>0)
+
+        if (allFeatures?.length < 1) {
             return layers;
         }
 
         const layerProps = {
             pickable: true,
             autoHighlight: true,
-            highlightColor: [170, 100, 50, 60],
+            highlightColor: [252, 3, 215, 60],
             onHover: setHoverInfo,
             zoom: zoomGlobal,
         };
@@ -343,6 +355,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                                     y: -3000,
                                     cluster: false,
                                     object: {
+                                        isShowTooltip: true,
                                         cluster: false
                                     },
                                     objects: []

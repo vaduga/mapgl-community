@@ -3,11 +3,9 @@ import { useRootStore } from '../../utils';
 import {css} from "@emotion/css";
 import {useStyles2} from "@grafana/ui";
 import {GrafanaTheme2} from "@grafana/data";
-import {displayProperties as markersDP, locName, parentName} from "../../layers/data/markersLayer";
-import {displayProperties as polygonsDP} from "../../layers/data/polygonsLayer";
-import {displayProperties as geojsonDP} from "../../layers/data/geojsonLayer";
+
+
 import {Info} from '../../store/interfaces'
-import {toJS} from "mobx";
 const getStyles = (theme: GrafanaTheme2) => ({
     tooltip: css`
       pointer-events: all;      
@@ -48,7 +46,9 @@ function displayItem(item: any) {
 
 function renderTooltipContent(object, pinned = false) {
     const props = object?.properties ?? object ?? {}; // #todo no obj in editmode
-    const DP = geojsonDP//object?.contour? polygonsDP : markersDP
+    // Assuming `info` is defined somewhere in your code
+    const {locName, parentName} = props
+    let DP = props?.displayProperties
     const filteredProps = DP?.length ? DP.reduce((obj, field: string) => {
             if (props.hasOwnProperty(field) && ![locName, parentName].includes(field) ) {
                 obj[field] = props[field];
@@ -69,18 +69,25 @@ function renderTooltipContent(object, pinned = false) {
     );
 }
 
-const Tooltip = ({ info, isClosed = false , selectedFeIndexes=[]}: {
+const Tooltip = ({ info, isClosed = false}: {
     info: Info;
     isClosed?: boolean;
     selectedFeIndexes?: number[];
 }) => {
-    const s = useStyles2(getStyles);
+
+  const s = useStyles2(getStyles);
   const { pointStore } = useRootStore();
   const { getTooltipObject } = pointStore;
 if (!Object.entries(info).length) {
     return null
 }
+
     const { x, y, object } = info;
+
+    if (!object?.cluster && (!object?.isShowTooltip && !object?.properties?.isShowTooltip)) {
+        return null
+    }
+
     if (object?.cluster) {
         const { colorCounts } = object;
 
@@ -114,7 +121,6 @@ if (!Object.entries(info).length) {
         </div>
     );
   }
-
 
       return (
     <div className={s.tooltip} style={{ left: x, top: y}}>

@@ -5,7 +5,7 @@ import {
   PanelOptionsEditorBuilder,
   StandardEditorContext,
   FieldType,
-  Field, SelectableValue,
+  Field,
 } from '@grafana/data';
 import { DEFAULT_BASEMAP_CONFIG, geomapLayerRegistry } from '../layers/registry';
 import { OptionsPaneCategoryDescriptor } from './PanelEditor/OptionsPaneCategoryDescriptor';
@@ -15,7 +15,6 @@ import { GazetteerPathEditor } from './GazetteerPathEditor';
 import { ExtendMapLayerRegistryItem, ExtendMapLayerOptions, ExtendFrameGeometrySourceMode } from '../extension';
 import { FrameSelectionEditor } from './FrameSelectionEditor';
 import {getQueryFields} from "./getQueryFields";
-import {DEFAULT_OK_COLOR_RGBA} from "../components/defaults";
 
 export interface LayerEditorProps<TConfig = any> {
   options?: ExtendMapLayerOptions<TConfig>;
@@ -36,7 +35,7 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
     );
   }, [options?.type, filter]);
 
-  const getGeoJsonProps = useCallback(async (e)=> {
+  const getGeoJsonProps = useCallback(async ()=> {
     if (!options?.geojsonurl) {return []}
     const url = options?.geojsonurl
     if (!url) {return}
@@ -71,10 +70,17 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
             //description: '',
             settings: {},
           })
+          .addTextInput({
+              path: 'geojsonurl',
+              name: 'GeoJson Url',
+              description: 'Url to a file with valid GeoJSON FeatureCollection object',
+              settings: {},
+              showIf: (opts) => opts.type === 'geojson',
+          })
         .addCustomEditor({
           id: 'query',
           path: 'query',
-          name: 'Query',
+          name: 'Data query',
           editor: FrameSelectionEditor,
           defaultValue: undefined,
           showIf: (opts) => opts.type !== 'geojson',
@@ -175,6 +181,7 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
           .addFieldNamePicker({
             path: 'parentName',
             name: 'Parent name field',
+            description: 'To draw relation lines',
             settings: {
               filter: (f: Field) => f.type === FieldType.string,
               noFieldsMessage: 'No string fields found',
@@ -193,6 +200,7 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
           .addColorPicker({
             path: 'geojsonColor',
       name: 'Default GeoJson Color',
+      description: 'Use \'CUSTOM\' tab only to set correct color',
       //defaultValue :  [255, 0, 0, 1], //DEFAULT_OK_COLOR_RGBA,
                 showIf: (opts) => opts.type === 'geojson',
               }
@@ -207,33 +215,33 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
               placeholder: 'GeoJson properties',
               //@ts-ignore
               getOptions: getGeoJsonProps,
-              showIf: (opts) => opts.type === 'geojson',
-            }})
+            },
+             showIf: (opts) => opts.type === 'geojson',
+           })
+          .addBooleanSwitch({
+            path: 'isShowTooltip',
+            name: 'Show tooltip',
+            description: 'Show tooltip for this layer',
+            defaultValue: true,
+          })
         .addMultiSelect({
           path: 'displayProperties',
           name: 'Tooltip properties',
-          description: 'Select properties to be displayed',
+          description: 'Properties to be displayed. Default: all',
           settings: {
             allowCustomValue: false,
             options: [],
             placeholder: 'All Properties',
             getOptions: getQueryFields,
           },
-          showIf: (opts) => opts.type !== 'geojson',
+          showIf: (opts) => opts.type !== 'geojson' && opts.isShowTooltip,
           //showIf: (opts) => typeof opts.query !== 'undefined',
           defaultValue: '',
         })
-          .addTextInput({
-            path: 'geojsonurl',
-            name: 'GeoJson Url',
-            description: 'Url to a file with valid GeoJSON FeatureCollection object',
-            settings: {},
-            showIf: (opts) => opts.type === 'geojson',
-          })
           .addMultiSelect({
             path: 'geojsonDisplayProperties',
             name: 'Tooltip properties',
-            description: 'Select properties to be displayed from GeoJson properties',
+            description: 'Properties to be displayed from GeoJson file',
             settings: {
               allowCustomValue: true,
               options: [],
@@ -247,14 +255,14 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
           .addMultiSelect({
             path: 'searchProperties',
             name: 'Search by',
-            description: 'Select properties for search options',
+            description: 'Extra properties for search options. Default: location name',
             settings: {
               allowCustomValue: false,
               options: [],
               placeholder: 'Search by location name only',
               getOptions: getQueryFields,
             },
-            showIf: (opts) => opts.type === 'markers',
+            //showIf: (opts) => opts.type === 'markers',
             //showIf: (opts) => typeof opts.query !== 'undefined',
             defaultValue: '',
           })

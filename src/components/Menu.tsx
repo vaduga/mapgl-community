@@ -32,13 +32,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
 
 
 const Menu = () => {
-  const { getPoints } = useRootStore().pointStore;
+  const { getPoints, getPath, getPolygons, getGeoJson } = useRootStore().pointStore;
     const s = useStyles2(getStyles);
-
-  return getPoints.length ? (
+const hasData = [getPoints, getPath, getPolygons, getGeoJson].some(el=> el?.length>0)
+  return hasData ? (
       <div className={s.myMenu}>
         <ReactSelectSearch/>
-        <LayerSelect />
+          {getPoints?.length>0 && <LayerSelect/>}
       </div>
   ) : null;
 };

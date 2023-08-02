@@ -8,7 +8,12 @@
 - Points toggle
 
 ## 1.0.1
-fix: rerender canvas on resize and on change options
+- Multi layers support
+- PolygonsLayer, Path (LineStrings) layer from frames datasource 
+- Static GeoJsonlayer with FeatureCollection support from GeoJson file (url)
+- Advanced thresholds processor for metrics. Set specific color for any set of parameters describing group of features.
+- Points show toggle
+
 ## 1.0.0 
 
 Initial release.

@@ -2,33 +2,24 @@ import {toRGB4Array} from '../../utils';
 import { GeoJsonLayer } from '@deck.gl/layers/typed';
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
 import { thresholds } from '../../layers/data/markersLayer';
-import {toJS} from "mobx";
-import iconAtlas from '/img/location-icon-atlas.png';
-import {Feature, PointFeatureProperties} from "../../store/interfaces";
-import { Geometry } from 'geojson';
-
-const ICON_MAPPING = {
-    marker: { x: 0, y: 0, width: 128, height: 128, mask: true },
-};
 
 const MyGeoJsonLayer = (props) => {
     const {
         data,
-        getSelectedFeIndexes,
         getSelectedIp,
-        zoom,
         onHover,
         highlightColor,
-        iconMapping = ICON_MAPPING,
         idx
     } = props;
 
-    // @ts-ignore
+
     return new GeoJsonLayer({
         id: 'geojson-layer'+idx,
         data,
         pickable: true,
         onHover,
+        autoHighlight: true,
+        highlightColor,
         stroked: false,
         filled: true,
         extruded: true,
@@ -55,7 +46,8 @@ const MyGeoJsonLayer = (props) => {
             }
             return toRGB4Array(iconColor)      } , //[160, 160, 180, 200] ,
         getPointRadius: 100,
-        getLineWidth: 1,
+        getLineWidth: (d) =>{
+            return d?.properties?.lineWidth ?? 1},
         getElevation: 30
     });
 };

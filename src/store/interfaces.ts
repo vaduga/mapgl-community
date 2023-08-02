@@ -15,6 +15,7 @@ export interface Info {
   y: number,
   cluster: boolean,
   object: {
+    isShowTooltip: Boolean;
     cluster: boolean,
     colorCounts?: { [color: string]: { count: number, label: string } }
     properties?: any

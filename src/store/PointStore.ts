@@ -82,20 +82,21 @@ class PointStore {
   get switchMap(): Map<string, Feature> | undefined {
     const {points, polygons, path, geojson} = this
     const features = [points.flat(), polygons.flat(), path.flat(), geojson.flat()]
+
     const mergedFeatures = features.reduce((r, curr) => {
       return r.concat(curr);
     }, []);
-    const relArr = this.points.length>0 && mergedFeatures.map((point): [string, Feature] | undefined => {
+    const relArr = mergedFeatures?.length>0 && mergedFeatures.map((point): [string, Feature] | undefined => {
       if (point && point.properties) {
         return [point.properties.locName, point];
       }
       return
     });
-
     if (!relArr) {
       return
     }
 
+    //console.log('relArr', toJS(relArr))
     return new Map(relArr.filter((val): val is [string, Feature] => val !== undefined));
   }
   toggleShowCluster = (flag: boolean) => {

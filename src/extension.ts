@@ -43,6 +43,7 @@ export interface DataLayerOptions<TConfig = any> {
   config: TConfig
 }
 export interface ExtendMapLayerOptions<TConfig = any> {
+  isShowTooltip?: boolean;
   geojsonColor?: string;
   geojsonLocName?: string;
   geojsonMetricName?: string;

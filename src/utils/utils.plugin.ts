@@ -1,6 +1,4 @@
 import turfbbox from "@turf/bbox";
-import {DEFAULT_NO_DATA_COLOR_RGBA} from "../components/defaults";
-
 function toHex(rgbaColor) {
     // Parse the rgbaColor string to extract the red, green, blue, and alpha values
     const rgbaMatch = rgbaColor.match(/^rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)$/);
@@ -59,7 +57,8 @@ const colorNames: { [name: string]: RGB } = {
 };
 
 // Function to convert a color to RGBA string
-function colorToRGBA(color: string, alpha: number = 1): string | null {
+function colorToRGBA(color: string, alpha = 1): string | null {
+    if (!color) {return `rgba(600,200,0)`}
     // Check if the input color is a valid hexadecimal value
     if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color)) {
         // If it's a valid hex color, convert it to RGB
@@ -138,8 +137,25 @@ function getBounds(points) {
     return bounds;
 }
 
+function getFirstCoordinate(geojson) {
+    if (!geojson) {return undefined;}
+
+    if (geojson.type === 'Point') {
+        return geojson.coordinates;
+    } else if (geojson.type === 'MultiPoint' || geojson.type === 'LineString') {
+        return geojson.coordinates[0];
+    } else if (geojson.type === 'Polygon' || geojson.type === 'MultiLineString') {
+        return geojson.coordinates[0][0];
+    } else if (geojson.type === 'MultiPolygon') {
+        return geojson.coordinates[0][0][0];
+    }
+
+    return undefined;
+}
+
+
 
 
 export {
-    toRGB4Array, toHex, hexToRgba, getBounds, colorToRGBA
+    toRGB4Array, toHex, hexToRgba, getBounds, colorToRGBA, getFirstCoordinate
 }

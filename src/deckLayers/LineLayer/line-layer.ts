@@ -2,12 +2,14 @@ import {toRGB4Array} from '../../utils';
 import { LineLayer } from '@deck.gl/layers/typed';
 import {DeckLine} from "../../store/interfaces";
 
-function MyLineLayer({ setHoverInfo,data, type }: { data: Array<DeckLine | null>, setHoverInfo: any, type: string}) {
+function MyLineLayer({ onHover, highlightColor, data, type }: { data: Array<DeckLine | null>, onHover: any, highlightColor: any, type: string}) {
   return new LineLayer({
     id: 'line-layer'+type,
     data,
     pickable: true,
-    onHover: setHoverInfo,
+    onHover,
+    autoHighlight: true,
+    highlightColor,
     getWidth: (d) =>{
         return d.properties.lineWidth;
     },

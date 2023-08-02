@@ -1,4 +1,3 @@
-import React from 'react';
 import {
     PanelData,
     DataFrameView,
@@ -9,10 +8,9 @@ import {
     ExtendMapLayerRegistryItem,
     ExtendFrameGeometrySourceMode,
     ExtendMapLayerOptions,
-    DataLayerOptions
 } from '../../extension';
 import {Feature} from '../../store/interfaces';
-import {Geometry, Point, Position} from "geojson";
+import {Position} from "geojson";
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
 
 export interface PathConfig {
@@ -33,7 +31,7 @@ export const defaultPathConfig: ExtendMapLayerOptions<PathConfig> = {
         mode: ExtendFrameGeometrySourceMode.Auto,
     },
 };
-export let locName, parentName, metricName, displayProperties, thresholds
+export let locName, parentName, metricName, searchProperties, isShowTooltip, thresholds
 
 /**
  * Map data layer configuration for icons overlay
@@ -64,7 +62,9 @@ export const pathLayer: ExtendMapLayerRegistryItem<PathConfig> = {
 
         locName = options.locName
         metricName = options.metricName
-        displayProperties = options.displayProperties
+        isShowTooltip = options.isShowTooltip
+        const displayProperties = options.displayProperties
+        searchProperties = options?.searchProperties
         thresholds = options?.config?.globalThresholdsConfig
 
         for (const frame of data.series) {
@@ -85,7 +85,7 @@ export const pathLayer: ExtendMapLayerRegistryItem<PathConfig> = {
 
                 const dataFrame = new DataFrameView(frame).toArray()
                 const points: Array<{ path: Position[]; id: number; type: string; properties: any }> = info.points.map((geom, id) => {
-                        const {type, coordinates} = geom
+                        const {coordinates} = geom
                         const point = dataFrame[id]
                         const metric = point[metricName]
                         const threshold = getThresholdForValue(point, metric, thresholds)
@@ -110,6 +110,8 @@ export const pathLayer: ExtendMapLayerRegistryItem<PathConfig> = {
                                 iconColor: iconColor || 'rgb(0, 0, 0)',
                                 colorLabel,
                                 lineWidth: lineWidth || 1,
+                                isShowTooltip,
+                                displayProperties: isShowTooltip ? displayProperties : null
                             },
                         }
                     }
@@ -124,18 +126,6 @@ export const pathLayer: ExtendMapLayerRegistryItem<PathConfig> = {
         return []
     },
 
-    // Path overlay options
-    registerOptionsUI: (builder) => {
-
-        // builder
-        //     .addBooleanSwitch({
-        //         path: 'config.jitterPoints',
-        //         name: 'exmaple',
-        //         description: 'exmpale swithc',
-        //         defaultValue: true,//defaultOptions.jitterPoints,
-        //     })
-    },
-
-    // fill in the default values
+     // fill in the default values
     defaultOptions,
 };

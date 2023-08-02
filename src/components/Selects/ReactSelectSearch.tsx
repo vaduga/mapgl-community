@@ -1,10 +1,13 @@
 import React, {FC} from 'react';
 import { observer } from 'mobx-react-lite';
-import { useRootStore } from '../../utils';
+import {getFirstCoordinate, useRootStore} from '../../utils';
 import SelectSearch from 'react-select-search';
 import debounce from 'debounce-promise';
 import {Point} from "geojson";
-import {searchProperties} from "../../layers/data/markersLayer";
+import {searchProperties as geoSP} from "../../layers/data/geojsonLayer";
+import {searchProperties as markersSP} from "../../layers/data/markersLayer";
+import {searchProperties as pathSP} from "../../layers/data/pathLayer";
+import {searchProperties as polygonsSP} from "../../layers/data/polygonsLayer";
 import {GrafanaTheme2} from "@grafana/data";
 import {css} from "@emotion/css";
 import {useStyles2} from "@grafana/ui";
@@ -27,26 +30,9 @@ const ReactSelectSearch: FC<MapRefProps> = ({wait = 300,
 
   const selectOptions = switchMap
       ? Array.from(switchMap, ([locName, point]) => {
-        const pointGeometry = point.geometry as Point
-        const paneProps = searchProperties && searchProperties.length ? searchProperties : []
+        const SP = [geoSP, markersSP, pathSP, polygonsSP].filter(el=>el?.length).reduce((acc,cur)=> acc.concat(cur), [])
+        const paneProps = SP && SP.length ? SP : []
         const nameComposite = paneProps.map(field=> point.properties[field]).join(' ')
-
-        function getFirstCoordinate(geojson) {
-          if (!geojson) {return undefined;}
-
-          if (geojson.type === 'Point') {
-            return geojson.coordinates;
-          } else if (geojson.type === 'MultiPoint' || geojson.type === 'LineString') {
-            return geojson.coordinates[0];
-          } else if (geojson.type === 'Polygon' || geojson.type === 'MultiLineString') {
-            return geojson.coordinates[0][0];
-          } else if (geojson.type === 'MultiPolygon') {
-            return geojson.coordinates[0][0][0];
-          }
-
-          return undefined;
-        }
-
         const geojsonFirstCoord = getFirstCoordinate(point?.geometry);
 
 
@@ -65,7 +51,6 @@ const ReactSelectSearch: FC<MapRefProps> = ({wait = 300,
 
   const selectHandler = async (value, option) => {
     setSelectedIp(value);
-    console.log('option.coord', option.coord)
     const [longitude, latitude] = option.coord
     setViewState({
       longitude,
