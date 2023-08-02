@@ -18,7 +18,7 @@ import {getQueryFields} from "../../editor/getQueryFields";
 import {toJS} from "mobx";
 
 export interface MarkersConfig {
-  globalThresholdsConfig: [],
+  globalThresholdsConfig?: [],
   searchProperties?: string[],
   parentName?: string,
   jitterPoints?: boolean;
@@ -26,7 +26,6 @@ export interface MarkersConfig {
 }
 
 const defaultOptions: MarkersConfig = {
-  globalThresholdsConfig: [],
   searchProperties: [],
   jitterPoints: true,
 };
@@ -99,7 +98,6 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
 
         const dataFrame = new DataFrameView(frame).toArray()
 
-        console.log('info', info)
         const points: Array<{ geometry: Point; id: number; type: string; properties: any }> = info.points.map((geom, id) => {
           const {type, coordinates} = geom
               const point = dataFrame[id]

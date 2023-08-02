@@ -3,7 +3,7 @@ import RootStore from './RootStore';
 import {DeckLine} from "./interfaces";
 import {Point} from "geojson";
 import {getThresholdForValue} from "../editor/Thresholds/data/threshold_processor";
-import {DEFAULT_SEL_LINE_WIDTH} from "../components/defaults";
+import {SEL_LINE_WIDTH_MULTIPLIER} from "../components/defaults";
 import {metricName, thresholds} from "../layers/data/markersLayer";
 
 class LineStore {
@@ -19,7 +19,7 @@ class LineStore {
     const res = this.root.pointStore.getPoints.map(gp=>
        gp.map((fromPoint): DeckLine | null => {
           if (fromPoint) {
-            const {parentName, isInParentLine, iconColor, lineWidth} = fromPoint.properties
+            const {locName, parentName, isInParentLine, iconColor, lineWidth} = fromPoint.properties
             const metric = fromPoint.properties[metricName]
             const toPoint = this.root.pointStore.switchMap?.get(parentName);
             if (toPoint) {
@@ -38,8 +38,9 @@ class LineStore {
                   coordinates: toPointGeometry.coordinates,
                 },
                 properties: {
+                  locName,
                   isInParentLine,
-                  lineWidth: isInParentLine ? DEFAULT_SEL_LINE_WIDTH : lineWidth,
+                  lineWidth: isInParentLine ? lineWidth * SEL_LINE_WIDTH_MULTIPLIER : lineWidth,
                   iconColor: selColor ?? iconColor,
                 }
               };

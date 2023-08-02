@@ -52,7 +52,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         setViewState,
     } = viewStore;
 
-    const { getisShowLines, getpLines, getLines } = lineStore;
+    const { getisShowLines, getLines } = lineStore;
 
     const deckRef = useRef(null);
     const mapRef = useRef(null);
@@ -68,7 +68,6 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         const ip = info.object?.locName || info.object?.properties?.locName;
 
         if (info.picked) {
-
             if (ip) {
                 setClosedHint(false);
                 setSelectedIp(ip);
@@ -164,7 +163,8 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
 
                 const layer = geomapLayerRegistry.getIfExists(dataLayer.type)
 
-                const extOptions = {...dataLayer, config: {...options.config,globalThresholdsConfig: options?.globalThresholdsConfig}}
+                    console.log('th', options?.globalThresholdsConfig , options )
+                const extOptions = {...dataLayer, config: {...dataLayer.config, globalThresholdsConfig: options?.globalThresholdsConfig}}
                  return {type: dataLayer.type, features: layer?.pointsUp ? await layer.pointsUp(data, extOptions) : []
         }
         }))
@@ -262,7 +262,6 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
 
         if (polygons.length>0) {
             polygons.forEach((p,i)=> {
-                console.log('polygons', toJS(getPolygons))
                 layers.push(MyPolygonsLayer({ ...layerProps,data: p, idx: i }));
             })
         }

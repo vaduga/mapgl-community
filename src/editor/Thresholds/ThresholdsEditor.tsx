@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { orderBy } from 'lodash';
 import { Button, useTheme, useTheme2} from '@grafana/ui';
 import { v4 as uuidv4 } from 'uuid';
-import {Threshold, ThresholdTracker} from './types';
+import {OverrideTracker, Threshold, ThresholdTracker} from './types';
 import { ThresholdItem } from './ThresholdItem';
 import {
   DEFAULT_LINE_WIDTH,
@@ -46,11 +46,20 @@ export const ThresholdsEditor: React.FC<Props> = (options) => {
     options.setter(allThresholds);
   };
 
+  const updateThresholdOverrides = (index: number, overrides: OverrideTracker, value: number) => {
+    if (!overrides) {
+      return
+    }
+
+    tracker[index].threshold.overrides = overrides ;
+    setTracker([...tracker]);
+  };
+
   const updateThresholdValue = (index: number, value: number) => {
     tracker[index].threshold.value = Number(value);
     // reorder
     const allThresholds = [...tracker];
-    const orderedThresholds = orderBy(allThresholds, ['threshold.value'], ['asc']);
+    const orderedThresholds = orderBy(allThresholds, ['threshold.value'], ['asc']) as ThresholdTracker[];
     setTracker([...orderedThresholds]);
   };
 
@@ -102,6 +111,7 @@ export const ThresholdsEditor: React.FC<Props> = (options) => {
   const addItem = () => {
     const order = tracker.length;
     const aThreshold: Threshold = {
+      overrides: [],
       color: DEFAULT_OK_COLOR_RGBA,
       selColor: DEFAULT_OK_COLOR_SELECTED_RGBA,
       lineWidth: DEFAULT_LINE_WIDTH,
@@ -117,30 +127,31 @@ export const ThresholdsEditor: React.FC<Props> = (options) => {
   };
 
   return (
-    <>
-      <Button disabled={options.disabled} fill="solid" variant="primary" icon="plus" onClick={addItem}>
-        Add Threshold
-      </Button>
-      {tracker &&
-        tracker.map((tracker: ThresholdTracker, index: number) => {
+      <>
+        <Button disabled={options.disabled} fill="solid" variant="primary" icon="plus" onClick={addItem}>
+          Add Threshold
+        </Button>
+        {tracker &&
+            tracker.map((tracker: ThresholdTracker, index: number) => {
 
-          return (
-            <ThresholdItem
-              disabled={options.disabled || false}
-              key={`threshold-item-index-${tracker.ID}`}
-              ID={tracker.ID}
-              threshold={tracker.threshold}
-              colorSetter={updateThresholdColor}
-              selColorSetter={updateThresholdSelColor}
-              lineWidthSetter={updateLineWidth}
-              valueSetter={updateThresholdValue}
-              labelSetter={updateThresholdLabel}
-              remover={removeThreshold}
-              index={index}
-              context={options.context}
-            />
-          );
-        })}
-    </>
+              return (
+                  <ThresholdItem
+                      disabled={options.disabled || false}
+                      key={`threshold-item-index-${tracker.ID}`}
+                      ID={tracker.ID}
+                      threshold={tracker.threshold}
+                      colorSetter={updateThresholdColor}
+                      selColorSetter={updateThresholdSelColor}
+                      lineWidthSetter={updateLineWidth}
+                      valueSetter={updateThresholdValue}
+                      labelSetter={updateThresholdLabel}
+                      overrideSetter={updateThresholdOverrides}
+                      remover={removeThreshold}
+                      index={index}
+                      context={options.context}
+                  />
+              );
+            })}
+      </>
   );
 };

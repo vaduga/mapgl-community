@@ -43,6 +43,7 @@ export interface DataLayerOptions<TConfig = any> {
   config: TConfig
 }
 export interface ExtendMapLayerOptions<TConfig = any> {
+  globalThresholdsConfig?: [];
   name?: string;
   type: string;
   locName?: string;

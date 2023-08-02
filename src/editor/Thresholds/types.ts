@@ -1,6 +1,7 @@
-import {SelectableValue} from '@grafana/data';
+import {FieldType, SelectableValue} from '@grafana/data';
 
 export interface Threshold {
+  overrides: OverrideTracker | [];
   color: string;
   selColor: string;
   lineWidth: number;
@@ -14,15 +15,27 @@ export interface ThresholdTracker {
 }
 
 
-export const LineWidthStates: SelectableValue[] = [
-  { value: 0.5, label: '0.5' },
-  { value: 1, label: '1' },
-  { value: 1.5, label: '1.5' },
-  { value: 2, label: '2' },
-  { value: 2.5, label: '2.5' },
-  { value: 3, label: '3' },
-  { value: 3.5, label: '3.5' },
-  { value: 4, label: '4' },
-  { value: 4.5, label: '4.5' },
-  { value: 5, label: '5' },
-];
+export interface OverField {
+  name: string;
+  value: string;
+
+  type: FieldType
+}
+
+export interface OverrideTracker {
+  overrideField: OverField;
+  order: number;
+  ID: string;
+}
+
+
+export const generateValuesWithIncrement = (start: number, end: number, increment: number): SelectableValue[] => {
+  const values: SelectableValue[] = [];
+  for (let value = start; value <= end; value += increment) {
+    const roundedValue = parseFloat(value.toFixed(1));
+    values.push({ value: roundedValue, label: roundedValue.toString() });
+  }
+  return values;
+};
+
+export const LineWidthStates: SelectableValue[] = generateValuesWithIncrement(0.2, 15, 0.2);
