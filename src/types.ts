@@ -20,6 +20,7 @@ export const defaultView: MapViewConfig = {
 export interface PanelOptions {
   view: MapViewConfig;
   basemap: ExtendMapLayerOptions;
-  layers: ExtendMapLayerOptions[];
+  dataLayers: ExtendMapLayerOptions[];
+  dataLayer?: ExtendMapLayerOptions | null;
 
 }

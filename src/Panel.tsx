@@ -10,6 +10,13 @@ interface Props extends PanelProps<PanelOptions> {}
 export const Panel: React.FC<Props> = ({ options, data, width, height, replaceVariables }) => {
   const styles = useStyles2(getStyles);
 
+  /// migration from v1.0.0 with single dataLayer object
+
+  if (options?.dataLayer && !options?.dataLayers) {
+    options.dataLayers = [options.dataLayer]
+    options.dataLayer = null
+  }
+
   return (
       <RootStoreProvider>
     <div
@@ -20,7 +27,6 @@ export const Panel: React.FC<Props> = ({ options, data, width, height, replaceVa
           height: ${height}px;          
         `
       )}>
-
       <Mapgl options={options} data={data} width={width} height={height} replaceVariables={replaceVariables}/>
 
     </div>
