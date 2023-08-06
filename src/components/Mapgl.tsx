@@ -166,7 +166,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
     const loadPoints = async (data)=> {
 
 
-                const transformed =  options?.dataLayers?.length ? await Promise.all(options.dataLayers.map(async (dataLayer)=>{
+                const transformed =  options?.dataLayers?.length > 0 ? await Promise.all(options.dataLayers.map(async (dataLayer)=>{
 
                 const layer = geomapLayerRegistry.getIfExists(dataLayer.type)
                 const extOptions = {...dataLayer, config: {...dataLayer.config, globalThresholdsConfig: options?.globalThresholdsConfig}}
@@ -182,12 +182,12 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                     const viewport = new WebMercatorViewport({width, height});
                     const boundsCoords = transformed[0].features.map(el=> {
 
-                        const normalCoord = getFirstCoordinate(el.geometry)
+                        const firstCoord = getFirstCoordinate(el.geometry)
                         return (
                             {
                                 type: 'Feature', geometry: {
                                     type: 'Point',
-                                    coordinates: normalCoord ?? el?.contour?.[0]?.[0] ?? el?.path?.[0]
+                                    coordinates: firstCoord
                                 }
                             }
                         )
@@ -196,7 +196,9 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                     const bounds: [[number, number], [number, number]] = [[minLng, minLat], [maxLng, maxLat]];
 
 
-                    ({longitude, latitude, zoom} = viewport.fitBounds(bounds));
+                    if (minLng && minLat && maxLng && maxLat) {
+                        ({longitude, latitude, zoom} = viewport.fitBounds(bounds));
+                    }
                 }
                 // when there's no query points in auto mode
                 if (!longitude) {
@@ -293,13 +295,13 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
 
         if (polygons.length>0) {
             polygons.forEach((p,i)=> {
-                layers.push(MyPolygonsLayer({ ...layerProps,data: p, idx: i }));
+                layers.push(MyPolygonsLayer({ ...layerProps,data: p, colIdx: i }));
             })
         }
 
         if (path.length>0) {
             path.forEach((p,i)=> {
-                layers.push(MyPathLayer({ ...layerProps, data: p, idx: i, type: 'path' }));
+                layers.push(MyPathLayer({ ...layerProps, data: p, colIdx: i, type: 'path' }));
             })
         }
 
@@ -309,14 +311,14 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                     type: 'FeatureCollection',
                     features: p
                 }
-                layers.push(MyGeoJsonLayer({ ...layerProps, data: featCollection, idx: i }));
+                layers.push(MyGeoJsonLayer({ ...layerProps, data: featCollection, colIdx: i }));
             })
         }
 
 
         if (markers.length>0) {
             markers.forEach((m, i)=>{
-                layers.push(getisShowLines ? MyPathLayer({ ...layerProps, data: getLines[i], idx: i, type: 'connections' }) : null);
+                layers.push(getisShowLines ? MyPathLayer({ ...layerProps, data: getLines[i], colIdx: i, type: 'connections' }) : null);
                 // layers.push(getpLines?.length > 0 ? MyLineLayer({ setHoverInfo, data: getpLines[i], type: 'pline' }) : null);
 
                 let clusterLayerData;
@@ -376,7 +378,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                             setClosedHint,
                             setSelectedIp,
                             zoom: zoomGlobal,
-                            idx: i
+                            colIdx: i
                         })
                     );
                 }
@@ -431,7 +433,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                             mapLib={maplibregl}
                             mapStyle={source}
                         />}
-                        <Tooltip info={hoverInfo} isClosed={closedHint} selectedFeIndexes={getSelectedFeIndexes}/>
+                        <Tooltip info={hoverInfo} isClosed={closedHint}/>
                     </DeckGL>}
                 <Menu/>
           </>

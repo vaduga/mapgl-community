@@ -72,7 +72,6 @@ function renderTooltipContent(object, pinned = false) {
 const Tooltip = ({ info, isClosed = false}: {
     info: Info;
     isClosed?: boolean;
-    selectedFeIndexes?: number[];
 }) => {
 
   const s = useStyles2(getStyles);

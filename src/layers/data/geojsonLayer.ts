@@ -2,14 +2,12 @@ import {
     PanelData,
 } from '@grafana/data';
 
-import { getLocationMatchers } from '../../utils/location';
 import {
     ExtendMapLayerRegistryItem,
     ExtendFrameGeometrySourceMode,
     ExtendMapLayerOptions,
 } from '../../extension';
 import {Feature} from '../../store/interfaces';
-import {Position} from "geojson";
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
 import {colorToRGBA} from "../../utils";
 
@@ -29,7 +27,7 @@ export const defaultPolygonsConfig: ExtendMapLayerOptions<GeoJsonConfig> = {
         mode: ExtendFrameGeometrySourceMode.Auto,
     },
 };
-export let locName, parentName, metricName, searchProperties, isShowTooltip, thresholds, geoColor
+export let locName, metricName, searchProperties, isShowTooltip, thresholds, geoColor
 
 /**
  * Map data layer configuration for icons overlay
@@ -37,7 +35,7 @@ export let locName, parentName, metricName, searchProperties, isShowTooltip, thr
 export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
     id: GEOJSON_LAYER_ID,
     name: 'GeoJson layer',
-    description: 'render from Geojson file (url)',
+    description: 'render Geojson FeatureCollection from file (url)',
     isBaseMap: false,
     showLocation: true,
 
@@ -85,7 +83,7 @@ export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
                     console.log('no geodata')
                     return []}
 
-                const points: Array<{ contour: Position[]; id: number; type: string; properties: any }> = geoData?.features?.map((point, id) => {
+                const points: Feature[] = geoData?.features?.map((point, id) => {
                     const {geometry,properties: props} = point
                     const metric = props[metricName]
                     const threshold = getThresholdForValue(point, metric, thresholds)
@@ -95,15 +93,14 @@ export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
 
 
                     return {
-                        id: id,
+                        id,
                         type: "Feature",
                         geometry,
                         properties: {
                             ...props,
                             geometry,
                             locName: locName ? props[locName] : undefined,
-                            parentName: props[parentName],
-                            metricName: metric,
+                            metric,
                             iconColor: iconColor ?? 'rgb(350, 220, 20)',
                             colorLabel,
                             lineWidth: lineWidth ?? 1,

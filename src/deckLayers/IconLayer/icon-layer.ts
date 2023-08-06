@@ -4,6 +4,7 @@ import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_proce
 import { thresholds } from '../../layers/data/markersLayer';
 import {toJS} from "mobx";
 import iconAtlas from '/img/location-icon-atlas.png';
+import { colTypes } from 'store/interfaces';
 
 const ICON_MAPPING = {
   marker: { x: 0, y: 0, width: 128, height: 128, mask: true },
@@ -18,18 +19,19 @@ const MyIconLayer = (props) => {
     onHover,
     highlightColor,
     iconMapping = ICON_MAPPING,
-      idx
+    colIdx
   } = props;
+
 
   // @ts-ignore
   return new IconLayer({
     highlightColor,
     onHover,
-    id: 'icon-layer'+idx,
+    id: colTypes.Icons+'-'+colIdx,
     iconAtlas,
     iconMapping,
     data,
-    selectedFeatureIndexes: getSelectedFeIndexes,
+    selectedFeatureIndexes: getSelectedFeIndexes?.[colTypes.Icons]?.[colIdx] ?? [],
     getPosition: d => d.geometry.coordinates,
     getIcon: () => 'marker',
     getColor: (d) => {

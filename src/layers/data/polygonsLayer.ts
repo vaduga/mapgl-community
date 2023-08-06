@@ -10,8 +10,9 @@ import {
     ExtendMapLayerOptions,
 } from '../../extension';
 import {Feature} from '../../store/interfaces';
-import {Position} from "geojson";
+import {Position, Polygon} from "geojson";
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
+import {toJS} from "mobx";
 
 export interface PolygonsConfig {
 }
@@ -37,7 +38,7 @@ export let locName, parentName, metricName, searchProperties, isShowTooltip, thr
 export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
     id: POLYGONS_LAYER_ID,
     name: 'Polygons layer',
-    description: 'render from Geojson Polygons',
+    description: 'render from Geojson Polygon Geometry',
     isBaseMap: false,
     showLocation: true,
 
@@ -84,8 +85,7 @@ export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
                     return []}
 
                 const dataFrame = new DataFrameView(frame).toArray()
-                const points: Array<{ contour: Position[]; id: number; type: string; properties: any }> = info.points.map((geom, id) => {
-                        const {coordinates} = geom
+                const points: Feature[] = info.points.map((geometry, id) => {
                         const point = dataFrame[id]
                         const metric = point[metricName]
                         const threshold = getThresholdForValue(point, metric, thresholds)
@@ -93,17 +93,15 @@ export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
                         const colorLabel = threshold.label
                         const lineWidth = threshold.lineWidth
 
-                        const contour = coordinates
-
                         const entries = Object.entries(point);
 
                         return {
-                            id: id,
+                            id,
                             type: "Feature",
-                            contour,
+                            geometry,
                             properties: {
                                 ...point,
-                                contour,
+                                geometry,
                                 locName: entries.length > 0 ? point[locName] ?? entries[0][1] : undefined,
                                 parentName: point[parentName],
                                 metricName: point[metricName],

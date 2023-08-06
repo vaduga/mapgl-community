@@ -33,7 +33,7 @@ export const MARKERS_LAYER_ID = 'markers';
 // Used by default when nothing is configured
 export const defaultMarkersConfig: ExtendMapLayerOptions<MarkersConfig> = {
   type: MARKERS_LAYER_ID,
-  name: 'new data',
+  name: 'New',
   config: defaultOptions,
   location: {
     mode: ExtendFrameGeometrySourceMode.Auto
@@ -47,7 +47,7 @@ export let locName, parentName, metricName, searchProperties, isShowTooltip, thr
 export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
   id: MARKERS_LAYER_ID,
   name: 'Markers and clusters',
-  description: 'render data-points with parent-child relation lines',
+  description: 'render points with parent-child relation lines',
   isBaseMap: false,
   showLocation: true,
 
@@ -96,7 +96,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
 
         const dataFrame = new DataFrameView(frame).toArray()
 
-        const points: Array<{ geometry: Point; id: number; type: string; properties: any }> = info.points.map((geom, id) => {
+        const points: Feature[] = info.points.map((geom, id) => {
           const {type, coordinates} = geom
               const point = dataFrame[id]
               const metric = point[metricName]
@@ -127,7 +127,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
           const entries = Object.entries(point);
 
               return {
-                id: id,
+                id,
                 type: "Feature",
                 geometry,
                 properties: {
@@ -153,7 +153,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
 
             if (len > 1) {
               let angle = 0, k = 1, r = 0.0001;
-              coords.forEach(({idx, longitude, latitude}, i) => {
+              coords.forEach(({idx, longitude, latitude}) => {
                 if (points[idx].geometry.type === 'Point') {
 
                   const pointGeometry = points[idx].geometry as Point;

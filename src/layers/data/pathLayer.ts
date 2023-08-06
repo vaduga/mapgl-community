@@ -10,7 +10,7 @@ import {
     ExtendMapLayerOptions,
 } from '../../extension';
 import {Feature} from '../../store/interfaces';
-import {Position} from "geojson";
+import {Position, LineString} from "geojson";
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
 
 export interface PathConfig {
@@ -38,8 +38,8 @@ export let locName, parentName, metricName, searchProperties, isShowTooltip, thr
  */
 export const pathLayer: ExtendMapLayerRegistryItem<PathConfig> = {
     id: PATH_LAYER_ID,
-    name: 'path layer',
-    description: 'render path from Geojson LineStrings',
+    name: 'Path layer',
+    description: 'render path from Geojson LineString Geometry',
     isBaseMap: false,
     showLocation: true,
 
@@ -84,8 +84,7 @@ export const pathLayer: ExtendMapLayerRegistryItem<PathConfig> = {
                     return []}
 
                 const dataFrame = new DataFrameView(frame).toArray()
-                const points: Array<{ path: Position[]; id: number; type: string; properties: any }> = info.points.map((geom, id) => {
-                        const {coordinates} = geom
+                const points: Feature[] = info.points.map((geom, id) => {
                         const point = dataFrame[id]
                         const metric = point[metricName]
                         const threshold = getThresholdForValue(point, metric, thresholds)
@@ -93,14 +92,18 @@ export const pathLayer: ExtendMapLayerRegistryItem<PathConfig> = {
                         const colorLabel = threshold.label
                         const lineWidth = threshold.lineWidth
 
-                        const path = coordinates
+                        const path = geom.coordinates
 
                         const entries = Object.entries(point);
+                        const geometry: LineString = {
+                        type: 'LineString',
+                            coordinates: path
+                    }
 
                         return {
-                            id: id,
+                            id,
                             type: "Feature",
-                            path,
+                            geometry,
                             properties: {
                                 ...point,
                                 path,

@@ -3,6 +3,7 @@ import {Geometry, Position, GeoJsonProperties} from 'geojson'
 export type PointFeatureProperties = GeoJsonProperties & {
   locName: string;
   parentName: string;
+  metricName: number;
   iconColor: string,
   colorLabel: string,
   lineWidth: number,
@@ -11,6 +12,7 @@ export type PointFeatureProperties = GeoJsonProperties & {
 };
 
 export interface Info {
+  layer?: any;
   x: number,
   y: number,
   cluster: boolean,
@@ -30,11 +32,21 @@ export interface DeckFeature<G extends Geometry | null = Geometry, P = PointFeat
   properties: P;
 }
 
+export enum colTypes {
+  Icons = "icon-layer",
+  Lines = "lines-layer",
+  Polygons = "polygons-layer",
+  Path = "path-layer",
+  GeoJson = "geojson-layer",
+  Text = "text-layer"
+}
+
+
 export interface Feature<G extends Geometry | null = Geometry, P = PointFeatureProperties> {
-  path?: [];
-  contour?: string;
   id: number;
-  type: 'Feature';
+  type: 'Feature' | string;
+  colType?: colTypes,
+  colIdx?: number,
   geometry: G;
   properties: P;
 }

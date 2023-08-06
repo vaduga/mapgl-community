@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import {getFirstCoordinate, useRootStore} from '../../utils';
 import SelectSearch from 'react-select-search';
 import debounce from 'debounce-promise';
-import {Point} from "geojson";
 import {searchProperties as geoSP} from "../../layers/data/geojsonLayer";
 import {searchProperties as markersSP} from "../../layers/data/markersLayer";
 import {searchProperties as pathSP} from "../../layers/data/pathLayer";
@@ -33,16 +32,14 @@ const ReactSelectSearch: FC<MapRefProps> = ({wait = 300,
         const SP = [geoSP, markersSP, pathSP, polygonsSP].filter(el=>el?.length).reduce((acc,cur)=> acc.concat(cur), [])
         const paneProps = SP && SP.length ? SP : []
         const nameComposite = paneProps.map(field=> point.properties[field]).join(' ')
-        const geojsonFirstCoord = getFirstCoordinate(point?.geometry);
+          const firstCoord = getFirstCoordinate(point?.geometry);
 
 
         return {
           name: `${locName} ${nameComposite}`,
           value: locName,
           color: point.properties.iconColor,
-          coord: geojsonFirstCoord ?? (Array.isArray(point?.contour) ? point?.contour?.[0]?.[0] : undefined) ??
-              // @ts-ignore
-              (point?.path ? point.path[0] : undefined)
+          coord: firstCoord
         }
       })
       : [];
@@ -217,7 +214,7 @@ const getStyles = (theme2: GrafanaTheme2) => ({
       display: block;
       height: 42px;
       width: 100%;
-      padding-left: 0px;
+      padding-left: 0;
       background: var(--select-search-background);
       border: none;
       outline: none;

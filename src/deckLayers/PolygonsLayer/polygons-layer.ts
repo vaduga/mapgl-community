@@ -4,6 +4,7 @@ import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_proce
 import { thresholds } from '../../layers/data/markersLayer';
 import {toJS} from "mobx";
 import iconAtlas from '/img/location-icon-atlas.png';
+import { colTypes } from 'store/interfaces';
 
 const ICON_MAPPING = {
     marker: { x: 0, y: 0, width: 128, height: 128, mask: true },
@@ -18,7 +19,7 @@ const MyPolygonsLayer = (props) => {
         onHover,
         highlightColor,
         iconMapping = ICON_MAPPING,
-        idx
+        colIdx
     } = props;
 
     // @ts-ignore
@@ -28,13 +29,13 @@ const MyPolygonsLayer = (props) => {
         pickable: true,
         autoHighlight: true,
         onHover,
-        id: 'polygon-layer'+idx,
+        id: colTypes.Polygons+'-'+colIdx,
         iconAtlas,
         iconMapping,
         data,
-        selectedFeatureIndexes: getSelectedFeIndexes,
+        selectedFeatureIndexes: getSelectedFeIndexes?.[colTypes.Polygons]?.[colIdx] ?? [],
         getPolygon: d => {
-            return d.contour
+            return d.geometry.coordinates
         },
         getIcon: () => 'marker',
         getFillColor: (d) => {

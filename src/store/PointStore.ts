@@ -3,7 +3,7 @@
 
 import {autorun, makeAutoObservable, toJS} from 'mobx';
 import RootStore from './RootStore';
-import {Feature, Info} from './interfaces';
+import {colTypes, Feature, Info} from './interfaces';
 
 class PointStore {
   root: RootStore;
@@ -21,6 +21,7 @@ class PointStore {
   y: -3000,
   cluster: false,
   object: {
+    isShowTooltip: false,
     cluster: false
   },
   objects: []
@@ -42,10 +43,18 @@ class PointStore {
       object: info.object ?? {},
     };
   };
-  get getSelectedFeIndexes(): number[] {
-    const plinePts = this.pLinePoints
-    const selId = plinePts.length && plinePts[0] ? plinePts[0].id : null;
-    return (selId || selId === 0) ? [Number(selId)] : [];
+  get getSelectedFeIndexes(): { [key: string]: number[][] } {
+    const { id: index, colType, colIdx } = this.switchMap?.get(this.selectedIp) || {};
+
+    const selectedIndexes: { [key: string]: number[][] } = {
+      [colTypes.Points]: [],
+      [colTypes.Lines]: [],
+    }
+
+    if (colType && colIdx && index !== undefined) {
+      selectedIndexes[colType][colIdx] = [index];
+    }
+    return selectedIndexes;
   }
 
   get getType() {
@@ -80,23 +89,33 @@ class PointStore {
   }
 
   get switchMap(): Map<string, Feature> | undefined {
-    const {points, polygons, path, geojson} = this
-    const features = [points.flat(), polygons.flat(), path.flat(), geojson.flat()]
+    const { points, polygons, path, geojson } = this;
+    //const features = [points, polygons, path, geojson]; // Don't flatten the arrays yet
 
-    const mergedFeatures = features.reduce((r, curr) => {
-      return r.concat(curr);
-    }, []);
-    const relArr = mergedFeatures?.length>0 && mergedFeatures.map((point): [string, Feature] | undefined => {
-      if (point && point.properties) {
-        return [point.properties.locName, point];
+    type f = [string, Feature]
+    const relArr: f[] = [];
+
+    const processCollection = (collection, type) => {
+      if (Array.isArray(collection)) {
+        collection.forEach((pointsArray, i) => {
+          pointsArray.forEach((point) => {
+            if (point && point.properties) {
+              relArr.push([point.properties.locName, { ...point, colIdx: i, colType: type }]);
+
+            }
+          });
+        });
       }
-      return
-    });
-    if (!relArr) {
-      return
+    };
+    processCollection(points, colTypes.Points);
+    processCollection(polygons, colTypes.Polygons);
+    processCollection(path, colTypes.Path);
+    processCollection(geojson, colTypes.GeoJson);
+
+    if (relArr.length === 0) {
+      return;
     }
 
-    //console.log('relArr', toJS(relArr))
     return new Map(relArr.filter((val): val is [string, Feature] => val !== undefined));
   }
   toggleShowCluster = (flag: boolean) => {

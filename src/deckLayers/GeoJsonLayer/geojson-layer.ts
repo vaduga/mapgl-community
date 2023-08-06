@@ -2,6 +2,7 @@ import {toRGB4Array} from '../../utils';
 import { GeoJsonLayer } from '@deck.gl/layers/typed';
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
 import { thresholds } from '../../layers/data/markersLayer';
+import {colTypes} from "../../store/interfaces";
 
 const MyGeoJsonLayer = (props) => {
     const {
@@ -9,12 +10,12 @@ const MyGeoJsonLayer = (props) => {
         getSelectedIp,
         onHover,
         highlightColor,
-        idx
+        colIdx
     } = props;
 
 
     return new GeoJsonLayer({
-        id: 'geojson-layer'+idx,
+        id: colTypes.GeoJson+colIdx,
         data,
         pickable: true,
         onHover,
