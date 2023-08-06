@@ -10,7 +10,7 @@ function MyPathLayer({onHover, highlightColor, data, colIdx, type }: { data: Arr
         highlightColor,
         pickable: true,
         //widthScale: 20,
-        widthMinPixels: 2,
+        widthMinPixels:  2,
         // capRounded: true,
         // jointRounded: true,
         getPath: d => {

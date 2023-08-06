@@ -107,7 +107,7 @@ class PointStore {
         });
       }
     };
-    processCollection(points, colTypes.Points);
+    processCollection(points, colTypes.Icons);
     processCollection(polygons, colTypes.Polygons);
     processCollection(path, colTypes.Path);
     processCollection(geojson, colTypes.GeoJson);

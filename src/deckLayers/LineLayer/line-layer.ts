@@ -4,7 +4,7 @@ import {DeckLine} from "../../store/interfaces";
 
 function MyLineLayer({ onHover, highlightColor, data, type, colIdx }: { data: Array<DeckLine | null>, onHover: any, highlightColor: any, type: string, colIdx: number}) {
   return new LineLayer({
-    id: 'line-layer'+colIdx+type,
+    id: 'line-layer'+'-'+colIdx+type,
     data,
     pickable: true,
     onHover,

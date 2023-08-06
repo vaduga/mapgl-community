@@ -33,10 +33,10 @@ export interface DeckFeature<G extends Geometry | null = Geometry, P = PointFeat
 }
 
 export enum colTypes {
-  Icons = "icon-layer",
+  Icons = "icons-layer",
   Lines = "lines-layer",
   Polygons = "polygons-layer",
-  Path = "path-layer",
+  Path = "paths-layer",
   GeoJson = "geojson-layer",
   Text = "text-layer"
 }

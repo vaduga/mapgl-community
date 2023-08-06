@@ -15,7 +15,7 @@ const MyGeoJsonLayer = (props) => {
 
 
     return new GeoJsonLayer({
-        id: colTypes.GeoJson+colIdx,
+        id: colTypes.GeoJson+'-'+colIdx,
         data,
         pickable: true,
         onHover,
