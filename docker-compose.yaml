@@ -2,7 +2,7 @@ version: '3.0'
 
 services:
   grafana:
-    container_name: 'mapgl-grafana'
+    container_name: 'mapgl-community'
     build:
       context: ./.config
       args:
@@ -20,12 +20,13 @@ services:
 
     restart: always
     environment:
-      - GF_INSTALL_PLUGINS=grafana-googlesheets-datasource
+      - GF_INSTALL_PLUGINS=marcusolsson-csv-datasource
+      - GF_PLUGIN_ALLOW_LOCAL_MODE=true
       - HTTP_USER="{{ GRAFANA_USER }}"
       - HTTP_PASS="{{ GRAFANA_PASSWD }}"
 
   nginx:
-    container_name: nginx
+    container_name: 'mapgl-community-nginx'
     build: ./nginx
     restart: always
     environment:

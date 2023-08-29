@@ -1,13 +1,10 @@
-apiVersion: 1
+apiVersion: 2
 
 datasources:
 
-  - name: Google sheets
-    uid: "9CThojbVY"
-    type: grafana-googlesheets-datasource
-    jsonData:
-      authType: key
-    secureJsonData:
-      apiKey: 'AIzaSyD3O4Y_ABRC6qRWC-_lsXLtNxQvG-mAseY'
-    version: 1
-    editable: false
+  - name: local CSV
+    uid: "9CahajbeZ"
+    type: marcusolsson-csv-datasource
+    Path: /usr/share/grafana/public
+    version: 2
+    editable: true

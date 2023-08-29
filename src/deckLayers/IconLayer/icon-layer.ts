@@ -31,7 +31,7 @@ const MyIconLayer = (props) => {
     iconAtlas,
     iconMapping,
     data,
-    selectedFeatureIndexes: getSelectedFeIndexes?.[colTypes.Icons]?.[colIdx] ?? [],
+    selectedFeatureIndexes: getSelectedFeIndexes?.get(colTypes.Icons+colIdx) ?? [],
     getPosition: d => d.geometry.coordinates,
     getIcon: () => 'marker',
     getColor: (d) => {

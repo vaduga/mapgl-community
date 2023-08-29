@@ -190,9 +190,9 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
           })
           .addFieldNamePicker({
             path: 'metricName',
-            name: 'Metric name field',
+            name: 'Metric field (numeric)',
             settings: {
-              filter: (f: Field) => f.type === FieldType.number,
+              filter: (f: Field) => f.type === FieldType.number || f.type === FieldType.string,
               noFieldsMessage: 'No number fields found',
             },
             showIf: (opts) => opts.type !== 'geojson',

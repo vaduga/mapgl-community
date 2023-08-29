@@ -43,17 +43,17 @@ class PointStore {
       object: info.object ?? {},
     };
   };
-  get getSelectedFeIndexes(): { [key: string]: number[][] } {
+  get getSelectedFeIndexes(): Map<string,[number]> {
     const { id: index, colType, colIdx } = this.switchMap?.get(this.selectedIp) || {};
 
-    const selectedIndexes: { [key: string]: number[][] } = {
-      [colTypes.Points]: [],
-      [colTypes.Lines]: [],
+    const selectedIndexes: Map<string,[number]> = new Map()
+
+    if (colType && (colIdx !== undefined && colIdx >-1) && index !== undefined) {
+      selectedIndexes.set(colType+colIdx, [index]);
+      selectedIndexes.set(colTypes.Lines+colIdx, [index]);
     }
 
-    if (colType && colIdx && index !== undefined) {
-      selectedIndexes[colType][colIdx] = [index];
-    }
+    console.log(toJS(selectedIndexes), toJS(colType), toJS(colIdx), index)
     return selectedIndexes;
   }
 

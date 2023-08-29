@@ -4,8 +4,7 @@ import {useStyles2, useTheme2} from '@grafana/ui';
 import { config } from '@grafana/runtime';
 import {observer} from 'mobx-react-lite';
 import DeckGL from '@deck.gl/react';
-import Map from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
+import Map from 'react-map-gl/maplibre';
 //import {MyLineLayer} from '../deckLayers/LineLayer/line-layer';
 import {MyPathLayer} from '../deckLayers/PathLayer/path-layer';
 import {IconClusterLayer} from '../deckLayers/IconClusterLayer/icon-cluster-layer';
@@ -430,7 +429,6 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                         {source && <Map
                             onLoad={onMapLoad}
                             ref={mapRef}
-                            mapLib={maplibregl}
                             mapStyle={source}
                         />}
                         <Tooltip info={hoverInfo} isClosed={closedHint}/>

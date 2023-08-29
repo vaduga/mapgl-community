@@ -13,37 +13,24 @@ with different data layer rendering technology.
 This plugin uses [Deck.gl](https://deck.gl/) framework at its core and features:
 
 * Optimized rendering of large datasets using WebGL
-* New: Multi layers support
-* New: Clusters, Polygons, Path (LineStrings)
-* New: static GeoJson from file url
-* Composite donut-chart cluster icons layer with fallback to icon layer
-* Tooltips with customizable fields. Aggregated threshold labels for clusters 
-* New: color thresholds parameterized by set of properties 
 * Parent/child relation lines with path to root
+* New: support for parent path as an array of coordinates 
+* New: aggregation nodes and offset for overlapping lines in parent path. 
+* Multi layers support
+* Clusters, Polygons, Path (LineStrings)
+* Static GeoJson from file url
+* Composite donut-chart cluster icons layer with fallback to icon layer*  
+* Color thresholds customizable for any set of properties 
+* Aggregated threshold labels for clusters
 * Customizable tooltip properties 
 * Customizable features search 
 
 ## Required fields: 
 * Coordinates for points in any popular format
-* Metric field if you wish to set color thresholds
+* Numeric metric field to set color thresholds
 
-![Overview](https://mapgl.org/img/screenshot1.png)
+![Overview](https://mapgl.org/img/aggr.gif)
+![Overview1](https://mapgl.org/img/screenshot1.png)
 ![Overview2](https://mapgl.org/img/screenshot2.png)
 
-## Usage with PostGis
 
-To use the plugin with PostGis, you need either to query longitude and latitude from a stored `Point`, e.g.:
-* `ST_X(ST_GeomFromEWKT(location_centroid)) AS \"longitude\"`
-* `ST_Y(ST_GeomFromEWKT(location_centroid)) AS \"latitude\"`
-
-Or query the GeoJSON shape, e.g.:
-* `ST_AsGeoJSON(ST_GeomFromEWKT(location)) AS \"geojson\"`
-
-## Usage with CrateDB
-
-To use the plugin with CrateDB, you need either to query longitude and latitude from a stored `Point`, e.g.:
-* `longitude(location_centroid) AS \"longitude\"`
-* `latitude(location_centroid) AS \"latitude\"`
-
-Or query the GeoJSON field, e.g.:
-* `location AS \"geojson\"`

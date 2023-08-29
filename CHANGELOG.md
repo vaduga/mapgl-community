@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.2
+
+* New: support for parent path as an array of coordinates
+* New: aggregation nodes and offset for overlapping lines in parent path.
+* Parent line style improvements. Extended path to root as a separate line. 
+* Bug fixes: 
+ - isolate config options for different layers;  
+
+
 ## 1.0.1
 
 - Multi layers support
