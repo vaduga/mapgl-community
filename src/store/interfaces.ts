@@ -1,14 +1,22 @@
 import {Geometry, Position, GeoJsonProperties} from 'geojson'
 
-export type PointFeatureProperties = GeoJsonProperties & {
-  locName: string;
-  parentName: string;
-  metricName: number;
-  iconColor: string,
-  colorLabel: string,
-  lineWidth: number,
-  [key: string]: unknown;
+export const AggrTypes = ['node', 'connector']
 
+export type PointFeatureProperties = GeoJsonProperties & {
+  locName: string,
+  colType: colTypes,
+  colIdx?: number,
+  aggrType?: string,
+  refId: string,
+  parName: string,
+  parPath: [string | [number, number] ],
+  metric: number,
+  threshold: {thresholdLevel: number,
+  color: string,
+  selColor: string,
+  lineWidth: number,
+  label: string},
+  [key: string]: unknown
 };
 
 export interface Info {
@@ -33,12 +41,13 @@ export interface DeckFeature<G extends Geometry | null = Geometry, P = PointFeat
 }
 
 export enum colTypes {
-  Icons = "icons-layer",
-  Lines = "lines-layer",
-  Polygons = "polygons-layer",
-  Path = "paths-layer",
-  GeoJson = "geojson-layer",
-  Text = "text-layer"
+  Icons = "icons",
+  Points = "markers",
+  Lines = "edit-lines",
+  Polygons = "polygons",
+  Path = "path",
+  GeoJson = "geojson",
+  Text = "text"
 }
 
 
@@ -51,8 +60,11 @@ export interface Feature<G extends Geometry | null = Geometry, P = PointFeatureP
   properties: P;
 }
 
-export interface DeckLine<P = PointFeatureProperties> {
-  from: { coordinates: Position };
-  to: { coordinates: Position };
+export interface DeckLine<G extends Geometry | null = Geometry, P = PointFeatureProperties> {
+  id: number;
+  type: 'Feature';
+  geometry: G;
+  // from: { coordinates: Position };
+  // to: { coordinates: Position };
   properties: Partial<P>;
 }

@@ -2,9 +2,10 @@
 
 ## 1.0.2
 
-* New: support for parent path as an array of coordinates
+* New: support for parent path as an array of coordinates or location names
 * New: aggregation nodes and offset for overlapping lines in parent path.
-* Parent line style improvements. Extended path to root as a separate line. 
+* Parent line style improvements:
+  -Extended path to root as a separate dotted line.    
 * Bug fixes: 
  - isolate config options for different layers;  
 

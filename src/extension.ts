@@ -51,9 +51,10 @@ export interface ExtendMapLayerOptions<TConfig = any> {
   globalThresholdsConfig?: [];
   name?: string;
   type: string;
-  locName?: string;
-  parentName?: string;
-  metricName?: string;
+  locField?: string;
+  parField?: string;
+  metricField?: string;
+  aggrTypeField?: string;
   config?: TConfig;
   location?: ExtendFrameGeometrySource;
   opacity?: number;

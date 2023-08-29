@@ -3,24 +3,27 @@ import { observer } from 'mobx-react-lite';
 import {getFirstCoordinate, useRootStore} from '../../utils';
 import SelectSearch from 'react-select-search';
 import debounce from 'debounce-promise';
-import {searchProperties as geoSP} from "../../layers/data/geojsonLayer";
 import {searchProperties as markersSP} from "../../layers/data/markersLayer";
-import {searchProperties as pathSP} from "../../layers/data/pathLayer";
-import {searchProperties as polygonsSP} from "../../layers/data/polygonsLayer";
 import {GrafanaTheme2} from "@grafana/data";
 import {css} from "@emotion/css";
 import {useStyles2} from "@grafana/ui";
+import {AggrTypes} from "../../store/interfaces";
 
 type MapRefProps = {
   wait?: number;
+    selectHandler: (value: any, coord: any, reloc: boolean) => Promise<void>;
+    value: string;
+    placeholder?: string;
+    aggrTypes?: string[];
 };
 
-const ReactSelectSearch: FC<MapRefProps> = ({wait = 300,
-  ...props
-}) => {
+const ReactSelectSearch: FC<MapRefProps> = ({ selectHandler, value, wait = 300,
+    placeholder ='Search location', aggrTypes = [],
+                                              ...props
+                                            }) => {
   const s = useStyles2(getStyles);
   const { pointStore, viewStore } = useRootStore();
-  const { switchMap, selectedIp, setSelectedIp } =
+  const { switchMap } =
     pointStore;
 
   const {
@@ -29,9 +32,9 @@ const ReactSelectSearch: FC<MapRefProps> = ({wait = 300,
 
   const selectOptions = switchMap
       ? Array.from(switchMap, ([locName, point]) => {
-        const SP = [geoSP, markersSP, pathSP, polygonsSP].filter(el=>el?.length).reduce((acc,cur)=> acc.concat(cur), [])
-        const paneProps = SP && SP.length ? SP : []
-        const nameComposite = paneProps.map(field=> point.properties[field]).join(' ')
+          const SP = [markersSP].filter(el=>el?.length).reduce((acc,cur)=> acc.concat(cur), [])
+          const paneProps = SP && SP.length ? SP : []
+          const nameComposite = paneProps.map(field=> point.properties[field]).join(' ')
           const firstCoord = getFirstCoordinate(point?.geometry);
 
 
@@ -39,36 +42,32 @@ const ReactSelectSearch: FC<MapRefProps> = ({wait = 300,
           name: `${locName} ${nameComposite}`,
           value: locName,
           color: point.properties.iconColor,
-          coord: firstCoord
-        }
+          coord: firstCoord,
+          aggrType: point.properties.aggrType
+        };
       })
       : [];
 
-  const debouncedLoadOptions = debounce(() => selectOptions, wait);
 
-  const selectHandler = async (value, option) => {
-    setSelectedIp(value);
-    const [longitude, latitude] = option.coord
-    setViewState({
-      longitude,
-      latitude,
-      zoom: 16,
-      transitionDuration: 350,
-    });
-  };
+  const filteredOptions = aggrTypes.length === 0 ? selectOptions : selectOptions.filter(el=>
+      AggrTypes.includes(el.aggrType as string)
+  )
+
+  const debouncedLoadOptions = debounce(() => filteredOptions, wait);
+
 
   return (
 
-        <div style={{ width: '100%', pointerEvents: 'all' }} className={s.wrapper}>
-    <SelectSearch
-      options={selectOptions}
-      getOptions={(query) => debouncedLoadOptions(query)}
-      search
-      placeholder="Search location"
-      onChange={selectHandler}
-      value={selectedIp}
-    />
-        </div>
+      <div style={{ width: 'auto', pointerEvents: 'all' }} className={s.wrapper}>
+        <SelectSearch
+            options={filteredOptions}
+            getOptions={(query) => debouncedLoadOptions(query)}
+            search
+            placeholder={placeholder+` (${filteredOptions?.length})`}
+            onChange={(v)=> selectHandler(v, null, true)}
+            value={value}
+        />
+      </div>
   );
 };
 

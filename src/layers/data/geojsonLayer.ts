@@ -2,21 +2,29 @@ import {
     PanelData,
 } from '@grafana/data';
 
+import { getLocationMatchers } from '../../utils/location';
 import {
     ExtendMapLayerRegistryItem,
     ExtendFrameGeometrySourceMode,
     ExtendMapLayerOptions,
 } from '../../extension';
-import {Feature} from '../../store/interfaces';
+import {colTypes, Feature} from '../../store/interfaces';
+import {Position} from "geojson";
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
 import {colorToRGBA} from "../../utils";
+import {MARKERS_LAYER_ID} from "./markersLayer";
+import {toJS} from "mobx";
 
 export interface GeoJsonConfig {
+    startId: number,
+    colIdx: number,
 }
 
 const defaultOptions: GeoJsonConfig = {
+    startId: 0,
+    colIdx: 0,
 };
-export const GEOJSON_LAYER_ID = 'geojson';
+export const GEOJSON_LAYER_ID = colTypes.GeoJson;
 
 // Used by default when nothing is configured
 export const defaultPolygonsConfig: ExtendMapLayerOptions<GeoJsonConfig> = {
@@ -27,7 +35,6 @@ export const defaultPolygonsConfig: ExtendMapLayerOptions<GeoJsonConfig> = {
         mode: ExtendFrameGeometrySourceMode.Auto,
     },
 };
-export let locName, metricName, searchProperties, isShowTooltip, thresholds, geoColor
 
 /**
  * Map data layer configuration for icons overlay
@@ -35,7 +42,7 @@ export let locName, metricName, searchProperties, isShowTooltip, thresholds, geo
 export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
     id: GEOJSON_LAYER_ID,
     name: 'GeoJson layer',
-    description: 'render Geojson FeatureCollection from file (url)',
+    description: 'render from Geojson file (url)',
     isBaseMap: false,
     showLocation: true,
 
@@ -54,15 +61,16 @@ export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
             return []
         }
 
-        locName = options.geojsonLocName
-        metricName = options.geojsonMetricName
-        isShowTooltip = options.isShowTooltip
+        const locName = options.geojsonLocName
+        const metricName = options.geojsonMetricName
+        const isShowTooltip = options.isShowTooltip
         const displayProperties = options.geojsonDisplayProperties
+        const colIdx = config.colIdx
+        const colType = GEOJSON_LAYER_ID
 //@ts-ignore
-        geoColor = colorToRGBA(options?.geojsonColor);
-        searchProperties = options?.searchProperties
+        const geoColor = colorToRGBA(options?.geojsonColor);
 // @ts-ignore
-        thresholds = options?.config?.globalThresholdsConfig
+        const thresholds = options?.config?.globalThresholdsConfig
 
 
         const geoUrl = options?.geojsonurl
@@ -85,15 +93,13 @@ export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
 
                 const points: Feature[] = geoData?.features?.map((point, id) => {
                     const {geometry,properties: props} = point
-                    const metric = props[metricName]
+                    const metric = metricName && props[metricName]
                     const threshold = getThresholdForValue(point, metric, thresholds)
-                    const iconColor = metric ? threshold.color : geoColor
-                    const colorLabel = threshold.label
-                    const lineWidth = threshold.lineWidth
-
+                    const color = metric ? threshold.color : geoColor
+                    const selColor = metric ? threshold.selColor : geoColor
 
                     return {
-                        id,
+                        id: config.startId+id,
                         type: "Feature",
                         geometry,
                         properties: {
@@ -101,9 +107,9 @@ export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
                             geometry,
                             locName: locName ? props[locName] : undefined,
                             metric,
-                            iconColor: iconColor ?? 'rgb(350, 220, 20)',
-                            colorLabel,
-                            lineWidth: lineWidth ?? 1,
+                            threshold: {...threshold, color, selColor},
+                            colIdx,
+                            colType,
                             isShowTooltip,
                             displayProperties: isShowTooltip ? displayProperties : null
                         },

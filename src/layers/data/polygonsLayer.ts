@@ -9,17 +9,24 @@ import {
     ExtendFrameGeometrySourceMode,
     ExtendMapLayerOptions,
 } from '../../extension';
-import {Feature} from '../../store/interfaces';
+import {colTypes, Feature} from '../../store/interfaces';
 import {Position, Polygon} from "geojson";
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
+import {PATH_LAYER_ID} from "./pathLayer";
 import {toJS} from "mobx";
 
 export interface PolygonsConfig {
+    colIdx: number,
+    startId: number,
+    globalThresholdsConfig: [],
 }
 
 const defaultOptions: PolygonsConfig = {
+    colIdx: 0,
+    startId: 0,
+    globalThresholdsConfig: [],
 };
-export const POLYGONS_LAYER_ID = 'polygons';
+export const POLYGONS_LAYER_ID = colTypes.Polygons;
 
 // Used by default when nothing is configured
 export const defaultPolygonsConfig: ExtendMapLayerOptions<PolygonsConfig> = {
@@ -30,7 +37,6 @@ export const defaultPolygonsConfig: ExtendMapLayerOptions<PolygonsConfig> = {
         mode: ExtendFrameGeometrySourceMode.Auto,
     },
 };
-export let locName, parentName, metricName, searchProperties, isShowTooltip, thresholds
 
 /**
  * Map data layer configuration for icons overlay
@@ -38,7 +44,7 @@ export let locName, parentName, metricName, searchProperties, isShowTooltip, thr
 export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
     id: POLYGONS_LAYER_ID,
     name: 'Polygons layer',
-    description: 'render from Geojson Polygon Geometry',
+    description: 'render from Geojson Polygons',
     isBaseMap: false,
     showLocation: true,
 
@@ -59,13 +65,13 @@ export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
             return []
         }
 
-        locName = options.locName
-        metricName = options.metricName
-        isShowTooltip = options.isShowTooltip
+        const  locField = options.locField
+        const  metricField = options.metricField
+        const  isShowTooltip = options.isShowTooltip
         const displayProperties = options.displayProperties
-        searchProperties = options?.searchProperties
-        // @ts-ignore
-        thresholds = options?.config?.globalThresholdsConfig
+        const colIdx = config.colIdx
+        const colType = POLYGONS_LAYER_ID
+        const  thresholds = options?.config?.globalThresholdsConfig
 
 
 
@@ -86,28 +92,24 @@ export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
 
                 const dataFrame = new DataFrameView(frame).toArray()
                 const points: Feature[] = info.points.map((geometry, id) => {
-                        const point = dataFrame[id]
-                        const metric = point[metricName]
-                        const threshold = getThresholdForValue(point, metric, thresholds)
-                        const iconColor = threshold.color
-                        const colorLabel = threshold.label
-                        const lineWidth = threshold.lineWidth
 
+                        const point = dataFrame[id]
+                        const metric = metricField &&  point[metricField]
+                        const threshold = getThresholdForValue(point, metric, thresholds)
                         const entries = Object.entries(point);
+                        const locName = entries.length > 0 && locField ? point[locField] ?? entries[0][1] : undefined
 
                         return {
-                            id,
+                            id: config.startId+id,
                             type: "Feature",
                             geometry,
                             properties: {
                                 ...point,
-                                geometry,
-                                locName: entries.length > 0 ? point[locName] ?? entries[0][1] : undefined,
-                                parentName: point[parentName],
-                                metricName: point[metricName],
-                                iconColor: iconColor || 'rgb(0, 0, 0)',
-                                colorLabel,
-                                lineWidth: lineWidth || 1,
+                                locName,
+                                metric: metricField && point[metricField],
+                                threshold,
+                                colIdx,
+                                colType,
                                 isShowTooltip,
                                 displayProperties: isShowTooltip ? displayProperties : null
                             },

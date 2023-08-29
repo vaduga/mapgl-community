@@ -1,35 +1,74 @@
-import {toRGB4Array} from '../../utils';
+import {makeColorLighter, toRGB4Array} from '../../utils';
 import { PathLayer } from '@deck.gl/layers/typed';
-import {colTypes, DeckLine, Feature} from "../../store/interfaces";
+import {DeckLine, Feature, colTypes} from "../../store/interfaces";
+import {DEFAULT_SEL_LINE_WIDTH, SEL_LINE_WIDTH_MULTIPLIER} from "../../components/defaults";
+import {PathStyleExtension} from "@deck.gl/extensions";
+import {toJS} from "mobx";
 
-function MyPathLayer({onHover, highlightColor, data, colIdx, type }: { data: Array<DeckLine | Feature | null>, highlightColor: any, onHover: any, colIdx: number, type: string}) {
+// @ts-ignore
+function MyPathLayer({onHover, highlightColor, selFeature, data, type }: { data: [DeckLine | Feature | null], highlightColor: any, onHover: any, idx: number, type: string}) {
+    // @ts-ignore
     return new PathLayer({
-        id: colTypes.Path + '-' + type +'-'+ colIdx,
+        id: colTypes.Path + '-'+ type,
         data,
         autoHighlight: true,
         highlightColor,
-        pickable: true,
+        pickable: !['par-path-extension', 'par-path-line'].includes(type),
         //widthScale: 20,
-        widthMinPixels:  2,
-        // capRounded: true,
-        // jointRounded: true,
-        getPath: d => {
+        widthMinPixels: 2,
+        capRounded: true,
+        jointRounded: true,
+        getPath: (d) => {
             switch (type) {
-                case 'connections':
-                    return [d.from.coordinates, d.to.coordinates]
+                case 'par-path-extension':
+                    return d[0] //.geometry.coordinates.reduce((acc,cur)=> acc.concat(cur), [])//d
                     break
-                case 'parent-path':
-                    return d
+                case 'par-path-line':
+                    return d[0] // coords
                     break
                 default:
                     return d.geometry.coordinates
             }
-            return d.geometry.coordinates
         },
-        getColor: (d) => toRGB4Array(d.properties.iconColor),
-        getWidth: (d) =>{
-            return d.properties.lineWidth;
+        getDashArray: type === 'par-path-extension' ? [5, 8] : null,
+        dashJustified: true,
+        dashGapPickable: true,
+        //@ts-ignore
+        extensions: [new PathStyleExtension({dash: true})],
+
+        //@ts-ignore
+        getColor: d => {
+
+            let color
+            switch (type) {
+                case 'par-path-extension':
+                    color = makeColorLighter(d[1]) //selFeature?.properties?.iconColor
+                    //color = 'rgba(237, 129, 40, 1)'
+                    break
+                case 'par-path-line':
+                    color =  makeColorLighter(d[1]) //d[1] // color
+                    break
+                default:
+                    color =  d.properties?.threshold?.color
+            }
+            return Array.from(toRGB4Array(color))
         },
+        widthScale: 1.1,
+        getWidth: (d) => {
+            const base = selFeature?.properties?.threshold?.lineWidth * SEL_LINE_WIDTH_MULTIPLIER
+            switch (type) {
+                case 'par-path-extension':
+                    return base / 10
+                    break
+                case 'par-path-line':
+                    return base
+                    break
+                default:
+                    return base
+            }
+        },
+        widthMaxPixels: 7
+        ,
         onHover,
     })
 }

@@ -3,9 +3,8 @@ ARG grafana_image=grafana-enterprise
 
 FROM grafana/${grafana_image}:${grafana_version}
 
+COPY sample.sqlite /usr/share/grafana/public/sample.sqlite
 COPY sample.json /usr/share/grafana/public/sample.json
-COPY switches.csv /usr/share/grafana/public/switches.csv
-COPY newPaths.csv /usr/share/grafana/public/newPaths.csv
 
 # Make it as simple as possible to access the grafana instance for development purposes
 # Do NOT enable these settings in a public facing / production grafana instance

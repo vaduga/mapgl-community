@@ -1,10 +1,6 @@
 import {toRGB4Array} from '../../utils';
 import { PolygonLayer } from '@deck.gl/layers/typed';
-import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
-import { thresholds } from '../../layers/data/markersLayer';
-import {toJS} from "mobx";
-import iconAtlas from '/img/location-icon-atlas.png';
-import { colTypes } from 'store/interfaces';
+import {colTypes} from "../../store/interfaces";
 
 const ICON_MAPPING = {
     marker: { x: 0, y: 0, width: 128, height: 128, mask: true },
@@ -14,12 +10,9 @@ const MyPolygonsLayer = (props) => {
     const {
         data,
         getSelectedFeIndexes,
-        getSelectedIp,
-        zoom,
         onHover,
         highlightColor,
         iconMapping = ICON_MAPPING,
-        colIdx
     } = props;
 
     // @ts-ignore
@@ -29,28 +22,21 @@ const MyPolygonsLayer = (props) => {
         pickable: true,
         autoHighlight: true,
         onHover,
-        id: colTypes.Polygons+'-'+colIdx,
-        iconAtlas,
+        id: colTypes.Polygons,
         iconMapping,
         data,
-        selectedFeatureIndexes: getSelectedFeIndexes?.[colTypes.Polygons]?.[colIdx] ?? [],
+        selectedFeatureIndexes: getSelectedFeIndexes?.[colTypes.Polygons] ?? [],
         getPolygon: d => {
             return d.geometry.coordinates
         },
         getIcon: () => 'marker',
+        // @ts-ignore
         getFillColor: (d) => {
-            const {iconColor} = d.properties
-            const isSelected = d.properties.locName === getSelectedIp
-            if (isSelected) {
-
-                const selColor = getThresholdForValue(d.properties, d.properties.metricName, thresholds).selColor
-                return toRGB4Array(selColor)
-            }
-            return toRGB4Array(iconColor)
+            const {threshold, isInParentLine} = d.properties
+            const {color,selColor} = threshold
+            return toRGB4Array(isInParentLine ? selColor : color)
         },
-        getLineWidth: 1,
-
-
+        getLineWidth: (d)=> d.properties?.threshold?.lineWidth,
     });
 };
 

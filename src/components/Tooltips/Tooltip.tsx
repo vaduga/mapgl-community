@@ -1,31 +1,10 @@
 import React from 'react';
 import { useRootStore } from '../../utils';
+import {toJS} from "mobx";
 import {css} from "@emotion/css";
-import {useStyles2} from "@grafana/ui";
-import {GrafanaTheme2} from "@grafana/data";
-
-
+import {IconButton as IconGrafanaButton, useStyles2, useTheme2} from "@grafana/ui";
+import {Field, formattedValueToString, GrafanaTheme2, Vector} from "@grafana/data";
 import {Info} from '../../store/interfaces'
-const getStyles = (theme: GrafanaTheme2) => ({
-    tooltip: css`
-      pointer-events: all;      
-      text-align: left;
-      user-select: text;
-      cursor: text;
-      position: absolute;
-      font-size: 1em;
-      border-radius: 5px;
-      background: ${theme.colors.background.secondary}; 
-      color: ${theme.colors.getContrastText(theme.colors.background.secondary)}; 
-      min-width: 160px;
-      max-width: 400px;
-      overflow-y: hidden;
-      margin: 5px;
-      padding: 8px;
-      ul {
-      list-style-type: none }
-    `
-});
 
 function displayItem(item: any) {
     if (typeof item === "object" && item !== null) {
@@ -44,48 +23,98 @@ function displayItem(item: any) {
     }
 }
 
-function renderTooltipContent(object, pinned = false) {
-    const props = object?.properties ?? object ?? {}; // #todo no obj in editmode
-    // Assuming `info` is defined somewhere in your code
-    const {locName, parentName} = props
+
+    function renderTooltipContent(object, pinned = false, setClosedHint, getNodeConnections) {
+    const props = object?.properties ?? object ?? {};
+
     let DP = props?.displayProperties
+
     const filteredProps = DP?.length ? DP.reduce((obj, field: string) => {
-            if (props.hasOwnProperty(field) && ![locName, parentName].includes(field) ) {
-                obj[field] = props[field];
-            }
-            return obj;
-        }, {}) : props
+        if (props.hasOwnProperty(field)) {
+            obj[field] = props[field];
+        }
+        return obj;
+    }, {}) : {}
 
     return (
         <>
              <ul>
-                 {locName && <li key="locName"><b>{`name: ${displayItem(props.locName)}`}{pinned && '    [Pinned]'}</b></li>}
-                 {parentName && DP?.includes(parentName) && <li key="pName"><b>{`parent: ${displayItem(props.parentName)}`}</b></li>}
+                 {props.locName && <li key="locName">
+                     {pinned && <IconGrafanaButton
+                         key="closeHint"
+                         variant="destructive"
+                         name="x"
+                         size='sm'
+                         tooltip="Close hint"
+                         onClick={() => {
+                             setClosedHint(true)
+                         }}
+                     />}
+                     <b>{`loc: ${displayItem(props.locName)}  `}</b></li>}
+                 {props.parName && <li key="pName"><b>{`par: ${displayItem(props.parName)}`}</b></li>}
                 {Object.entries(filteredProps).map(([key, value]) => (
                     <li key={key}>{`${key}: ${displayItem(value)}`}</li>
                 ))}
+                 {['node','connector'].includes(props.aggrType) && <>
+                     {`\n`}
+                     {`${props.locName} --> ${props.parName}:`}
+                     {getNodeConnections?.get(props.parName)?.from?.map((el, key) => (<li style={{color: el?.threshold?.color}} key={key}>{`${el?.locName}`} </li>))}
+                     {`\n`}
+                     {`${props.locName} <-- ${props.parName}:`}
+                     {getNodeConnections?.get(props.parName)?.to?.map((el, key) => (<li style={{color: el?.threshold?.color}} key={key}>{`${el?.locName}`} </li>))}
+                 </>
+                 }
+
             </ul>
         </>
     );
 }
 
-const Tooltip = ({ info, isClosed = false}: {
+
+const Tooltip = ({ info, isClosed = false , setClosedHint, position = 0}: {
     info: Info;
     isClosed?: boolean;
+    setClosedHint?: Function;
+    selectedFeIndexes?: number[];
+    position: number
 }) => {
 
-  const s = useStyles2(getStyles);
+    const getStyles = (theme: GrafanaTheme2) => ({
+        tooltip: css`
+      position: absolute;
+      left: ${position - 80}px;
+      top: 150px;
+      pointer-events: all;      
+      text-align: left;
+      user-select: text;
+      cursor: text;      
+      font-size: 1em;
+      border-radius: 5px;
+      background: ${theme.colors.background.secondary}; 
+      color: ${theme.colors.getContrastText(theme.colors.background.secondary)}; 
+      min-width: 250px;
+      max-width: 400px;
+      overflow-y: hidden;
+      margin: 5px;
+      padding: 8px;
+      z-index: 99;
+      opacity: 0.95;
+      ul {
+      list-style-type: none }
+    `
+    });
+
+    const s = useStyles2(getStyles);
   const { pointStore } = useRootStore();
-  const { getTooltipObject } = pointStore;
+  const { getMode, getTooltipObject, getNodeConnections } = pointStore;
 if (!Object.entries(info).length) {
     return null
 }
 
     const { x, y, object } = info;
 
-    if (!object?.cluster && (!object?.isShowTooltip && !object?.properties?.isShowTooltip)) {
-        return null
-    }
+    if (object?.isShowTooltip === false || object?.properties?.isShowTooltip === false) {return null}
+
 
     if (object?.cluster) {
         const { colorCounts } = object;
@@ -108,23 +137,39 @@ if (!Object.entries(info).length) {
         }
     }
 
-  if (!object) {
-    if (isClosed) {return null;}
-    const { x, y, object } = getTooltipObject; //return null;
+  if (!object ) {
+
+    if (isClosed || getMode === 'modify' ) {return null}
+    const { x, y, object: ghostObject } = getTooltipObject; //return null;
+      const idx = parseInt(info.layer?.id.split('-').at(-1), 10)
 
     return (
       /// Pinned hint
       /// onClick={() => setHoverInfo({})}
         <div className={s.tooltip} style={{ left: x, top: y }}>
-            {renderTooltipContent(object, true)}
+            {renderTooltipContent(ghostObject, true, setClosedHint, getNodeConnections)}
         </div>
     );
   }
 
+  if (getMode === 'modify') {
+
+    // if (selectedFeIndexes.includes(object.properties?.featureIndex))
+    //       {return null}
+
+      // console.log('hover obj', object)
+  if (object.properties?.guideType) {
+      // skip hoverInfo on edit handle
+      return null
+  }
+  }
+    const idx = parseInt(info.layer?.id.split('-').at(-1), 10)
       return (
-    <div className={s.tooltip} style={{ left: x, top: y}}>
-        {renderTooltipContent(object)}
+    <div className={s.tooltip} style={x && y ? { left: x, top: y } : {}}>
+        {renderTooltipContent(object, false, setClosedHint, getNodeConnections)}
     </div>
   );
 };
 export { Tooltip };
+
+

@@ -1,10 +1,11 @@
-apiVersion: 2
+apiVersion: 1
 
 datasources:
 
-  - name: local CSV
-    uid: "9CahajbeZ"
-    type: marcusolsson-csv-datasource
-    Path: /usr/share/grafana/public
-    version: 2
+  - name: local sqlite
+    uid: "b6c1a5f4-6225-4788-8ed6-540fb078e8bc"
+    type: frser-sqlite-datasource
+    jsonData:
+      path: /usr/share/grafana/public/sample.sqlite
+    version: 1
     editable: true

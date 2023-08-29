@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {GrafanaTheme2} from '@grafana/data';
 import {useStyles2, useTheme2} from '@grafana/ui';
@@ -5,17 +6,20 @@ import { config } from '@grafana/runtime';
 import {observer} from 'mobx-react-lite';
 import DeckGL from '@deck.gl/react';
 import Map from 'react-map-gl/maplibre';
-//import {MyLineLayer} from '../deckLayers/LineLayer/line-layer';
+import {LinesGeoJsonLayer} from '../deckLayers/MarkersLines/lines-geo-json-layer';
 import {MyPathLayer} from '../deckLayers/PathLayer/path-layer';
 import {IconClusterLayer} from '../deckLayers/IconClusterLayer/icon-cluster-layer';
-import {DeckFeature, Feature} from '../store/interfaces';
+import {AggrTypes, colTypes, DeckFeature, Feature} from '../store/interfaces';
 import Menu from '../components/Menu';
 import {
+    genExtendedPLine,
+    genNodeConnectionsText, genNodeNamesText, genParentLine,
+    genParPathText,
     getBounds, getFirstCoordinate,
     useRootStore,
 } from '../utils';
 
-import {MyIconLayer} from '../deckLayers/IconLayer/icon-layer';
+import {MarkersGeoJsonLayer} from '../deckLayers/MarkersLines/geo-json-layer';
 import {Tooltip} from './Tooltips/Tooltip';
 import {MapViewConfig} from "../types";
 import {Point, Position} from "geojson";
@@ -26,30 +30,35 @@ import {centerPointRegistry, MapCenterID} from "../view";
 import {MyPolygonsLayer} from "../deckLayers/PolygonsLayer/polygons-layer";
 import {toJS} from "mobx";
 import {MyGeoJsonLayer} from "../deckLayers/GeoJsonLayer/geojson-layer";
+import {LineTextLayer} from "../deckLayers/TextLayer/text-layer";
 
-export let lastMapPanelInstance
+export let lastMapPanelInstance, thresholds
 const Mapgl = ({ options, data, width, height, replaceVariables }) => {
+    thresholds = options.globalThresholdsConfig
     const s = useStyles2(getStyles);
     const theme2 = useTheme2()
     const { pointStore, lineStore, viewStore } = useRootStore();
     const {
         //<editor-fold desc="store imports">
         getPoints,
-        setPoints, setType, getType,
+        getisOffset,
+        setPoints,
         setPolygons,
         setPath,
         getPath,
         setGeoJson,
         getGeoJson,
+        getNodeConnections,
         getSelectedIp,
+        selFeature,
         switchMap,
         getisShowCluster,
         getSelectedFeIndexes,
         setSelectedIp,setTooltipObject,
-        getpLinePoints,
         getTooltipObject,
+        getBlankInfo,
         getisShowPoints,
-        getPolygons
+        getPolygons,
         //</editor-fold>
     } = pointStore;
     const {
@@ -57,7 +66,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         setViewState,
     } = viewStore;
 
-    const { getisShowLines, getLines } = lineStore;
+    const { getisShowLines, getEditableLines, getLineSwitchMap } = lineStore;
 
     const deckRef = useRef(null);
     const mapRef = useRef(null);
@@ -107,16 +116,8 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
             /// clicking blank space to reset pinned tooltip
             setSelectedIp('');
             setClosedHint(true);
-            setHoverInfo({
-                x: -3000,
-                y: -3000,
-                cluster: false,
-                object: {
-                    isShowTooltip: false,
-                    cluster: false
-                },
-                objects: []
-            });
+            setTooltipObject({...getBlankInfo});
+
         }
     };
 
@@ -162,78 +163,104 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         return view;
     }
 
-    const loadPoints = async (data)=> {
+    const loadPoints = async (data) => {
 
-
-                const transformed =  options?.dataLayers?.length > 0 ? await Promise.all(options.dataLayers.map(async (dataLayer)=>{
-
-                const layer = geomapLayerRegistry.getIfExists(dataLayer.type)
-                const extOptions = {...dataLayer, config: {...dataLayer.config, globalThresholdsConfig: options?.globalThresholdsConfig}}
-                 return {type: dataLayer.type, features: layer?.pointsUp ? await layer.pointsUp(data, extOptions) : []
+        const startIds = {};
+        for (const key in colTypes) {
+            if (Object.prototype.hasOwnProperty.call(colTypes, key)) {
+                startIds[colTypes[key]] = 0;
+            }
         }
-        })) : []
+        const transformed: Array< {colType: string, features: any[]}> = [];
+
+        if (options?.dataLayers?.length > 0) {
+            for (let i = 0; i < options.dataLayers.length; i++) {
+                const dataLayer = options.dataLayers[i];
+                const layer = geomapLayerRegistry.getIfExists(dataLayer.type);
+
+                const extOptions = {
+                    ...dataLayer,
+                    config: {
+                        ...dataLayer.config,
+                        globalThresholdsConfig: thresholds,
+                        startId: startIds[dataLayer.type] ?? 0,
+                    },
+                };
+
+                const res = {
+                    colType: dataLayer.type as string,
+                    features: layer?.pointsUp ? await layer.pointsUp(data, extOptions) as Feature[] : [],
+                };
+
+                startIds[res.colType] = startIds[res.colType] + res.features.length;
+                transformed.push(res);
+            }
+        }
 
         const view = initMapView(options.view)
 
-            let longitude, latitude, zoom;
-            if (view.id === MapCenterID.Auto) {
-                if (transformed?.length > 0) {
-                    const viewport = new WebMercatorViewport({width, height});
-                    const boundsCoords = transformed[0].features.map(el=> {
+        let longitude, latitude, zoom;
+        if (view.id === MapCenterID.Auto) {
+            if (transformed?.length > 0) {
+                const viewport = new WebMercatorViewport({width, height});
+                const allCoordinates = transformed.reduce((acc,curr: any)=> acc.concat(curr.features), []).filter(el=>el)
+                const boundsCoords = allCoordinates.map((el: Feature)=> {
 
-                        const firstCoord = getFirstCoordinate(el.geometry)
-                        return (
-                            {
-                                type: 'Feature', geometry: {
-                                    type: 'Point',
-                                    coordinates: firstCoord
-                                }
+                    const firstCoord = el?.geometry && getFirstCoordinate(el.geometry)
+                    return (
+                        {
+                            type: 'Feature', geometry: {
+                                type: 'Point',
+                                coordinates: firstCoord
                             }
-                        )
-                    })
-                    const [minLng, minLat, maxLng, maxLat] = getBounds(boundsCoords);
-                    const bounds: [[number, number], [number, number]] = [[minLng, minLat], [maxLng, maxLat]];
+                        }
+                    )
+                })
 
+                const [minLng, minLat, maxLng, maxLat] = getBounds(boundsCoords);
+                const bounds: [[number, number], [number, number]] = [[minLng, minLat], [maxLng, maxLat]];
 
-                    if (minLng && minLat && maxLng && maxLat) {
-                        ({longitude, latitude, zoom} = viewport.fitBounds(bounds));
-                    }
+                if (minLng && minLat && maxLng && maxLat) {
+                    ({longitude, latitude, zoom} = viewport.fitBounds(bounds));
                 }
-                // when there's no query points in auto mode
-                if (!longitude) {
-                    ({ longitude, latitude, zoom } = view)
-                }
-
-            } else {
-                /// not 'auto';
-                ({ longitude, latitude, zoom } = view)
             }
 
+            // if no query points in auto mode
+            if (!longitude) {
+                ({longitude, latitude, zoom} = view)
+            }
+
+        } else {
+            // console.log('not auto');
+            ({longitude, latitude, zoom} = view)
+        }
+
         initBasemap(options.basemap)
-        const markers: Feature[] = []
-        const polygons: Feature[] = []
-        const path: Feature[] = []
-        const geojson: Feature[] = []
+        let markers: Feature[] = []
+        let polygons: Feature[] = []
+        let path: Feature[] = []
+        let geojson: Feature[] = []
+
         transformed.forEach(el=> {
-            switch (el.type){
-                case 'markers':
+            switch (el.colType){
+                case colTypes.Points:
                     if (el?.features.length) {
-                        markers.push(el?.features)
+                        markers = markers.concat(el?.features)
                     }
                     break;
-                case 'polygons':
+                case colTypes.Polygons:
                     if (el?.features.length) {
-                        polygons.push(el?.features)
+                        polygons = polygons.concat(el?.features)
                     }
                     break;
-                case 'path':
+                case colTypes.Path:
                     if (el?.features.length) {
-                        path.push(el?.features)
+                        path = path.concat(el?.features)
                     }
                     break;
-                case 'geojson':
+                case colTypes.GeoJson:
                     if (el?.features.length) {
-                        geojson.push(el?.features)
+                        geojson = geojson.concat(el?.features)
                     }
                     break;
 
@@ -250,9 +277,11 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
             longitude,
             latitude,
             zoom,
+            maxPitch: 45 * 0.95 // for non-wgs projection
         };
-        setViewState(deckInitViewState)
 
+        // console.log('deckInitViewState', deckInitViewState)
+        setViewState(deckInitViewState)
     }
 
     useEffect(() => {
@@ -271,123 +300,208 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         } = mapRef
         lastMapPanelInstance = myRef.current?.getMap ? myRef.current.getMap() : null;
     } , [])
+    const layerProps = {
+        pickable: true,
+        autoHighlight: true,
+        highlightColor: [170, 100, 50, 60], //[252, 3, 215, 60],
+        onHover: setHoverInfo, //!hoverInfo.objects &&
+        zoom: zoomGlobal,
+    };
+
+    const lineLayersProps = {
+        getSelectedFeIndexes,
+        getEditableLines,
+        getPoints,
+        switchMap,
+        getSelectedIp,
+        setClosedHint,
+        setSelectedIp,
+    };
+
+    const iconLayersProps = {
+        getPoints,
+        switchMap,
+        getEditableLines,
+        getSelectedFeIndexes,
+        getisShowLines,
+        getSelectedIp,
+        setClosedHint,
+        setSelectedIp,
+    }
+
+    const [layers, setLayers] = useState([])
     const getLayers = () => {
-        const layers: any = [];
+        let lines, icons, pathLine, pathLineExt, unames, list1, list2, nums, commentsLayer, clusterLayer
+        const secLayers: any[] = []
+        let newLayers: any = [];
+        const iconLayers = []
+        const lineLayers = []
+        const clusters = []
         const markers = getPoints;
         const polygons = getPolygons;
         const path = getPath;
         const geojson = getGeoJson;
 
-        const allFeatures = [markers, polygons,path, geojson].filter(el=> el?.length>0)
+        const allFeatures = [markers, polygons,path, geojson].filter(el=> el)
 
         if (allFeatures?.length < 1) {
-            return layers;
+            setLayers(newLayers);
+
+            return
         }
 
-        const layerProps = {
-            pickable: true,
-            autoHighlight: true,
-            highlightColor: [252, 3, 215, 60],
-            onHover: setHoverInfo,
-            zoom: zoomGlobal,
-        };
-
         if (polygons.length>0) {
-            polygons.forEach((p,i)=> {
-                layers.push(MyPolygonsLayer({ ...layerProps,data: p, colIdx: i }));
-            })
+            secLayers.push(MyPolygonsLayer({ ...layerProps,data: polygons }));
         }
 
         if (path.length>0) {
-            path.forEach((p,i)=> {
-                layers.push(MyPathLayer({ ...layerProps, data: p, colIdx: i, type: 'path' }));
-            })
+            secLayers.push(MyPathLayer({ ...layerProps, selFeature, data: path, type: 'path' }));
+
         }
 
         if (geojson.length>0) {
-            geojson.forEach((p,i)=> {
-                const featCollection = {
+
+            const featCollection = {
+                type: 'FeatureCollection',
+                features: geojson
+            }
+            secLayers.push(MyGeoJsonLayer({ ...layerProps, data: featCollection }));
+
+        }
+
+
+        if (markers.length>0 || secLayers.length>0) {
+
+            const lineSwitchMap = getLineSwitchMap
+            if (selFeature?.properties.colType === colTypes.Points) {
+                /// ParentLine
+
+                const selLine = lineSwitchMap.get(selFeature.properties.locName)
+                const pathLinesCoords = selFeature && genParentLine(selLine, lineSwitchMap)[1]
+
+                pathLine = MyPathLayer({
+                    ...layerProps,
+                    selFeature,
+                    data: pathLinesCoords?.length > 0 ? pathLinesCoords : [],
+                    type: 'par-path-line'
+                });
+
+                const pathExtCoords = pathLinesCoords && genExtendedPLine(selFeature, lineSwitchMap)
+
+                pathLineExt = pathExtCoords && pathExtCoords.length > 0 ?
+                    MyPathLayer({
+                        ...layerProps,
+                        selFeature,
+                        data: pathExtCoords?.length > 0 ? pathExtCoords : [],
+                        type: 'par-path-extension'
+                    }) : null
+
+                const numsData = genParPathText(lineSwitchMap.get(getSelectedIp))
+                nums = numsData && numsData.length > 0 ? LineTextLayer({data: numsData, type: 'nums'}) : null
+                const genNodeConsText = genNodeConnectionsText(selFeature, getNodeConnections, lineSwitchMap)
+                const isAggregator =  AggrTypes.includes(selFeature?.properties.aggrType)
+                // Experimental attached points count
+                // list1 = isAggregator && genNodeConsText?.to?.length > 0 ? LineTextLayer({
+                //     data: genNodeConsText.to,
+                //     dir: 'to',
+                //     type: 'list1'
+                // }) : null
+                // list2 = isAggregator && genNodeConsText?.from?.length > 0 ? LineTextLayer({
+                //     data: genNodeConsText.from,
+                //     dir: 'from',
+                //     type: 'list2'
+                // }) : null
+            }
+
+            const lFeatures = getEditableLines
+            const iconFeatures= markers
+
+            const nodeNames = genNodeNamesText(iconFeatures)
+            unames = nodeNames.length > 0 ? LineTextLayer({data: nodeNames, type: 'unames'}) : null
+
+            /// Relation lines
+            if (getisShowLines && lFeatures?.length > 0) {
+                const linesCollection = {
                     type: 'FeatureCollection',
-                    features: p
-                }
-                layers.push(MyGeoJsonLayer({ ...layerProps, data: featCollection, colIdx: i }));
-            })
+                    features: lFeatures
+                };
+
+
+                lines = LinesGeoJsonLayer({
+                    ...layerProps,
+                    ...lineLayersProps,
+                    linesCollection
+                })
+                lineLayers.push(lines)
+                lineLayers.push(unames)
+            }
+
+            let clusterLayerData;
+            let iconLayerData;
+
+            if (getisShowCluster) {
+                clusterLayerData = markers
+                    .map((el): DeckFeature | undefined => {
+                        if (el) {
+                            const pointGeometry = el.geometry as Point;
+                            return {
+                                id: el.id,
+                                coordinates: pointGeometry.coordinates,
+                                properties: el.properties,
+                            };
+                        }
+                        return undefined;
+                    })
+                    .filter((val): val is DeckFeature => val !== undefined);
+            }
+            else {
+            iconLayerData = markers
+            }
+
+            if (iconLayerData?.length>0) {
+                const featureCollection = {
+                    type: 'FeatureCollection',
+                    features: iconLayerData,
+                };
+
+                icons = MarkersGeoJsonLayer({
+                    ...layerProps,
+                    ...iconLayersProps,
+                    featureCollection, isVisible: !getisShowCluster && getisShowPoints,
+                })
+                iconLayers.push(icons)
+            }
+            if (clusterLayerData) {
+                clusters.push(clusterLayerData)
+            }
+
+
+            if (clusters) {
+                clusterLayer = new IconClusterLayer({
+                        ...layerProps,
+                        getPosition: (d) => d.coordinates,
+                        selectedIp: getSelectedIp,
+                        data: clusters.reduce((acc,curr)=> acc.concat(curr), []),
+                        id: 'icon-cluster',
+                        sizeScale: 30,
+                        //onClick: (info, event) => {
+                        //setHoverInfo(getBlankInfo);
+                        //},
+                        thresholds: []
+                    }
+                );
+            }
+            newLayers = [...secLayers, ...iconLayers, ...lineLayers, clusterLayer]
+            if (pathLine) {
+                newLayers.splice(0, 0, pathLine)
+                newLayers.splice(newLayers.length - 1, 0, pathLineExt, nums) // list1, list2 - experimental
+            }
         }
 
-
-        if (markers.length>0) {
-            markers.forEach((m, i)=>{
-                layers.push(getisShowLines ? MyPathLayer({ ...layerProps, data: getLines[i], colIdx: i, type: 'connections' }) : null);
-                // layers.push(getpLines?.length > 0 ? MyLineLayer({ setHoverInfo, data: getpLines[i], type: 'pline' }) : null);
-
-                let clusterLayerData;
-                let iconLayerData;
-
-                if (getisShowCluster) {
-                    clusterLayerData = m
-                        .map((el): DeckFeature | undefined => {
-                            if (el) {
-                                const pointGeometry = el.geometry as Point;
-                                return {
-                                    id: el.id,
-                                    coordinates: pointGeometry.coordinates,
-                                    properties: el.properties,
-                                };
-                            }
-                            return undefined;
-                        })
-                        .filter((val): val is DeckFeature => val !== undefined);
-                } else {
-                    iconLayerData = m
-                }
-
-                if (clusterLayerData) {
-                    layers.push(
-                        new IconClusterLayer({
-                            ...layerProps,
-                            getPosition: (d) => d.coordinates,
-                            selectedIp: getSelectedIp,
-                            data: clusterLayerData,
-                            id: 'icon-cluster' + i,
-                            sizeScale: 30,
-                            onClick: (info, event) => {
-                                setHoverInfo({
-                                    x: -3000,
-                                    y: -3000,
-                                    cluster: false,
-                                    object: {
-                                        isShowTooltip: true,
-                                        cluster: false
-                                    },
-                                    objects: []
-                                });
-                            },
-                            thresholds: []
-                        })
-                    );
-                }
-
-                if (iconLayerData && getisShowPoints) {
-                    layers.push(
-                        MyIconLayer({
-                            ...layerProps,
-                            data: iconLayerData.slice(),
-                            getSelectedFeIndexes,
-                            getSelectedIp,
-                            setClosedHint,
-                            setSelectedIp,
-                            zoom: zoomGlobal,
-                            colIdx: i
-                        })
-                    );
-                }
-            })
-        }
-
-        setLayers(layers)
+        setLayers(newLayers) //.filter(el => el !== null && el !== undefined))
     };
 
- const [layers, setLayers] = useState([])
+
 
     useEffect(() => {
         getLayers();
@@ -398,7 +512,8 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         getPoints,
         getPath,
         getGeoJson,
-        getpLinePoints,
+        getSelectedIp,
+        getisOffset,
         getisShowCluster,
         getisShowLines,
         getisShowPoints
@@ -431,9 +546,12 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                             ref={mapRef}
                             mapStyle={source}
                         />}
-                        <Tooltip info={hoverInfo} isClosed={closedHint}/>
                     </DeckGL>}
-                <Menu/>
+                <Tooltip position={0} info={hoverInfo} isClosed={closedHint} setClosedHint={setClosedHint}
+                        />
+
+                {switchMap && <Menu
+                />}
           </>
     );
 }

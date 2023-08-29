@@ -1,7 +1,5 @@
 import {toRGB4Array} from '../../utils';
 import { GeoJsonLayer } from '@deck.gl/layers/typed';
-import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
-import { thresholds } from '../../layers/data/markersLayer';
 import {colTypes} from "../../store/interfaces";
 
 const MyGeoJsonLayer = (props) => {
@@ -10,12 +8,11 @@ const MyGeoJsonLayer = (props) => {
         getSelectedIp,
         onHover,
         highlightColor,
-        colIdx
     } = props;
 
 
     return new GeoJsonLayer({
-        id: colTypes.GeoJson+'-'+colIdx,
+        id: colTypes.GeoJson,
         data,
         pickable: true,
         onHover,
@@ -27,28 +24,23 @@ const MyGeoJsonLayer = (props) => {
         pointType: 'circle',
         lineWidthScale: 20,
         lineWidthMinPixels: 2,
+        //@ts-ignore
         getFillColor: (d: any) => {
-            const {iconColor} = d.properties
-            const isSelected = d.properties?.locName === getSelectedIp
-            if (isSelected) {
-
-                const selColor = getThresholdForValue(d.properties, d.properties?.metricName, thresholds).selColor
-                return toRGB4Array(selColor)
-            }
-            return toRGB4Array(iconColor)
-        },//[160, 160, 180, 200],
+            const {threshold, isInParentLine} = d.properties
+            const {selColor, color} = threshold
+            return toRGB4Array(isInParentLine ? selColor : color)
+        },
+        //@ts-ignore
         getLineColor: (d: any) => {
-            const {iconColor} = d.properties
-            const isSelected = d.properties.locName === getSelectedIp
-            if (isSelected) {
-
-                const selColor = getThresholdForValue(d.properties, d.properties?.metricName, thresholds).selColor
+            const {threshold, isInParentLine} = d.properties
+            const {color,selColor} = threshold
+            if (isInParentLine) {
                 return toRGB4Array(selColor)
             }
-            return toRGB4Array(iconColor)      } , //[160, 160, 180, 200] ,
+            return toRGB4Array(color) },
         getPointRadius: 100,
         getLineWidth: (d) =>{
-            return d?.properties?.lineWidth ?? 1},
+            return d?.properties?.threshold?.lineWidth},
         getElevation: 30
     });
 };

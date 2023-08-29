@@ -13,13 +13,13 @@ with different data layer rendering technology.
 This plugin uses [Deck.gl](https://deck.gl/) framework at its core and features:
 
 * Optimized rendering of large datasets using WebGL
-* Parent/child relation lines with path to root
-* New: support for parent path as an array of coordinates 
-* New: aggregation nodes and offset for overlapping lines in parent path. 
+* Parent/child relation lineStrings with path to root
+* New: support for parent path as an array of coordinates or location names
+* New: aggregation nodes and offset for overlapping lines in parent path.
 * Multi layers support
 * Clusters, Polygons, Path (LineStrings)
 * Static GeoJson from file url
-* Composite donut-chart cluster icons layer with fallback to icon layer*  
+* Composite donut-chart cluster icons layer with fallback to icon layer  
 * Color thresholds customizable for any set of properties 
 * Aggregated threshold labels for clusters
 * Customizable tooltip properties 

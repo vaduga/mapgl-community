@@ -20,7 +20,7 @@ services:
 
     restart: always
     environment:
-      - GF_INSTALL_PLUGINS=marcusolsson-csv-datasource
+      - GF_INSTALL_PLUGINS=frser-sqlite-datasource
       - GF_PLUGIN_ALLOW_LOCAL_MODE=true
       - HTTP_USER="{{ GRAFANA_USER }}"
       - HTTP_PASS="{{ GRAFANA_PASSWD }}"

@@ -1,0 +1,158 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 8,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "b6c1a5f4-6225-4788-8ed6-540fb078e8bc"
+      },
+      "gridPos": {
+        "h": 25,
+        "w": 19,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "basemap": {
+          "config": {},
+          "type": "default"
+        },
+        "dataLayers": [
+          {
+            "config": {
+              "colIdx": 0,
+              "globalThresholdsConfig": [],
+              "startId": 0
+            },
+            "isShowTooltip": true,
+            "locField": "name",
+            "location": {
+              "geojson": "geojson",
+              "mode": "geojson"
+            },
+            "metricField": "metric",
+            "name": "Sampl Polygon",
+            "query": {
+              "id": "byRefId",
+              "options": "Polygon"
+            },
+            "type": "polygons"
+          },
+          {
+            "config": {
+              "colIdx": 0,
+              "globalThresholdsConfig": [],
+              "startId": 0
+            },
+            "isShowTooltip": true,
+            "locField": "name",
+            "location": {
+              "geojson": "geojson",
+              "mode": "geojson"
+            },
+            "metricField": "metric",
+            "name": "Sample path (lines)",
+            "query": {
+              "id": "byRefId",
+              "options": "Linestrings"
+            },
+            "type": "path"
+          },
+          {
+            "config": {
+              "colIdx": 0,
+              "startId": 0
+            },
+            "geojsonColor": "#b7b840",
+            "geojsonLocName": "name",
+            "geojsonurl": "/public/sample.json",
+            "location": {
+              "mode": "auto"
+            },
+            "name": "Sample static GeoJson",
+            "type": "geojson"
+          }
+        ],
+        "globalThresholdsConfig": [],
+        "view": {
+          "id": "coords",
+          "lat": 55.549817,
+          "lon": 37.559723,
+          "zoom": 16.47
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "b6c1a5f4-6225-4788-8ed6-540fb078e8bc"
+          },
+          "queryText": "select * from polygons;",
+          "queryType": "table",
+          "rawQueryText": "select * from polygons;",
+          "refId": "Polygon",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        },
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "b6c1a5f4-6225-4788-8ed6-540fb078e8bc"
+          },
+          "hide": false,
+          "queryText": "select * from lineStrings;",
+          "queryType": "table",
+          "rawQueryText": "select * from lineStrings;",
+          "refId": "Linestrings",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Panel Title",
+      "type": "vaduga-mapgl-panel"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Extra layers demo",
+  "uid": "abd5f4f0-3bab-4584-97c9-6ef979a60073",
+  "version": 8,
+  "weekStart": ""
+}

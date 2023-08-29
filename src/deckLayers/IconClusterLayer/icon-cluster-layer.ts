@@ -3,9 +3,6 @@ import { IconLayer } from '@deck.gl/layers';
 import Supercluster from 'supercluster';
 import { svgToDataURL, createDonutChart } from './donutChart';
 import {Feature} from "geojson";
-import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
-import {thresholds} from "../../layers/data/markersLayer";
-import {toJS} from "mobx";
 
 type params =
 {
@@ -18,11 +15,9 @@ type params =
 export class IconClusterLayer extends CompositeLayer<params> {
   selectedIp;
   zoom;
-  uPoint
 
   constructor(props) {
     super(props);
-    this.uPoint = props.uPoint;
     this.selectedIp = props.selectedIp;
     this.zoom = props.zoom
   }
@@ -82,36 +77,42 @@ export class IconClusterLayer extends CompositeLayer<params> {
         data,
         stroked: true,
         sizeScale: 1.1,
-        getSize: (d) => (this.selectedIp === d.properties?.locName ? 50 : 30),
+        getSize: (d) => {
+          const isHead = this.selectedIp === d.properties?.locName
+
+          return isHead ? 60 : d.properties?.isInParentLine ? 50 : 30
+        },
         getPosition: (d) => d.geometry.coordinates,
         getIcon: (d) => {
           const isSelected = this.selectedIp === d.properties?.locName;
           const colorCounts = {};
+
           let clPoints = d.properties.cluster
             ? this.state.index.getLeaves(d.properties.cluster_id, 'infinity')
             : '';
           if (clPoints) {
             clPoints.forEach((p) => {
-              const { iconColor, colorLabel } = p.properties;
-              colorCounts[iconColor] = colorCounts[iconColor] ?
+              const { color, label } = p.properties?.threshold;
+              colorCounts[color] = colorCounts[color] ?
                   {
-                    count : colorCounts[iconColor].count +1,
-                    label : colorCounts[iconColor].label
+                    count : colorCounts[color].count +1,
+                    label : colorCounts[color].label
                   } :
                   {
                     count : 1,
-                    label : colorLabel
+                    label
                   }
               })
            d.properties.colorCounts = colorCounts
           } else {
             // single point, not a cluster
-            const {locName, colorLabel } = d.properties
-            const isSelected = locName === this.selectedIp
-            const color = isSelected ? getThresholdForValue(d.properties, d.properties.metricName, thresholds).selColor : d.properties.iconColor;
-            colorCounts[color] =   {
+            const {threshold, isInParentLine} = d.properties
+            const {color, selColor, label} = threshold
+
+            const singleColor = isInParentLine ? selColor : color;
+            colorCounts[singleColor] =   {
               count : 1,
-              label : colorLabel
+              label
             }
             }
           return {

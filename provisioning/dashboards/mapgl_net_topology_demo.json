@@ -1,0 +1,252 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "b6c1a5f4-6225-4788-8ed6-540fb078e8bc"
+      },
+      "gridPos": {
+        "h": 28,
+        "w": 19,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "basemap": {
+          "config": {},
+          "type": "default"
+        },
+        "dataLayers": [
+          {
+            "aggrTypeField": "aggrType",
+            "config": {
+              "colIdx": 0,
+              "jitterPoints": true,
+              "searchProperties": [],
+              "show": true,
+              "startId": 0
+            },
+            "displayProperties": [
+              "city",
+              "model",
+              "aggrType",
+              "metricReduced"
+            ],
+            "isShowTooltip": true,
+            "locField": "name",
+            "locName": "name",
+            "location": {
+              "geojson": "geojson",
+              "mode": "geojson"
+            },
+            "metricField": "metricReduced",
+            "metricName": "metric",
+            "name": "Switches",
+            "parField": "parPath",
+            "parentName": "parent",
+            "searchProperties": [
+              "city"
+            ],
+            "type": "markers"
+          }
+        ],
+        "globalThresholdsConfig": [
+          {
+            "color": "rgb(224, 47, 68)",
+            "label": "down",
+            "lineWidth": 0.4,
+            "overrides": [],
+            "selColor": "rgb(196, 22, 42)",
+            "value": 0
+          },
+          {
+            "color": "rgb(50, 116, 217)",
+            "label": "node",
+            "lineWidth": 0.4,
+            "overrides": [
+              {
+                "name": "aggrType",
+                "type": "string",
+                "value": "node, socket"
+              }
+            ],
+            "selColor": "rgb(31, 96, 196)",
+            "value": 1
+          },
+          {
+            "color": "rgb(65, 41, 245)",
+            "label": "upstream",
+            "lineWidth": 0.4,
+            "overrides": [
+              {
+                "name": "name",
+                "type": "string",
+                "value": "TTK"
+              },
+              {
+                "name": "aggrType",
+                "type": "string",
+                "value": "node"
+              }
+            ],
+            "selColor": "rgb(110, 86, 255)",
+            "value": 1
+          },
+          {
+            "color": "rgb(143, 59, 184)",
+            "label": "socket",
+            "lineWidth": 0.4,
+            "overrides": [
+              {
+                "name": "aggrType",
+                "type": "string",
+                "value": "connector"
+              }
+            ],
+            "selColor": "rgb(143, 59, 184)",
+            "value": 1
+          },
+          {
+            "color": "rgb(86, 166, 75)",
+            "label": "up",
+            "lineWidth": 0.3,
+            "overrides": [],
+            "selColor": "rgb(55, 135, 45)",
+            "value": 1
+          },
+          {
+            "color": "rgba(210, 118, 43, 0.72)",
+            "label": "exception color",
+            "lineWidth": 0.4,
+            "overrides": [
+              {
+                "name": "name",
+                "type": "string",
+                "value": "U29"
+              }
+            ],
+            "selColor": "rgb(161, 92, 35)",
+            "value": 1
+          },
+          {
+            "color": "rgba(92, 170, 204, 0.92)",
+            "label": "info",
+            "lineWidth": 0.4,
+            "overrides": [],
+            "selColor": "rgb(47, 156, 203)",
+            "value": 2
+          },
+          {
+            "color": "rgb(224, 180, 0)",
+            "label": "danger",
+            "lineWidth": 0.4,
+            "overrides": [],
+            "selColor": "rgb(212, 185, 29)",
+            "value": 3
+          }
+        ],
+        "view": {
+          "id": "auto",
+          "lat": 0,
+          "lon": 0,
+          "zoom": 1
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "b6c1a5f4-6225-4788-8ed6-540fb078e8bc"
+          },
+          "queryText": "select * from switches;",
+          "queryType": "table",
+          "rawQueryText": "select * from switches;",
+          "refId": "switches",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        },
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "b6c1a5f4-6225-4788-8ed6-540fb078e8bc"
+          },
+          "hide": false,
+          "queryText": "select * from newPaths;",
+          "queryType": "table",
+          "rawQueryText": "select * from newPaths;",
+          "refId": "coords",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Panel Title",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "name",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "metricReduced",
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "metric 1",
+                "metric 2"
+              ],
+              "reducer": "sum"
+            }
+          }
+        }
+      ],
+      "type": "vaduga-mapgl-panel"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "MapGL network topology",
+  "uid": "d5bd97ca-e373-438b-ba6b-bc01e2595481",
+  "version": 25,
+  "weekStart": ""
+}
