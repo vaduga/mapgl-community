@@ -3,6 +3,7 @@ import { getGazetteer, Gazetteer } from '../gazetteer/gazetteer';
 import { decodeGeohash } from './geohash';
 import { ExtendFrameGeometrySource, ExtendFrameGeometrySourceMode } from '../extension';
 import {Geometry, Position} from "geojson";
+import {toJS} from "mobx";
 export type FieldFinder = (frame: DataFrame) => Field | undefined;
 function getFieldFinder(matcher: FieldMatcher): FieldFinder {
   return (frame: DataFrame) => {
@@ -228,9 +229,9 @@ function getPointsFromGeohash(field: Field<string>): number[][] {
   const count = field.values.length;
   const points = new Array(count);
   for (let i = 0; i < count; i++) {
-    const coords = decodeGeohash(field.values.get(i));
-    if (coords) {
-      points[i] = [coords[0], coords[1]];
+    const coordinates = decodeGeohash(field.values.get(i));
+    if (coordinates) {
+      points[i] = {type: "Point", coordinates};
     }
   }
   return points;
@@ -241,7 +242,7 @@ function getPointsFromGazetteer(gaz: Gazetteer, field: Field<string>): number[][
   for (let i = 0; i < count; i++) {
     const info = gaz.find(field.values.get(i));
     if (info?.coords) {
-      points[i] = [info?.coords[0], info?.coords[1]];
+      points[i] = {type: "Point", coordinates: info?.coords}
     }
   }
   return points;

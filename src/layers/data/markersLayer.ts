@@ -134,7 +134,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
           const locName = entries.length > 0 && locField ? point[locField] ?? entries[0][1] : undefined
           const geometry: Point = {
             type: 'Point',
-            coordinates: coordinates,
+            coordinates: coordinates.slice(),
           }
 
           const par = parField && point[parField]
@@ -174,7 +174,6 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
               let angle = 0, k = 1, r = 0.0001;
               coords.forEach(({idx, longitude, latitude}) => {
                 if (points[idx].geometry.type === 'Point') {
-
                   const pointGeometry = points[idx].geometry as Point;
                   pointGeometry.coordinates[0] = longitude + 0.0001 * Math.cos(angle)
                   pointGeometry.coordinates[1] = latitude + 0.0001 * Math.sin(angle)
@@ -186,7 +185,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
           });
         }
 
-        return points
+       return points
       }
 
       //break; // Only the first frame for now!
