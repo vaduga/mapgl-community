@@ -3,7 +3,6 @@ ARG grafana_image=grafana-enterprise
 
 FROM grafana/${grafana_image}:${grafana_version}
 
-COPY geo.sqlite /usr/share/grafana/public/geo.sqlite
 COPY sample.sqlite /usr/share/grafana/public/sample.sqlite
 COPY sample.json /usr/share/grafana/public/sample.json
 
