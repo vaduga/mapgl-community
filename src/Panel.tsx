@@ -19,17 +19,17 @@ export const Panel: React.FC<Props> = ({ options, data, width, height, replaceVa
 
   return (
       <RootStoreProvider>
-    <div
-      className={cx(
-        styles.wrapper,
-        css`
-          width: ${width}px;
-          height: ${height}px;          
-        `
-      )}>
+    {/*<div*/}
+    {/*  className={cx(*/}
+    {/*    styles.wrapper,*/}
+    {/*    css`*/}
+    {/*      width: ${width}px;*/}
+    {/*      height: ${height}px;          */}
+    {/*    `*/}
+    {/*  )}>*/}
       <Mapgl options={options} data={data} width={width} height={height} replaceVariables={replaceVariables}/>
 
-    </div>
+    {/*</div>*/}
 </RootStoreProvider>
 
   );

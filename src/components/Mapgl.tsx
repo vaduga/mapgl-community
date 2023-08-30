@@ -5,7 +5,7 @@ import {useStyles2, useTheme2} from '@grafana/ui';
 import { config } from '@grafana/runtime';
 import {observer} from 'mobx-react-lite';
 import DeckGL from '@deck.gl/react';
-import Map from 'react-map-gl/maplibre';
+import Map, {AttributionControl} from 'react-map-gl/maplibre';
 import {LinesGeoJsonLayer} from '../deckLayers/MarkersLines/lines-geo-json-layer';
 import {MyPathLayer} from '../deckLayers/PathLayer/path-layer';
 import {IconClusterLayer} from '../deckLayers/IconClusterLayer/icon-cluster-layer';
@@ -524,8 +524,6 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                     {getViewState && <DeckGL
                         ref={deckRef}
                         style={{
-                            width: '100%',
-                            height: '99%',
                             pointerEvents: 'all',
                             inset: 0,
                             zIndex: 1
@@ -545,7 +543,11 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                             onLoad={onMapLoad}
                             ref={mapRef}
                             mapStyle={source}
-                        />}
+                            attributionControl={false}>
+                                <AttributionControl style={{ position: 'absolute', bottom: 0, left: 0 }}
+                                    />
+                        </Map>}
+
                     </DeckGL>}
                 <Tooltip position={0} info={hoverInfo} isClosed={closedHint} setClosedHint={setClosedHint}
                         />
