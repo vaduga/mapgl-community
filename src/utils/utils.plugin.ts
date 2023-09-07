@@ -314,7 +314,6 @@ function genExtendedPLine(selFeature , lineSwitchMap) {
             const {locName} = nextParent.properties
             if (occurences.includes(locName)) {
                 // Check for infinite loop
-                console.log('circuit in pline');   /// #TODO do test for short circuit
                 break;
             }
             occurences.push(locName)

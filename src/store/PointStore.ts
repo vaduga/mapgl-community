@@ -43,13 +43,6 @@ class PointStore {
   constructor(root: RootStore) {
     this.root = root;
     makeAutoObservable(this);
-    //autorun(() => console.log('pts', toJS(this.points.filter(el=>el.properties.locName==='U1').map(el=> toJS(el.properties.parPath)))));
-    autorun(() => console.log('oofs', toJS(this.isOffset)));
-    //  autorun(() => console.log('selfeature', toJS(this.selFeature)));
-    //autorun(() => console.log('pl', toJS(this.pLinePoints)));
-    //autorun(() => console.log('update host auto ', toJS(this.updatedHost)));
-    //autorun(() => console.log('tootlip auto ', toJS(this.tooltipObject)));
-    //    autorun(() => console.log('cmts ', toJS(this.comments)));
     //autorun(() => console.log('pts ', toJS(this.points)));
 
   }
