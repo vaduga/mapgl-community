@@ -116,9 +116,9 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                 const {aggrType, colType} = properties
                 setClosedHint(false);
                 const layerId = info.sourceLayer?.id
-                //const lineIds = layerId?.startsWith('edit-lines') ? id : null
+                const lineId = layerId?.startsWith('edit-lines') ? id : null
 
-                setSelectedIp(ip, null)
+                setSelectedIp(ip, [lineId])
                 const geom = switchMap?.get(ip)?.geometry as Point
 
                 const OSM = libreMapInstance?.getZoom()
