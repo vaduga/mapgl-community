@@ -12,20 +12,9 @@ export const MarkersGeoJsonLayer = (props) => {
     isVisible = true,
     featureCollection,
     getSelectedFeIndexes,
-    getEditableLines,
-    getPoints,
-    orgId,
-    switchMap,
-    setIconFeatures,
-    setLineFeatures,
-    lineFeatures,
-    getMode,
     getSelectedIp,
-    zoom,
     onHover,
     highlightColor,
-    editCoord,
-    uid
   } = props;
 
   return new GeoJsonLayer({
@@ -58,19 +47,9 @@ export const MarkersGeoJsonLayer = (props) => {
     // Styles
     filled: true,
     stroked: false,
-    getEditHandlePointColor: (d) => {
-      const color = FEATURE_EDIT_HANDLE_COLOR;
-      return Array.from(toRGB4Array(color)) as [number, number, number, number];
-    },
-    getEditHandlePointRadius: 17, //  zoom / 2, //map.current.zoom,
-    editHandlePointOutline: true,
-    editHandlePointRadiusScale: 0.8,
-    editHandlePointRadiusMinPixels: 8,
-    editHandlePointRadiusMaxPixels: 20,
 
     // Interactive props
     pickable: true,
-    pickingDepth: 0,
     autoHighlight: true,
     }
 

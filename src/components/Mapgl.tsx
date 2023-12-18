@@ -39,7 +39,7 @@ import {MyGeoJsonLayer} from "../deckLayers/GeoJsonLayer/geojson-layer";
 import {PositionTracker} from "./Geocoder/PositionTracker";
 import {pushPath} from "../layers/data/markersLayer";
 import {flushSync} from "react-dom";
-import {CENTER_PLOT_FILL_COLOR} from "./defaults";
+import {CENTER_PLOT_FILL_COLOR, parDelimiter} from "./defaults";
 import {RGBAColor} from "@deck.gl/core/utils/color";
 import {getThresholdForValue} from "../editor/Thresholds/data/threshold_processor";
 
@@ -118,8 +118,8 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                 const layerId = info.sourceLayer?.id
                 const lineId = layerId?.startsWith('edit-lines') ? id : null
 
-                setSelectedIp(ip, [lineId])
-                const geom = switchMap?.get(ip)?.geometry as Point
+                const ipDelimited = ip?.split(parDelimiter)[0]
+                const geom = switchMap?.get(ipDelimited)?.geometry as Point
 
                 const OSM = libreMapInstance?.getZoom()
                 if (geom && getMode !== 'modify')
@@ -141,6 +141,8 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                 const isAggr = AggrTypes.includes(aggrType)
                 setIsRenderNums(!isAggr)
                 setTooltipObject(info); // this pins tooltip
+                setSelectedIp(ip, lineId ? [lineId] : null)
+
 
             } else if (getisShowCluster) {
                 // zoom on cluster click
