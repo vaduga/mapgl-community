@@ -90,7 +90,7 @@ export const pathLayer: ExtendMapLayerRegistryItem<PathConfig> = {
                     return []}
 
                 const dataFrame = new DataFrameView(frame).toArray()
-                const points: Feature[] = info.points.map((geom, id) => {
+                const points: { geometry: LineString; id: number; type: string; properties: any }[] = info.points.map((geom, id) => {
                         const point = dataFrame[id]
                         const metric = metricField && point[metricField]
                         const threshold = getThresholdForValue(point, metric, thresholds)
@@ -118,7 +118,7 @@ export const pathLayer: ExtendMapLayerRegistryItem<PathConfig> = {
                                 colIdx,
                                 colType,
                                 isShowTooltip,
-                                displayProperties: isShowTooltip ? displayProperties : null
+                                displayProps: isShowTooltip ? displayProperties : null
                             },
                         }
                     }

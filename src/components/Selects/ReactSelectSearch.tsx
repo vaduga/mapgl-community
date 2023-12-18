@@ -11,14 +11,15 @@ import {AggrTypes} from "../../store/interfaces";
 
 type MapRefProps = {
   wait?: number;
-    selectHandler: (value: any, coord: any, reloc: boolean) => Promise<void>;
+    selectHandler: (value: any, coord: any, select: boolean, fly: boolean, lineId?: number | null) => Promise<void> | undefined;
     value: string;
     placeholder?: string;
-    aggrTypes?: string[];
+    aggrTypesOnly?: boolean;
+    noAggrTypes?: boolean
 };
 
 const ReactSelectSearch: FC<MapRefProps> = ({ selectHandler, value, wait = 300,
-    placeholder ='Search location', aggrTypes = [],
+    placeholder ='Search location', aggrTypesOnly = false, noAggrTypes = false,
                                               ...props
                                             }) => {
   const s = useStyles2(getStyles);
@@ -49,9 +50,9 @@ const ReactSelectSearch: FC<MapRefProps> = ({ selectHandler, value, wait = 300,
       : [];
 
 
-  const filteredOptions = aggrTypes.length === 0 ? selectOptions : selectOptions.filter(el=>
-      AggrTypes.includes(el.aggrType as string)
-  )
+  const filteredOptions = aggrTypesOnly ? selectOptions.filter(el=>
+      AggrTypes.includes(el?.aggrType as string)) : noAggrTypes ? selectOptions.filter(el=>
+      !AggrTypes.includes(el?.aggrType as string)) : selectOptions
 
   const debouncedLoadOptions = debounce(() => filteredOptions, wait);
 
@@ -64,7 +65,7 @@ const ReactSelectSearch: FC<MapRefProps> = ({ selectHandler, value, wait = 300,
             getOptions={(query) => debouncedLoadOptions(query)}
             search
             placeholder={placeholder+` (${filteredOptions?.length})`}
-            onChange={(v)=> selectHandler(v, null, true)}
+            onChange={(v)=> selectHandler(v, null, true, true)}
             value={value}
         />
       </div>
@@ -187,7 +188,7 @@ const getStyles = (theme2: GrafanaTheme2) => ({
 
      .select-search-container:not(.select-search-is-multiple) .select-search-select {
       position: absolute;
-      z-index: 2;
+      z-index: 3;
       top: 58px;
       right: 0;
       left: 0;

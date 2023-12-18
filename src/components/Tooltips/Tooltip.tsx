@@ -1,10 +1,11 @@
-import React from 'react';
-import { useRootStore } from '../../utils';
+import React, {Dispatch, SetStateAction, useCallback, useMemo} from 'react';
+import {useRootStore} from '../../utils';
 import {toJS} from "mobx";
 import {css} from "@emotion/css";
 import {IconButton as IconGrafanaButton, useStyles2, useTheme2} from "@grafana/ui";
 import {Field, formattedValueToString, GrafanaTheme2, Vector} from "@grafana/data";
 import {Info} from '../../store/interfaces'
+import {locationService} from "@grafana/runtime";
 
 function displayItem(item: any) {
     if (typeof item === "object" && item !== null) {
@@ -23,47 +24,83 @@ function displayItem(item: any) {
     }
 }
 
+function setVars({parent=undefined, props, getSelectedIp, getDirection}){
 
-    function renderTooltipContent(object, pinned = false, setClosedHint, getNodeConnections) {
+    const [target, source] = getDirection === 'target' ? [getSelectedIp, parent] : [parent, getSelectedIp];
+    const lineId = parent && props?.sources[parent]?.lineId
+
+    locationService.partial({'var-lineIds': lineId ? ''+lineId : undefined, 'var-target': target ?? '', 'var-source': source ?? '', 'var-mode': 'view'}, true);
+
+}
+
+const SetVarsIcon = ({parent = undefined, props, getSelectedIp, getDirection})=> {
+    return (
+        <IconGrafanaButton
+            key="setVars"
+            variant="primary"
+            name="graph-bar"
+            size='sm'
+            tooltip="set vars"
+            tooltipPlacement='left'
+            onClick={() => {
+                setVars({parent, props, getSelectedIp, getDirection})
+            }}
+        />
+    )
+}
+
+    function renderTooltipContent({object, pinned = false, getSelectedIp='', setSelectedIp, getDirection, setClosedHint}) {
     const props = object?.properties ?? object ?? {};
 
-    let DP = props?.displayProperties
+    let DP = props?.displayProps
 
-    const filteredProps = DP?.length ? DP.reduce((obj, field: string) => {
+    const filteredProps = Array.isArray(DP) ? DP.reduce((obj, field: string) => {
         if (props.hasOwnProperty(field)) {
-            obj[field] = props[field];
+            obj[field] = Array.isArray(props[field]) ? JSON.stringify(props[field]): props[field];
         }
         return obj;
-    }, {}) : {}
+    }, {}) : props
+
+
+    const parArr = props.ptId && Array.isArray(props.parPath) && props.parPath.length ? [props.parPath?.at(-1)] : props.sources && Object.keys(props.sources)
+    const parents = parArr?.map((parent, k)=> {
+        return <li key={''+k}>
+            {pinned && <SetVarsIcon {...{parent, props, getSelectedIp, getDirection}}/>}
+            {getDirection === 'target' ? 'src: ' : 'tar: '}
+            <a onClick={()=> setSelectedIp(getSelectedIp, [props.sources[parent]?.lineId])}>{parent}</a>
+        </li>
+    })
 
     return (
         <>
              <ul>
                  {props.locName && <li key="locName">
-                     {pinned && <IconGrafanaButton
+                     {pinned && <><IconGrafanaButton
                          key="closeHint"
                          variant="destructive"
                          name="x"
                          size='sm'
-                         tooltip="Close hint"
+                         tooltip={'close'}
+                         tooltipPlacement='left'
                          onClick={() => {
                              setClosedHint(true)
                          }}
-                     />}
-                     <b>{`loc: ${displayItem(props.locName)}  `}</b></li>}
-                 {props.parName && <li key="pName"><b>{`par: ${displayItem(props.parName)}`}</b></li>}
+                     />
+                         {!parents?.length &&
+                             <SetVarsIcon {...{props, getSelectedIp, getDirection}}/>
+                         }
+                     </>
+                     }
+
+                     {getDirection === 'target' ? 'tar: ' : 'src: '}
+         <a onClick={()=> setSelectedIp(getSelectedIp, null)}>{props.locName}</a></li>}
+
+                 {parents}
+
                 {Object.entries(filteredProps).map(([key, value]) => (
                     <li key={key}>{`${key}: ${displayItem(value)}`}</li>
                 ))}
-                 {['node','connector'].includes(props.aggrType) && <>
-                     {`\n`}
-                     {`${props.locName} --> ${props.parName}:`}
-                     {getNodeConnections?.get(props.parName)?.from?.map((el, key) => (<li style={{color: el?.threshold?.color}} key={key}>{`${el?.locName}`} </li>))}
-                     {`\n`}
-                     {`${props.locName} <-- ${props.parName}:`}
-                     {getNodeConnections?.get(props.parName)?.to?.map((el, key) => (<li style={{color: el?.threshold?.color}} key={key}>{`${el?.locName}`} </li>))}
-                 </>
-                 }
+
 
             </ul>
         </>
@@ -74,7 +111,7 @@ function displayItem(item: any) {
 const Tooltip = ({ info, isClosed = false , setClosedHint, position = 0}: {
     info: Info;
     isClosed?: boolean;
-    setClosedHint?: Function;
+    setClosedHint?: Dispatch<SetStateAction<boolean>>;
     selectedFeIndexes?: number[];
     position: number
 }) => {
@@ -97,7 +134,7 @@ const Tooltip = ({ info, isClosed = false , setClosedHint, position = 0}: {
       overflow-y: hidden;
       margin: 5px;
       padding: 8px;
-      z-index: 99;
+      z-index: 1;
       opacity: 0.95;
       ul {
       list-style-type: none }
@@ -105,18 +142,33 @@ const Tooltip = ({ info, isClosed = false , setClosedHint, position = 0}: {
     });
 
     const s = useStyles2(getStyles);
-  const { pointStore } = useRootStore();
-  const { getMode, getTooltipObject, getNodeConnections } = pointStore;
+  const { pointStore , lineStore} = useRootStore();
+  const { getMode, getTooltipObject, getSelectedIp, setSelectedIp, getSelIds } = pointStore;
+  const {getDirection} = lineStore
 if (!Object.entries(info).length) {
     return null
 }
 
     const { x, y, object } = info;
 
-    if (object?.isShowTooltip === false || object?.properties?.isShowTooltip === false) {return null}
+    if (!object ) {
 
+        if (isClosed || getMode === 'modify' ) {return null}
+        const { x, y, object: ghostObject } = getTooltipObject; //return null;
+        const idx = parseInt(info.layer?.id.split('-').at(-1), 10)
 
+        return (
+            /// Pinned hint
+            /// onClick={() => setHoverInfo({})}
+            <div className={s.tooltip} style={{ left: x, top: y }}>
+                {renderTooltipContent({object: ghostObject, pinned: true, getSelectedIp, setSelectedIp, getDirection, setClosedHint })}
+            </div>
+        );
+    }
+
+    if (!object?.isShowTooltip && !object?.properties?.isShowTooltip && !object?.cluster) {return null}
     if (object?.cluster) {
+
         const { colorCounts } = object;
 
         if (colorCounts) {
@@ -137,20 +189,7 @@ if (!Object.entries(info).length) {
         }
     }
 
-  if (!object ) {
 
-    if (isClosed || getMode === 'modify' ) {return null}
-    const { x, y, object: ghostObject } = getTooltipObject; //return null;
-      const idx = parseInt(info.layer?.id.split('-').at(-1), 10)
-
-    return (
-      /// Pinned hint
-      /// onClick={() => setHoverInfo({})}
-        <div className={s.tooltip} style={{ left: x, top: y }}>
-            {renderTooltipContent(ghostObject, true, setClosedHint, getNodeConnections)}
-        </div>
-    );
-  }
 
   if (getMode === 'modify') {
 
@@ -166,7 +205,7 @@ if (!Object.entries(info).length) {
     const idx = parseInt(info.layer?.id.split('-').at(-1), 10)
       return (
     <div className={s.tooltip} style={x && y ? { left: x, top: y } : {}}>
-        {renderTooltipContent(object, false, setClosedHint, getNodeConnections)}
+        {renderTooltipContent({object, pinned: false, setClosedHint, getDirection, getSelectedIp, setSelectedIp})}
     </div>
   );
 };

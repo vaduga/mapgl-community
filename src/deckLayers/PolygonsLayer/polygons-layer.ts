@@ -32,9 +32,9 @@ const MyPolygonsLayer = (props) => {
         getIcon: () => 'marker',
         // @ts-ignore
         getFillColor: (d) => {
-            const {threshold, isInParentLine} = d.properties
-            const {color,selColor} = threshold
-            return toRGB4Array(isInParentLine ? selColor : color)
+            const {threshold} = d.properties
+            const {color} = threshold
+            return toRGB4Array(color)
         },
         getLineWidth: (d)=> d.properties?.threshold?.lineWidth,
     });

@@ -9,3 +9,8 @@ datasources:
       path: /usr/share/grafana/public/sample.sqlite
     version: 1
     editable: true
+
+  - name: static
+    uid: "d02c7074-3fbc-4174-ad36-f549f4cd4174"
+    type: marcusolsson-static-datasource
+     

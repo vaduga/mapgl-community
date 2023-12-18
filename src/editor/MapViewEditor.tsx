@@ -4,7 +4,7 @@ import { Button, InlineField, InlineFieldRow, Select, VerticalGroup } from '@gra
 import { PanelOptions, MapViewConfig } from '../types';
 import { centerPointRegistry, MapCenterID } from '../view';
 import { NumberInput } from './NumberInput';
-import { lastMapPanelInstance } from '../components/Mapgl';
+import { libreMapInstance } from '../components/Mapgl';
 
 export const MapViewEditor: FC<StandardEditorProps<MapViewConfig, any, PanelOptions>> = ({
   value,
@@ -25,7 +25,7 @@ export const MapViewEditor: FC<StandardEditorProps<MapViewConfig, any, PanelOpti
   }, [value?.id]);
 
   const onSetCurrentView = useCallback(() => {
-    const map = lastMapPanelInstance;
+    const map = libreMapInstance;
     if (map) {
 
       const center = map.getCenter();

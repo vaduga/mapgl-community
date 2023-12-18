@@ -2,10 +2,12 @@ import lineString from "turf-linestring";
 import lineOffset from "@turf/line-offset";
 import bearing from "@turf/bearing";
 import turfbbox from "@turf/bbox";
-import {Point, Position} from "geojson";
+import {Geometry, Point, Position} from "geojson";
 import {toJS} from "mobx";
-import {DEFAULT_NUMS_COLOR} from "../components/defaults";
-import {AggrTypes} from "../store/interfaces";
+import {DEFAULT_NUMS_COLOR, parDelimiter} from "../components/defaults";
+import {AggrTypes, DeckLine, Feature, ParentInfo, PointFeatureProperties, Sources, Vertices} from "../store/interfaces";
+import {MultiLineString} from "@turf/helpers";
+import {RGBAColor} from "@deck.gl/core/utils/color";
 
 function toHex(rgbaColor) {
     // Parse the rgbaColor string to extract the red, green, blue, and alpha values
@@ -38,7 +40,7 @@ function toHex(rgbaColor) {
 function makeColorLighter(color) {
     if (!color) {return `rgb(${[100,100,0].join(", ")})`;}
     const colorArr = color.match(/\d+/g); // extract the RGB values as an array
-    const lightenedColorArr = colorArr.map(value => Math.min(Number(value) + 45, 255)); // add 25 to each value, ensuring the result is at most 255
+    const lightenedColorArr = colorArr.map(value => Math.min(Number(value) + 45, 255)); // add 45 to each value, ensuring the result is at most 255
     return `rgb(${lightenedColorArr.join(", ")})`; // convert the array back to a string and return it
 }
 
@@ -55,15 +57,15 @@ function invertColor(color){
     return `rgb(${invertedColorArr.join(", ")})`; // convert the array back to a string and return it
 }
 
-const toRGB4Array = (rgbStr: string) => {
+const toRGB4Array = (rgbStr: string): RGBAColor => {
     const matches = rgbStr.match(/[\d.]+/g);
     if (matches === null || matches.length < 3) {
-        return [0, 0, 0]
+        return [0,0,0]
     }
 
-    const rgba = matches.slice(0).map(Number) as number[]//RGBAColor;
+    const rgba = matches.slice(0).map(Number) ;
     rgba[3] = (rgba[3] || 1) * 255;
-    return rgba;
+    return rgba as RGBAColor;
 };
 
 function hexToRgba(hexColor) {
@@ -96,7 +98,7 @@ const getTurfAngle = (fromPointCoords, toPointCoords) => {
     if (!fromPointCoords || !toPointCoords) {
         return 0
     }
-    let angle
+let angle
     // Calculate the line vector
     const dx = toPointCoords[0] - toPointCoords[0];
     const dy = toPointCoords[1] - toPointCoords[1];
@@ -142,33 +144,40 @@ const stringify4D = (coords, parPathComments)=> {
 // Helper function to find nearby points within a tolerance range
 function findNearbyNodes(coordinate, features, tolerance) {
 
-    if (!coordinate.length) {return []}
+        if (!coordinate.length) {return []}
 
-    const snappedPoint = coordinate;
+            const snappedPoint = coordinate;
 
-    // Compare the snapped point with other points in the dataset
-    const nearbyPoints = features.filter((dataPoint) => {
-        const types = AggrTypes
+            // Compare the snapped point with other points in the dataset
+            const nearbyPoints = features.filter((dataPoint) => {
+                const types = AggrTypes
 
-        if (!types.includes(dataPoint.properties.aggrType)) {return}
+                if (!types.includes(dataPoint.properties.aggrType)) {return}
 
-        const dataPointCoordinates = dataPoint.geometry.coordinates?.[0]?.[0];
-        if (!dataPointCoordinates) {return false}
+                const dataPointCoordinates = dataPoint.geometry.coordinates //?.[0]?.[0];
 
-        // Calculate the absolute difference between coordinates
-        const diffX = Math.abs(snappedPoint[0] - dataPointCoordinates[0]);
-        const diffY = Math.abs(snappedPoint[1] - dataPointCoordinates[1]);
+                if (!dataPointCoordinates) {
+                    return false}
 
-        // Check if the point falls within the tolerance range
+                // Calculate the absolute difference between coordinates
+                const diffX = Math.abs(snappedPoint[0] - dataPointCoordinates[0]);
+                const diffY = Math.abs(snappedPoint[1] - dataPointCoordinates[1]);
 
-        return diffX <= tolerance && diffY <= tolerance;
-    });
+                // Check if the point falls within the tolerance range
 
-    return nearbyPoints;
+                return diffX <= tolerance && diffY <= tolerance;
+            });
+
+            return nearbyPoints;
 
 
 }
-
+export function genName(name, idx: null | number = null) {
+    // if (idx===0) {
+    //     return name
+    // }
+    return idx===null ? name : name + parDelimiter+ idx
+}
 function getBounds(points) {
     const featureCollection = {
         type: 'FeatureCollection',
@@ -178,134 +187,199 @@ function getBounds(points) {
     return bounds;
 }
 
-function genParPathText(lineFeature) {
-
-    if (!lineFeature) {return null}
-
-    const path = lineFeature?.properties.parPathCoords
-    const pathExists = Array.isArray(path)
-    let flatArr = pathExists ? path : [] //.reduce((acc, val) => acc.concat(val), []) : []
-
-    const parPathText = flatArr?.length > 0 ? flatArr.map((coord, i) => {
-
-        return {
-            text: i + 1 + '',
-            coordinates: coord,
-            color: DEFAULT_NUMS_COLOR
+function parseIfPossible(dsParents) {
+    if (dsParents && (dsParents.startsWith('[') || !parseInt(dsParents, 10))) {
+        try {
+            return JSON.parse(dsParents) ?? dsParents;
+        } catch (error) {
+            return dsParents ?? null;
         }
-    }) : []
-    return parPathText
+    } else {
+        return dsParents ?? null;
+    }
+}
+
+function genParPathText(lineFeatures) {
+    if (!Array.isArray(lineFeatures) || lineFeatures.length === 0) {return []}
+
+const textCollection: any = []
+    lineFeatures.forEach((lineFeature)=> {
+        if (!lineFeature?.properties) {return}
+        const path = lineFeature?.properties.parPathCoords
+        const flatArr = Array.isArray(path) && path.length>1 ? path : []
+
+        const parPathText = flatArr?.length > 0 ? flatArr.map((coord, i) => {
+
+            return {
+                text: i + 1 + '',
+                coordinates: coord,
+                color: DEFAULT_NUMS_COLOR
+            }
+        }) : []
+
+        if (parPathText) {
+            textCollection.push(parPathText)
+        }
+    })
+    return textCollection.reduce((acc, curr)=> acc.concat(curr), [])
 }
 
 // used for insta-render of parentPath line onEditing lines/icons
-function genParentLine(selFeature, lineSwitchMap){
-    if (!selFeature) { return []}
-    type CoordsAndColor = [Position[], string]
-    const lineStringCoords: CoordsAndColor[] | [] = [];
-    const pLinePoints = [selFeature]
-    const parPath = selFeature?.properties.parPath
+type CoordsAndColor = [Position[], string]
+function genParentLine(lineFeatures: DeckLine<Geometry, PointFeatureProperties>[], switchMap, lineSwitchMap, getisoffset): [DeckLine<Geometry, PointFeatureProperties>[], CoordsAndColor[]] {
+if (!lineFeatures || !Array.isArray(lineFeatures) || lineFeatures?.length < 1) { return [[],[]]}
+    const lineStringCoords: CoordsAndColor[] = [];
+    const pLinePoints = [...lineFeatures]
 
+    lineFeatures.forEach((lFeature, pathIdx ) => {
+    if (!lFeature?.properties) {return}
+    const {parPath} = lFeature?.properties
+    if (!parPath || parPath?.length < 1) {return}
+
+    if (!getisoffset) {          // straight lines
+        const lastFeature = lineSwitchMap.get(parPath.at(-1))
+        pLinePoints.push(lFeature)
+        pLinePoints.push(lastFeature)
+        const geom = lFeature?.geometry as MultiLineString
+        const coords = geom?.coordinates
+        const coords1 = coords[0]?.[0]
+        const lastSegment = coords[coords.length-1]
+        const coords2 = lastSegment?.at(-1)
+        const color = coords1 && coords2 && lFeature?.properties?.threshold?.color
+if (coords1 && coords2 && color)
+        {
+            lineStringCoords.push([[coords1, coords2], color]);
+        }
+        return
+    }
 
     for (let i = 1; i < parPath?.length; i++) {
-        const p = parPath[i];
-        const prevP = parPath[i - 1];
+        let p = parPath[i];
+        let prevP = parPath[i - 1];
 
-        const feature = typeof p === 'string' ? lineSwitchMap?.get(p) : null;
-        pLinePoints.push(feature);
-        let addFeatIconColor = feature?.properties?.threshold?.color
-        const currType = feature?.properties.aggrType;
-        const currLoc = feature?.properties.locName
-        const currFeaturePath = feature?.properties.parPath
+        const pPt = typeof p === 'string' && switchMap.get(p.split(parDelimiter)[0])
+        const prevPt =  typeof prevP === 'string' && switchMap.get(prevP.split(parDelimiter)[0])
+        const pSources = (pPt?.properties?.sources && Object.values(pPt.properties.sources) as ParentInfo[]) ?? [] //.findIndex((el=> el.at(-1) === p)) : null
+        const prevPSources = (prevPt?.properties?.sources && Object.values(prevPt.properties.sources) as ParentInfo[]) ?? []
+        let fromPrevToCurr: (string|Position)[] | null = null
+        let fromCurrToPrev: (string|Position)[] | null = null
+        if (pSources?.length>0 && prevPSources?.length>0) {
 
-        const prevFeature = typeof prevP === 'string' ? lineSwitchMap?.get(prevP) : null;
+                pSources.forEach((info, i) => {
+                    const {parPath: currFeaturePath} = info
+                    prevPSources.forEach((prevInfo, k) => {
+                        const {parPath: prevFeaturePath} = prevInfo
+                        if (prevFeaturePath[0] === currFeaturePath?.at(-1)) {
+                            fromPrevToCurr = currFeaturePath
+                        }
+                        if (currFeaturePath[0] === prevFeaturePath?.at(-1)) {
+                            fromCurrToPrev = prevFeaturePath
+                        }
+                    })
+                })
+        }
+    else if (pSources?.length<1 && prevPSources?.length>0) {
+            prevPSources.forEach((prevInfo, i) => {
+                const {parPath: prevFeaturePath} = prevInfo
 
+                if (prevFeaturePath.at(-1) === p) {
+                    fromPrevToCurr = prevFeaturePath
+
+            }})
+        }
+
+        const feature = typeof p === 'string' ? switchMap?.get(p) : null;   // id=0 is reserve for main real point
+            pLinePoints.push(feature);
+            let addFeatIconColor = feature?.properties?.threshold?.color
+            const currType = feature?.properties.aggrType;
+
+        const prevFeature = typeof prevP === 'string' ? switchMap?.get(prevP): null;
         const prevType = prevFeature?.properties?.aggrType
-        const prevLoc = prevFeature?.properties?.locName
         let addPrevFeatIconColor = prevFeature?.properties?.threshold?.color
-        const prevFeaturePath = prevFeature?.properties.parPath
 
         if (
             (typeof p === 'string' && typeof prevP === 'string') ||
             Array.isArray(p) || Array.isArray(prevP) && (feature || prevFeature)
         ) {
-
             let coordinates;
             if (AggrTypes.includes(prevType) &&
                 AggrTypes.includes(currType)
             ) {
 
-                const fromPrevToCurr = prevFeaturePath && (prevFeaturePath[prevFeaturePath.length - 1] === currLoc) ? prevFeaturePath : [];
-                const fromCurrToPrev = currFeaturePath && (currFeaturePath[currFeaturePath.length - 1] === prevLoc) ? currFeaturePath : [];
-
-                if (fromPrevToCurr.length > 0 || fromCurrToPrev.length > 0) {
-                    const path = fromPrevToCurr.length>0 ? fromPrevToCurr : fromCurrToPrev
-                    const iconColor = fromPrevToCurr.length>0 ? addPrevFeatIconColor : addFeatIconColor
-                    const addon: Position[] = path.map((a) => {
+                if (fromPrevToCurr || fromCurrToPrev) {
+                    const path = fromPrevToCurr ? fromPrevToCurr : fromCurrToPrev ?? []
+                    const iconColor = addPrevFeatIconColor ? addPrevFeatIconColor : addFeatIconColor
+                    const addon: Position[] = []
+                        path?.forEach((a) => {
 
                         if (typeof a === 'string') {
-                            const addFeature = lineSwitchMap?.get(a)
+                            const addFeature = lineSwitchMap?.get(a) ?? lineSwitchMap?.get(a+parDelimiter+0)
                             const type = addFeature?.properties.aggrType
                             const geometry = addFeature?.geometry as Point
                             const addCoord = (geometry && geometry.coordinates && geometry.coordinates.length > 0)
-                                ? geometry.coordinates[0][0] ?? null : null
+                                ? geometry.coordinates[0][0] : switchMap?.get(a)?.geometry.coordinates ?? null
 
-                            return addCoord
+                            if (addCoord) {
+                                addon.push(addCoord)
+                            }
+
                         } else if (Array.isArray(a)) {
-                            return a
+                            addon.push(a)
                         } else {
                             return null
                         }
-
-                    }).filter(el=> el !== null)
+                        return
+                    })
                     //console.log('addon', addon)
-                    // @ts-ignore
-                    lineStringCoords.push([addon, iconColor ?? selFeature.properties?.threshold?.color])
-                    continue
+                    lineStringCoords.push([addon, iconColor ])  //?? lFeature.properties?.threshold?.color
+                    if (path) {
+                        continue
+                    }
                 }
+
             }
             let featIconColor, prevFeatIconColor
             if (typeof p === 'string') {
-                const feature = lineSwitchMap?.get(p);
+                const feature = lineSwitchMap?.get(p) ?? lineSwitchMap?.get(p+parDelimiter+0);
                 featIconColor = feature?.properties?.threshold?.color
                 const geometry = feature?.geometry as Point;
                 coordinates = (geometry?.coordinates?.length > 0)
-                    ? geometry.coordinates[0][0] ?? geometry.coordinates ?? null : null
+                    ? geometry.coordinates[0][0] : switchMap?.get(p)?.geometry.coordinates ?? null
             } else {
                 coordinates = p
             }
 
+
             let prevCoordinates;
             if (typeof prevP === 'string') {
-                const prevFeature = lineSwitchMap?.get(prevP);
+                const prevFeature = lineSwitchMap?.get(prevP) ?? lineSwitchMap?.get(prevP+parDelimiter+0);
                 prevFeatIconColor = prevFeature?.properties?.threshold?.color
                 const prevGeometry = prevFeature?.geometry as Point;
                 prevCoordinates = (prevGeometry && prevGeometry.coordinates && prevGeometry.coordinates.length > 0)
-                    ? prevGeometry.coordinates[0][0] ?? prevGeometry.coordinates ?? null : null
+                    ? prevGeometry.coordinates[0][0] : switchMap?.get(prevP)?.geometry.coordinates ?? null
             } else {
                 prevCoordinates = prevP;
             }
 
-            // @ts-ignore
-            lineStringCoords.push([[prevCoordinates, coordinates], AggrTypes.includes(prevType) &&
-            AggrTypes.includes(currType) ? prevFeatIconColor : selFeature.properties?.threshold?.color]);
+            lineStringCoords.push([[prevCoordinates, coordinates], (AggrTypes.includes(prevType) &&
+            AggrTypes.includes(currType)) ? prevFeatIconColor : lFeature?.properties?.threshold?.color]);
         }
     }
-
-    //console.log('lineStringCoords', toJS(lineStringCoords))
-// @ts-ignore
-    return [pLinePoints.filter(el=>el), lineStringCoords.filter(el=> !el[0].includes(null))]
+})
+        return [pLinePoints.filter(el=> el !== null), lineStringCoords.filter(el=> el[0].every(l=> l !== null))]
 
 
 }
 
-function genExtendedPLine(selFeature , lineSwitchMap) {
-    let pathCoords: Position[] = [];
-    let nextSegment
+function genExtendedPLine(features: DeckLine<Geometry, PointFeatureProperties>[], switchMap, lineSwitchMap, getisoffset) {
+     let pathCoords: Position[] = [];
+     let nextSegment
     const occurences: string[] = []
 //return pathCoords
-
-    if (selFeature) {
-        const {locName, parName} = selFeature.properties
+features.forEach((feature, pathIdx)=>{
+    if (feature && feature.properties?.locName) {
+        const {locName, parPath} = feature.properties
+        const parName = parPath?.at(-1)
         occurences.push(locName)
 
         let initParent = lineSwitchMap.get(parName)
@@ -313,9 +387,7 @@ function genExtendedPLine(selFeature , lineSwitchMap) {
         if (!initParent) {
             return;
         }
-
         let nextParent = initParent;
-
 
         while (nextParent) {
             const {locName} = nextParent.properties
@@ -325,42 +397,39 @@ function genExtendedPLine(selFeature , lineSwitchMap) {
             }
             occurences.push(locName)
 
-            nextSegment = genParentLine(nextParent, lineSwitchMap)[1] || undefined;
+            nextSegment = genParentLine([nextParent], switchMap, lineSwitchMap, getisoffset)[1] || undefined;
             //console.log('nextSegment', toJS(nextSegment))
 
-            if (nextSegment?.length>0) {
+            if (nextSegment?.length > 0) {
 
                 pathCoords.push(nextSegment) //.reduce((acc,cur,i)=> acc.concat(cur), []))
 
             }
+            const {parPath} = nextParent?.properties
 
-            const parent = nextParent?.properties.parName;
-            nextParent = parent && lineSwitchMap?.get(parent)
-
+            nextParent = parPath && lineSwitchMap?.get(parPath.at(-1))
         }
-    }
+
+    }})
+
+
     return pathCoords.reduce((acc,cur)=> acc.concat(cur), [])
 
-};
+  };
 
 function genNodeNamesText(iconFeatures){
 
-    const nodeNames = iconFeatures?.filter(el=>AggrTypes.includes(el?.properties.aggrType))
+    const nodeNames = iconFeatures?.filter(el=>AggrTypes.includes(el?.properties?.aggrType))
         .map((node)=> {
-            const {locName, isInParentLine, threshold } = node?.properties
-            const {color, selColor}= threshold
+            const {locName, threshold } = node?.properties
+            const {color}= threshold
             const geometry = node?.geometry as Point
-            return {text: locName, coordinates: geometry.coordinates ?? [0,0], color: isInParentLine ? selColor:color}
+            return {text: locName, coordinates: geometry.coordinates ?? [0,0], color}
         })
     return nodeNames
 }
 
-function genNodeConnectionsText(selFeature, getNodeConnections, switchMap) {
-
-    if (!selFeature) {
-        return []
-    }
-    const selLine = switchMap?.get(selFeature.properties.locName)
+function genNodeConnectionsText(selLine, switchMap?) {
 
     if (!selLine) {
         return []
@@ -368,48 +437,105 @@ function genNodeConnectionsText(selFeature, getNodeConnections, switchMap) {
 
     const {properties } = selLine
     const geometry = selLine.geometry as Point
-    const cons = getNodeConnections.get(properties.locName)
-    const parent = switchMap?.get(properties.parName)
+    //const cons = getNodeConnections.get(properties.locName)
+    const parent = switchMap?.get(properties.parPath?.at(-1))
     const parGeometry = parent?.geometry as Point
 
     const locCoords = (geometry && geometry.coordinates && geometry.coordinates.length > 0)
         ? geometry.coordinates[0][0] ?? null : null
     const parCoords = (parGeometry && parGeometry.coordinates && parGeometry.coordinates.length > 0)
-        ? parGeometry.coordinates[0][0] ?? null : null
+        ? parGeometry.coordinates ?? null : null
 
     if (!locCoords || !parCoords) {
         return []
     }
 
     const angle = getTurfAngle(locCoords, parCoords)
-    const color = properties?.threshold?.color
+    let color = properties?.threshold?.color
 
+    const {bandNumber, bandWidth, throughput} = properties
+    if ((bandWidth || bandNumber) && throughput) {
 
+        let metricPercentage;
 
+        if (bandWidth) {
+            metricPercentage = (throughput / bandWidth) * 100;
+        } else if (bandNumber) {
+            metricPercentage = (throughput / bandNumber) * 100;
+        }
 
-    let toText = cons?.to.map(el=>el.locName)
-    if (toText?.length>0) {
-        toText.splice(0,0,'<\n' )
-        toText[toText.length - 1] = toText.at(-1) + '\n<'
+        color = getColorByMetric(metricPercentage);
     }
 
-    let fromText = cons?.from.map(el=>el.locName)
-    if (fromText?.length>0) {
-        fromText[0] = '>\n' + fromText[0]
-        fromText[fromText.length - 1] = fromText.at(-1) + '\n'+'>\n'
+const {locName, edgeField} = selLine.properties
+     let toText = selLine.properties[edgeField] //?? locName //cons?.to.map(el=>el.locName)
+
+    if (typeof toText === 'number') {
+        const {value, unit} = convertBitsPerSecond(toText)
+        toText = value+unit
     }
 
-    const nodeConnectionsText = selFeature && parent && cons ?
+    // if (toText?.length>0) {
+    //     toText.splice(0,0,'<\n' )
+    //     toText[toText.length - 1] = toText.at(-1) + '\n<'
+    // }
 
-        {to: [{text: toText.join('\n'), coordinates: [locCoords, parCoords ], color, angle
+    //let fromText = cons?.from.map(el=>el.locName)
+    // if (fromText?.length>0) {
+    //     fromText[0] = '>\n' + fromText[0]
+    //     fromText[fromText.length - 1] = fromText.at(-1) + '\n'+'>\n'
+    // }
+
+    const nodeConnectionsText = selLine && toText ?
+
+        {to: [{text: toText+'\n', coordinates: [locCoords, parCoords ], color, angle
             }],
-            from: [{text: fromText.join('\n'), coordinates: [locCoords, parCoords ], color, angle
-            }]
-        } : {to: [], from: []}
+            // from: [{text: fromText.join('\n'), coordinates: [locCoords, parCoords ], color, angle
+            // }]
+        } : {to: []
+            // , from: []
+    }
 
 
 
     return nodeConnectionsText
+}
+
+
+function convertBitsPerSecond(toText) {
+    if (typeof toText === 'number') {
+        // Convert to kilobits per second (Kbps) and megabits per second (Mbps)
+        const kbps = toText / 1000; // 1 Kbps = 1000 bps
+        const mbps = kbps / 1000;   // 1 Mbps = 1000 Kbps
+
+        let result;
+
+        if (mbps >= 1) {
+            // Display in megabits per second
+            result = {
+                value: mbps.toFixed(2),
+                unit: ' Mbps',
+            };
+        } else if (kbps >= 1) {
+            // Display in kilobits per second
+            result = {
+                value: kbps.toFixed(1),
+                unit: ' Kbps',
+            };
+        } else {
+            // Display in bits per second
+            result = {
+                value: toText, //.toFixed(2),
+                unit: ' bps',
+            };
+        }
+
+        return result;
+    } else {
+        // Handle the case where toText is not a number
+        console.error('Invalid input. Please provide a number.');
+        return null; // You can choose to return a default value or handle the error differently
+    }
 }
 
 
@@ -492,7 +618,7 @@ function findRelatedLines({
     const lines = lineFeatures
     const relLines: any = []
     lineFeatures.forEach((lineFeat, featIdx)=>{
-        lineFeat.properties.parPath.forEach((point, pathIdx)=> {
+        lineFeat.properties.parPath?.forEach((point, pathIdx)=> {
             if (point === locName) {
                 const line = lines[featIdx]
                 const segrPathVisible = line.properties.segrPathVisible
@@ -513,50 +639,117 @@ function findRelatedLines({
 }
 
 function findChildLines({   locName,
-                            lineFeatures,}){
+                            lineFeatures, direction}){
     if (!lineFeatures.length) {return []}
-    return lineFeatures.filter(lineFeat=>
-        lineFeat.properties.parName === locName  )
+    return lineFeatures.filter(lineFeat=> {
+        const {parPath} = lineFeat.properties
+        //const parent = parPath?.length > 0 && Array.isArray(parents[0]) ? parents[0] : parents;
+        //console.log(parPath?.at(-1) === locName , locName, parPath?.at(-1))
+        return parPath?.at(direction === "target" ? -1 : 0) === locName } )
 }
 
-function offsetRelatedLines({ idx, locName, lineFeatures, newCoord }) {
-    if (!lineFeatures?.length) {
+function mergeVertices(first: Vertices, second: Vertices): Vertices {
+    const merged: Vertices = {};
+
+    for (const key in first) {
+        if (first.hasOwnProperty(key)) {
+            merged[key] = { ...first[key] };
+        }
+    }
+
+    for (const key in second) {
+        if (second.hasOwnProperty(key)) {
+            if (merged[key]) {
+                // Merge ptId, rxPtId, tarCoords
+                merged[key].ptId = merged[key].ptId || second[key].ptId;
+                //merged[key].rxPtId = merged[key].rxPtId || second[key].rxPtId;
+                merged[key].tarCoords = merged[key].tarCoords || second[key].tarCoords;
+
+                // Merge sources
+                //merged[key].sources = { ...merged[key].sources, ...second[key].sources };
+
+                merged[key].sources = {
+                    ...merged[key].sources,
+                    ...Object.entries(second[key].sources || {}).reduce((acc, [sourceKey, sourceValue]) => {
+                        const existingSource: any = merged[key]?.sources?.[sourceKey] || {};
+                        acc[sourceKey] = {
+                            ...existingSource,
+                            ...sourceValue,
+                            lineExtraProps: {
+                                ...(existingSource.lineExtraProps || {}),
+                                ...(sourceValue.lineExtraProps ?
+                                    Object.entries(sourceValue.lineExtraProps).reduce((lineAcc, [lineKey, lineValue]) => {
+                                        if (lineValue !== undefined && lineValue !== null && lineValue !== '') {
+                                            lineAcc[lineKey] = lineValue;
+                                        }
+                                        return lineAcc;
+                                    }, {}) :
+                                    {}),
+                            },
+                        };
+                        return acc;
+                    }, {}),
+                };
+
+
+
+            } else {
+                // If the key doesn't exist in the first object, simply copy it
+                merged[key] = { ...second[key] };
+            }
+        }
+    }
+
+    return merged;
+}
+
+
+function genRndNums(n: number, count: number): number[] {
+    if (count <= 0 || count > n + 1) {
+        console.error("Invalid count of numbers requested.");
         return [];
     }
 
-    const lines = [...lineFeatures];
-    const relLines = findChildLines({ locName, lineFeatures:lines });
+    const uniqueNumbers: Set<number> = new Set();
 
-    const numRelLines = relLines.length;
+    while (uniqueNumbers.size < count) {
+        const randomNumber = Math.floor(Math.random() * (n + 1));
+        uniqueNumbers.add(randomNumber);
+    }
 
-    relLines.forEach((feat, index) => {
-        const coords = feat?.geometry?.coordinates;
+    // Convert Set to array
+    const randomNumbers = Array.from(uniqueNumbers);
 
-        if (coords.length) {
-            const lastMultiLine = coords[coords.length - 1];
-            const segmLines = lineFeatures[idx].geometry.coordinates
-            const length = segmLines.length
-            const mixedLine = [segmLines[length-1][0], newCoord]
-            const offsetLine = lineOffset(lineString(mixedLine), 0.1*index, {units: 'meters'});
-
-            const offCoords = offsetLine.geometry.coordinates;
-
-
-            const lastOffSetPoint = offCoords[offCoords.length - 1] //.map(c=>parseFloat(c.toFixed(6)))
-            const lastPoint = lastMultiLine[lastMultiLine.length - 1];
-
-            lastPoint[0] = lastOffSetPoint[0]
-            lastPoint[1] = lastOffSetPoint[1]
-
-            feat.geometry.coordinates[coords.length - 1] = lastMultiLine;
-        }
-    });
-
-    return lines;
+    return randomNumbers;
 }
 
 
+function getColorByMetric(metricPercentage) {
+    if (metricPercentage >= 0 && metricPercentage <= 20) {
+        return 'rgba(14, 205, 50,1)';
+    }
+    if (metricPercentage <= 30) {
+        return 'rgba(255, 221, 87, 0.9)';
+    }
+    if (metricPercentage <= 40) {
+        return 'rgba(237, 129, 40, 1)';
+    }
+    if (metricPercentage <= 50) {
+        return 'rgba(219, 92, 158,1)';
+    }
+    if (metricPercentage <= 75) {
+        return 'rgba(163, 27, 50,1)';
+    }
+    if (metricPercentage <= 100) {
+        return 'rgba(276, 28, 62,0.9)';
+    }
+    // Handle invalid metricPercentage values
+    return'rgb(255, 0, 255, 0.7)'; // Default color for invalid values
+}
+
+
+
 export {
-    toRGB4Array, colorToRGBA, getFirstCoordinate, toHex, hexToRgba, getBounds, getTurfAngle, stringify4D, findNearbyNodes, makeColorLighter, makeColorDarker, genParPathText,
-    genParentLine, genExtendedPLine, genNodeNamesText, genNodeConnectionsText,findRelatedLines, offsetRelatedLines, findChildLines
+    toRGB4Array, colorToRGBA, getColorByMetric, genRndNums, getFirstCoordinate, toHex, hexToRgba, getBounds, getTurfAngle, stringify4D, findNearbyNodes, makeColorLighter, makeColorDarker, genParPathText,
+    genParentLine, genExtendedPLine, genNodeNamesText, genNodeConnectionsText,findRelatedLines, findChildLines, parseIfPossible, mergeVertices
 }

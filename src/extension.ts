@@ -1,6 +1,7 @@
 import {
   GrafanaTheme2,
   RegistryItemWithOptions,
+  //  FrameGeometrySource,
   FrameGeometrySourceMode,
   PanelOptionsEditorBuilder, PanelData
 } from '@grafana/data';
@@ -43,6 +44,7 @@ export interface DataLayerOptions<TConfig = any> {
   config: TConfig
 }
 export interface ExtendMapLayerOptions<TConfig = any> {
+  isShowBW?: boolean;
   isShowTooltip?: boolean;
   geojsonColor?: string;
   geojsonLocName?: string;
@@ -54,6 +56,10 @@ export interface ExtendMapLayerOptions<TConfig = any> {
   locField?: string;
   parField?: string;
   metricField?: string;
+  bandNumber?: number;
+  bandField?: string;
+  throughputField?: string;
+  edgeLabelField?: string;
   aggrTypeField?: string;
   config?: TConfig;
   location?: ExtendFrameGeometrySource;

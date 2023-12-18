@@ -10,7 +10,7 @@ import {
     ExtendMapLayerOptions,
 } from '../../extension';
 import {colTypes, Feature} from '../../store/interfaces';
-import {Position, Polygon} from "geojson";
+import {Position, Polygon, GeometryCollection, Geometry} from "geojson";
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
 import {PATH_LAYER_ID} from "./pathLayer";
 import {toJS} from "mobx";
@@ -91,7 +91,7 @@ export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
                     return []}
 
                 const dataFrame = new DataFrameView(frame).toArray()
-                const points: Feature[] = info.points.map((geometry, id) => {
+                const points: { geometry: number[] | Polygon | GeometryCollection<Geometry>; id: number; type: string; properties: any }[] = info.points.map((geometry, id) => {
 
                         const point = dataFrame[id]
                         const metric = metricField &&  point[metricField]
@@ -111,7 +111,7 @@ export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
                                 colIdx,
                                 colType,
                                 isShowTooltip,
-                                displayProperties: isShowTooltip ? displayProperties : null
+                                displayProps: isShowTooltip ? displayProperties : null
                             },
                         }
                     }

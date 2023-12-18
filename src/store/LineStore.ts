@@ -1,10 +1,16 @@
 import { toJS, makeAutoObservable, autorun } from 'mobx';
 import RootStore from './RootStore';
-import {AggrTypes, DeckLine} from "./interfaces";
+import {
+    AggrTypes, DeckLine, Vertices,
+    ParentInfo, pEditActions,
+} from "./interfaces";
 import {Point} from "geojson";
 import {findChildLines} from "../utils";
 import lineOffset from "@turf/line-offset";
 import lineString from "turf-linestring";
+import {parDelimiter} from "../components/defaults";
+import {MultiLineString} from "@turf/helpers";
+import {CoordsConvert, get2MiddleCoords, getMiddleCoords} from "../utils/utils.turf";
 
 
 function isNode(item, switchMap){
@@ -16,216 +22,245 @@ function isNode(item, switchMap){
   return false
 }
 
-function getMiddleCoords(coord1, coord2) {
-  return [(coord1[0] + coord2[0]) / 2, (coord1[1] + coord2[1]) / 2].map(c => parseFloat(c.toFixed(6)));
-}
-
-function get2MiddleCoords(coord1, coord2) {
-  const segment1 = [
-    (2 * coord1[0] + coord2[0]) / 3,
-    (2 * coord1[1] + coord2[1]) / 3
-  ];
-
-  const segment2 = [
-    (coord1[0] + 2 * coord2[0]) / 3,
-    (coord1[1] + 2 * coord2[1]) / 3
-  ];
-
-  return [segment1, segment2];
-}
-
-function CoordsConvert(subPath, switchMap) {
-  return subPath.map(p=> {
-    if (typeof p.item === 'string') {
-      const feature = switchMap?.get(p.item)
-      const geometry = feature?.geometry as Point
-      const coord = geometry?.coordinates
-
-      return coord ? coord : null
-    } else if (Array.isArray(p.item)) {
-      return p.item} else {return null}
-  }).filter(el=>el)
-}
-
-
 export function segregatePath(path: any[], switchMap): any[] {
-  if (path.length === 0) {return [[]]}
+    if (path.length === 0) {return [[]]}
 
-  const subarrays: any[] = [];
-  let currentSubarray: any[] = [];
+    const subarrays: any[] = [];
+    let currentSubarray: any[] = [];
 
-  let currType = isNode(path[0], switchMap)
-  for (let i = 0; i < path.length; i++) {
-    const item = path[i];
+    let currType = isNode(path[0], switchMap)
+    for (let i = 0; i < path.length; i++) {
+        const item = path[i];
 
-    const isIsNode = isNode(item, switchMap)
-    if (isIsNode && currType !== isIsNode) {
+        const isIsNode = isNode(item, switchMap)
+            if (isIsNode && currType !== isIsNode) {
 
-      if (currentSubarray.length > 0) {     // at least fromPoint already exists
-        currentSubarray.push({item, gIdx: i})
-        subarrays.push(currentSubarray);
-        currentSubarray = [];
-        currType = !isIsNode
-      }
+                if (currentSubarray.length > 0) {     // at least fromPoint already exists
+                    currentSubarray.push({item, gIdx: i})
+                    subarrays.push(currentSubarray);
+                    currentSubarray = [];
+                    currType = !isIsNode
+                }
+
+        }
+
+        currentSubarray.push({item,gIdx: i});
 
     }
 
-    currentSubarray.push({item,gIdx: i});
-
-  }
-
-  if (currentSubarray.length > 1) {
-    subarrays.push(currentSubarray);
-  }
-
-  return subarrays;
+    if (currentSubarray.length > 0) {
+        subarrays.push(currentSubarray);
+    }
+    return subarrays;
 }
-
 
 
 class LineStore {
   root: RootStore;
   isShowLines = true;
+  vertices: Vertices = {};
+  direction: "target" | "source" | undefined //= "target"
   constructor(root: RootStore) {
     this.root = root;
+    //this.direction = root.replaceVariables(`$locRole`) ?? "target"
     makeAutoObservable(this);
     //autorun(() => console.log('lines', toJS(this.lines)));
   }
+  get getVertices() {
+      return this.vertices;
+  }
+
+  setVertices = (vertices: any) => {
+      this.vertices = vertices;
+  }
+
+  get getDirection() {
+     return this.direction
+  }
+
+  setDirection = (direction) => {
+      this.direction = direction
+  }
+
 
   get getEditableLines() {
-    const {getPoints, switchMap, getisOffset} = this.root.pointStore
+const {getPoints, switchMap, getisOffset, editCoords} = this.root.pointStore
 
-    const initLines = getPoints.map((fromPoint: DeckLine | null) =>
-    {
-      if (fromPoint) {
+    const features: DeckLine[] = []
+    let counter = 0
+      Object.keys(this.vertices).forEach((lkey, i) => {
+          const {ptId } = this.vertices[lkey]
 
-        const {locName, parName, parPath} = fromPoint.properties
-        const toPoint = parName && switchMap?.get(parName);
-        const fromPointGeometry = fromPoint.geometry as Point;
-        let toPointGeometry
-
-        if (toPoint) {
-          toPointGeometry = toPoint.geometry as Point;
-        }
-
-        const fromPtType = fromPoint.properties.aggrType
-
-        const segrPath = parPath && parPath.length > 0 ? segregatePath(parPath, switchMap) : []
-        const segrPathVisible = !fromPtType || !AggrTypes.includes(fromPtType) ? segrPath.filter((subarray,i) => {
-          const flag1 = subarray.length===2 && isNode(subarray[0].item, switchMap) && isNode(subarray[subarray.length - 1].item, switchMap);
-          const flag2 = subarray.some(el=> typeof el.item === 'string')
-          return !flag1
-        }) :segrPath
-        const coordinates = (getisOffset || fromPtType && AggrTypes.includes(fromPtType))  ? segrPathVisible.map(subPath => CoordsConvert(subPath, switchMap)) : toPointGeometry ? [[fromPointGeometry.coordinates, toPointGeometry.coordinates]] : null
-        if (!coordinates) {
-          return null
-        };
-        const parPathFormatted = parPath?.map((el,i)=> ({item: el, gIdx: i}))
-        const parPathCoords = parPath && parPath.length> 0 ? CoordsConvert(parPathFormatted, switchMap) : [{item: locName, gIdx: 0},{item:parName, gIdx: 1}]
+          const fromPoint = getPoints[ptId as number]
+          if (!fromPoint?.properties) {return}
+          const {sources} = fromPoint?.properties
 
 
-        return {
-          id: fromPoint.id,
-          type: 'Feature',
-          geometry: {
-            type: 'MultiLineString',
-            coordinates
-          },
-          properties: {
-            ...fromPoint.properties,
-            parPath: parPath && parPath.length> 0 ? [...parPath] : [locName,parName],   /// copying parPath for pathLine dragging skipping mobx
-            parPathCoords,
-            segrPathVisible: segrPathVisible.length> 0 ? segrPathVisible : [[{item: locName, gIdx: 0},{item:parName, gIdx: 1}]] ,
-          }
-        };
+          sources && Object.values(sources)?.forEach((info: ParentInfo, k)=> {
+                  //const {parPath, properties: extraProps} = s
 
-      } else {
+              const {locName, sources} = fromPoint.properties
+              const extraProps = info?.lineExtraProps
+              const parName = info.parPath?.at(-1) as string //.at(-1) as string
+                  // const parInfo = sources && sources[parName]
+              const parPath = info?.parPath
 
-        return null;
-      }
-    })
-        .filter((e) => e !== null)
+              const toPoint = typeof parName === 'string' ? switchMap?.get(parName) : null;
+              const fromPointGeometry = fromPoint.geometry as Point;
+              let toPointGeometry
 
-    if (!getisOffset) {return initLines}
+              if (toPoint) {
+                  toPointGeometry = toPoint.geometry as Point;
+              }
+           //   console.log('lines parpath: ', locName, parPath)
+              const fromPtType = fromPoint.properties.aggrType
+              const segrPath = Array.isArray(parPath) && parPath.length > 0 ? segregatePath(parPath, switchMap) : []
 
-    initLines.forEach((line) => {
-      if (!line) {
-        return
-      }
-      const {locName, aggrType, parPath} = line.properties
+              const segrPathVisible = !fromPtType || !AggrTypes.includes(fromPtType) ? segrPath
 
-      const parType = (parPath && switchMap?.get(parPath[1] as string)?.properties.aggrType) ?? ''
-      const isAttached = parType && AggrTypes.includes(parType)
+                  .filter((subarray, i) => {
+                  const flag1 = i !== 0 && (subarray.length === 2 && isNode(subarray[0].item, switchMap) && isNode(subarray[subarray.length - 1].item, switchMap));
+                  const flag2 = subarray.some(el => typeof el.item === 'string')
+                  return !flag1
+              }) : segrPath
 
-      // offsetting parent lines only directly connected to nodes
-      if (AggrTypes.includes(aggrType as string) || !isAttached) {return}
+              const coordinates = (getisOffset || fromPtType && AggrTypes.includes(fromPtType)) ? segrPathVisible.filter(sp => sp.length > 1).map(subPath => CoordsConvert(subPath, switchMap)) : toPointGeometry ? [[fromPointGeometry.coordinates, toPointGeometry.coordinates]] : null
+              if (!coordinates) {
+                  return
+              }
 
-      const relLines = findChildLines({
-        locName,
-        lineFeatures: initLines,
+              const parPathFormatted = Array.isArray(parPath) && parPath?.map((el, i) => ({item: el, gIdx: i}))
+              const parPathCoords = parPathFormatted && parPathFormatted?.length ? CoordsConvert(parPathFormatted, switchMap) : []
+                  //Array.isArray(parPath) ? [{item: locName,  gIdx: 0}, {item: parPath.at(-1), gIdx: 1}] : []
+
+
+              const name = this.direction === "target" ? locName : locName//parName
+
+              features.push(
+                  {
+                      id: counter, //fromPoint.id,
+                      type: 'Feature',
+                      geometry: {
+                          type: 'MultiLineString',
+                          coordinates
+                      },
+                      properties: {
+                          ...fromPoint.properties,
+                          ...extraProps,
+                          locName: sources && Object.keys(sources).length === 1 ? name : name + parDelimiter + k,
+                          ptId,
+                          parPath: Array.isArray(parPath) ? [...parPath] : null,   /// copying parPath for pathLine dragging skipping mobx
+                          parPathCoords,
+                          segrPathVisible: segrPathVisible.length > 0 ? segrPathVisible : Array.isArray(parPath) ? [[{
+                              item: locName,
+                              gIdx: 0
+                          }, {item: parPath.at(-1), gIdx: 1}]] : null,
+
+                      }
+                  })
+
+              if (info.parPath?.length) {
+                  editCoords(fromPoint, counter, pEditActions.SetLineId, parName as string)
+              }
+              counter++
+          })
+
+
       })
 
-      if (relLines?.length < 1) {return}
+    if (!getisOffset) {return features}
 
-      let corr = 0
-      relLines.forEach((feat, index) => {
-        const lineCoords = feat.geometry.coordinates
-        const segrPathVisible = feat.properties.segrPathVisible
-        const lastMultiLine = lineCoords[lineCoords.length-1]
+      features.forEach((line, i) => {
+if (!line) {
+    return
+}
+        const {locName, ptId, aggrType, parPath, isOffset} = line.properties
 
-        const {locName: relLocName, parPath, type} = feat.properties
+        // if (isOffset) {return}  // TODO: skip duplicate offset operations
+        const secondPoint = parPath ? parPath[1] : null
+        const lastPoint =  parPath ? parPath[length-2] : null
+        const parType = secondPoint ? switchMap?.get(secondPoint as string)?.properties.aggrType : ''
+        const parType2 = lastPoint ? switchMap?.get(lastPoint as string)?.properties.aggrType : ''
+        const isAttached = parType ? AggrTypes.includes(parType) : false
+        const isAttached2 = parType2 ? AggrTypes.includes(parType2) : false
 
-        if (AggrTypes.includes(type)) {return}
-        if (!parPath || (typeof parPath[parPath.length - 2] !== 'string')) {return}
+        // offsetting parent lines only directly connected to nodes
+        if (aggrType && AggrTypes.includes(aggrType as string)) {return}
+        if (!isAttached) {return}
 
-        const coords = line?.geometry.coordinates
-        if (coords && coords?.length>0) {
-          const first = lastMultiLine[0]
-          const last = line?.geometry.coordinates[0][0]
-          if (first && last && relLocName !== locName) {
-            const mixedLine = [first, last]
-            const totalLines = relLines.length
-            // skip distance 0 for main locName
-            if ((index - Math.floor(totalLines / 2)) * 0.7 === 0) {corr++}
-            const offsetDistance = (index + corr - Math.floor(totalLines / 2)) * 0.7
-            const offsetLine = lineOffset(lineString(mixedLine), offsetDistance, {units: 'meters'});
+        const relLines = findChildLines({
+            locName: ptId ? getPoints[ptId]?.properties.locName : null,
+            lineFeatures: features, direction: this.direction
+        })
 
-            const [coord1, coord2] = offsetLine?.geometry?.coordinates
-            const offGeom = getMiddleCoords( first, coord2)
-            const off2Geom = get2MiddleCoords(coord1, coord2);
-            lastMultiLine.splice(lastMultiLine.length-1, 0, off2Geom[0], off2Geom[1])
-            parPath.splice(parPath.length-1, 0, off2Geom[0], off2Geom[1])
-            const lastSubline = segrPathVisible[segrPathVisible.length-1]
-            const lastPtCoord = lastSubline[lastSubline.length-1]
-            const prevGidx = lastSubline[0].gIdx
-            const items = [off2Geom[0], off2Geom[1]].map((el,i)=> ({item: el, gIdx: prevGidx+1 }))
-            lastSubline.splice(lastSubline.length-1, 0, ...items )
+        if (relLines?.length < 1) {return}
 
-            feat.properties.isOffset = true
+        let corr = 0
+        relLines.forEach((feat, index) => {
+            const lineCoords = feat.geometry.coordinates
+            const segrPathVisible = feat.properties.segrPathVisible
+            const editedMultiLine = lineCoords.at(this.direction === "target" ? -1 : 0)
 
-          }
+            const {locName: relLocName, parPath, aggrType} = feat.properties
 
-        }
-      })
+            if (AggrTypes.includes(aggrType)) {return}
+            //const parPath = parents && parents.length > 0 && Array.isArray(parents[0]) || parents;
 
-      return initLines
+            const dirPos = this.direction === 'target' ? parPath.length - 2 : 1
+            const attachedToAggrType = switchMap?.get(parPath[dirPos])?.properties.aggrType
+            if (!AggrTypes.includes(attachedToAggrType as string)) {return}
 
-    })
-    return initLines
+            const geom = line?.geometry as MultiLineString
+            const coords = geom.coordinates
+            if (coords && coords?.length>0) {
+                const first = editedMultiLine[0]
+                const last = coords[0].at(this.direction === "target"? 0 : -1)
+                if (first && last && relLocName !== locName) {
+                    const mixedLine = [first, last]
+                    const totalLines = relLines.length
+                    // skip distance 0 for main locName
+                    if ((index - Math.floor(totalLines / 2)) * 0.7 === 0) {corr++}
+                    const offsetDistance = (index + corr - Math.floor(totalLines / 2)) * 0.7
+                    const offsetLine = lineOffset(lineString(mixedLine), offsetDistance, {units: 'meters'});
+
+                const [coord1, coord2] = offsetLine?.geometry?.coordinates
+                    const offGeom = getMiddleCoords( first, coord2)
+                    const off2Geom = get2MiddleCoords(coord1, coord2).map(e=> e.map(c=> parseFloat(c.toFixed(6))));
+                const dirPos = this.direction === 'target'? editedMultiLine.length-1 :  1
+                    editedMultiLine.splice(dirPos, 0, off2Geom[0], off2Geom[1])
+                    const dirPos2 = this.direction === 'target'? parPath.length-1 : 1
+                    parPath.splice(dirPos2, 0, off2Geom[0], off2Geom[1])
+                    const subline = segrPathVisible[this.direction === 'target'? segrPathVisible.length-1 : 0]
+
+                    const prevGidx = subline[0].gIdx
+                    const items = [off2Geom[0], off2Geom[1]].map((el,i)=> ({item: el, gIdx: prevGidx+1 }))
+                    const dirPos3 = this.direction === 'target'? subline.length-1 : 1
+                    subline.splice(dirPos3, 0, ...items )
+
+                    //feat.properties.isOffset = true
+
+                }
+
+            }
+        })
+
+
+
+  })
+      return features
   };
 
 
+  get getLineSwitchMap(): Map<string, DeckLine> {
+      const lineFeatures = this.getEditableLines
 
-  get getLineSwitchMap() {
-    const lineFeatures = this.getEditableLines
-
-    const relArr = []
-    lineFeatures?.forEach(point => {
-      if (point?.properties) {
-        relArr.push([point.properties.locName, point] as never);
-      }
-    });
-    return new Map(relArr);
+      const relArr = []
+      lineFeatures?.forEach(point => {
+          if (point?.properties) {
+              relArr.push([point.properties.locName, point] as never);
+          }
+      });
+      return new Map(relArr);
   }
 
   get getisShowLines() {

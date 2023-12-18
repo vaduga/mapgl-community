@@ -159,7 +159,7 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
         })
           .addFieldNamePicker({
             path: 'locField',
-            name: 'Location name field',
+            name: 'Target name field',
             settings: {
               filter: (f: Field) => f.type === FieldType.string,
               noFieldsMessage: 'No string fields found',
@@ -182,8 +182,8 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
           })
           .addFieldNamePicker({
             path: 'parField',
-            name: 'Parent name / path to parent field',
-            description: 'String or "Array<String | Coord>"',
+            name: 'Source name / path to source field',
+            description: 'String or Array<String | [lon,lat]>',
             settings: {
               filter: (f: Field) => {
                 return f.type === FieldType.string
@@ -194,12 +194,55 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
           })
           .addFieldNamePicker({
             path: 'metricField',
-            name: 'Metric name field',
+            name: 'Main stat field',
             settings: {
-              filter: (f: Field) => f.type === FieldType.number || f.type === FieldType.string ,
+              filter: (f: Field) => f.type === FieldType.number,
               noFieldsMessage: 'No number fields found',
             },
             showIf: (opts) => opts.type !== colTypes.GeoJson,
+          })
+          .addFieldNamePicker({
+            path: 'edgeLabelField',
+            name: 'Edge label field',
+            description: 'Visible in stat2',
+            settings: {
+              // filter: (f: Field) => f.type === FieldType.number,
+              noFieldsMessage: 'No fields found',
+            },
+            showIf: (opts) => opts.type === colTypes.Points,
+          })
+          .addBooleanSwitch({
+            path: 'isShowBW',
+            name: 'Secondary stat',
+            description: 'Show tput/band with hardcoded color thresholds',
+            defaultValue: false,
+            showIf: (opts) => opts.type === colTypes.Points,
+          })
+          .addNumberInput({
+            path: 'bandNumber',
+            name: 'Bandwidth #',
+            description: 'Default bandwidth in bits/sec (SI) (bps).',
+            showIf: (opts) => opts.isShowBW,
+          })
+          .addFieldNamePicker({
+            path: 'bandField',
+            name: 'Bandwidth field',
+            description: 'Number-field with bandwidth in bits/sec (SI) (bps).',
+            settings: {
+              filter: (f: Field) => f.type === FieldType.number,
+              noFieldsMessage: 'No fields found',
+            },
+            showIf: (opts) => opts.isShowBW,
+          })
+          .addFieldNamePicker({
+            path: 'throughputField',
+            name: 'Throughput field',
+            description: 'Number-field with throughput in bits/sec (SI) (bps).',
+            settings: {
+              filter: (f: Field) => f.type === FieldType.number,
+              noFieldsMessage: 'No fields found',
+            },
+            showIf: (opts) => opts.isShowBW,
           })
           .addColorPicker({
                 path: 'geojsonColor',
@@ -222,21 +265,21 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
             },
             showIf: (opts) => opts.type === colTypes.GeoJson,
           })
-          .addBooleanSwitch({
-            path: 'isShowTooltip',
-            name: 'Show tooltip',
-            description: 'Applies to current layer',
-            defaultValue: true,
-          })
           .addFieldNamePicker({
             path: 'aggrTypeField',
-            name: 'Aggregation type field',
-            description: 'Mark aggregation points with \'node\' or \'connector\' type to offset overlapping parent lines',
+            name: 'Aggr type field',
+            description: 'Mark aggregation points as \'node\' or \'connector\' to offset overlapping links',
             settings: {
               filter: (f: Field) => f.type === FieldType.string,
               noFieldsMessage: 'No string fields found',
             },
             showIf: (opts) => typeof opts.parField === 'string' && opts.type === colTypes.Points,
+          })
+          .addBooleanSwitch({
+            path: 'isShowTooltip',
+            name: 'Show tooltip',
+            description: 'Applies to current layer',
+            defaultValue: true,
           })
         .addMultiSelect({
           path: 'displayProperties',
@@ -269,11 +312,11 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
           .addMultiSelect({
             path: 'searchProperties',
             name: 'Search by',
-            description: 'Extra properties for search options. Default: location name',
+            description: 'Extra fields for search options',
             settings: {
               allowCustomValue: false,
               options: [],
-              placeholder: 'Search by location name only',
+              placeholder: 'Search by location name',
               getOptions: getQueryFields,
             },
             showIf: (opts) => opts.type === colTypes.Points,

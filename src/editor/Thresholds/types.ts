@@ -3,7 +3,7 @@ import {FieldType, SelectableValue} from '@grafana/data';
 export interface Threshold {
   overrides: OverrideTracker | [];
   color: string;
-  selColor: string;
+  selColor?: string;
   lineWidth: number;
   label: string;
   value: number;

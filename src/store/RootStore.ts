@@ -6,11 +6,15 @@ class RootStore {
   lineStore: LineStore;
   pointStore: PointStore;
   viewStore: ViewStore;
-
-  constructor() {
+  replaceVariables: any;
+  options: any
+  constructor(props) {
+    this.replaceVariables = props.replaceVariables
+    this.options = props.options
     this.lineStore = new LineStore(this);
     this.pointStore = new PointStore(this);
     this.viewStore = new ViewStore(this);
+
   }
 }
 

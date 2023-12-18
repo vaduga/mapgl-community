@@ -5,6 +5,7 @@ import {v4 as uuidv4} from 'uuid';
 import {css} from '@emotion/css';
 import {OverrideField} from "./OverrideField";
 import {LineWidthStates, OverField, OverrideTracker, Threshold} from './types';
+import {makeColorLighter} from "../../utils";
 
 
 interface ThresholdItemProps {
@@ -105,9 +106,8 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
         return LineWidthStates[aKey];
       }
     }
-    // custom value //no match, return current by default
-    //LineWidthStates.push({value: thresholdId, label: thresholdId.toString()})
-    return LineWidthStates[4] //{value: thresholdId, label: thresholdId.toString()} //LineWidthStates[2];
+    // no match, return current by default
+    return LineWidthStates[1];
   };
 
 
@@ -129,19 +129,19 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
                 <ColorPicker
                     color={options.threshold.color}
                     onChange={(color) => {
-                      options.selColorSetter(options.index, color)
+                      //options.selColorSetter(options.index, color)
                       options.colorSetter(options.index, color)
                     }}
                     enableNamedColors={true}
                 />
               </div>
-              <div className={styles.colorPicker} title="Selected">
-                <ColorPicker
-                    color={options.threshold.selColor}
-                    onChange={(color) => options.selColorSetter(options.index, color)}
-                    enableNamedColors={true}
-                />
-              </div>
+              {/*<div className={styles.colorPicker} title="Selected">*/}
+              {/*  <ColorPicker*/}
+              {/*      color={options.threshold.selColor}*/}
+              {/*      onChange={(color) => options.selColorSetter(options.index, color)}*/}
+              {/*      enableNamedColors={true}*/}
+              {/*  />*/}
+              {/*</div>*/}
               <div title="Line width">
                 <Select
                     disabled={options.disabled}

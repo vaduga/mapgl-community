@@ -48,9 +48,6 @@ export const carto: ExtendMapLayerRegistryItem<CartoConfig> = {
         carto: {
           type: 'raster',
               tiles: [`https://basemaps.cartocdn.com/${style}/{z}/{x}/{y}.png`],
-
-
-
               tileSize: 256,
               attribution: '© CARTO'
         }

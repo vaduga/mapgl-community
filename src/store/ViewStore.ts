@@ -1,25 +1,12 @@
 import { makeAutoObservable, autorun } from 'mobx';
 import RootStore from './RootStore';
+import {ViewState} from "./interfaces";
 
 class ViewStore {
   root: RootStore;
 
-  viewState: {
-    longitude: number,
-    latitude: number,
-    zoom: number,
-    maxPitch?: number,
-    pitch?: number,
-    bearing?: number,
-  } | undefined =
-      {
-        longitude: -74.012321,
-        latitude: 40.712861,
-        zoom: 2
+  viewState: ViewState | undefined =  undefined
 
-      }
-
-      //undefined
 
   constructor(root: RootStore) {
     this.root = root;

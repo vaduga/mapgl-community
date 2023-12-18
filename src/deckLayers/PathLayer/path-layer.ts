@@ -6,7 +6,7 @@ import {PathStyleExtension} from "@deck.gl/extensions";
 import {toJS} from "mobx";
 
 // @ts-ignore
-function MyPathLayer({onHover, highlightColor, selFeature, data, type }: { data: [DeckLine | Feature | null], highlightColor: any, onHover: any, idx: number, type: string}) {
+function MyPathLayer({onHover, highlightColor, getSelFeature, data, type }) {
     // @ts-ignore
     return new PathLayer({
         id: colTypes.Path + '-'+ type,
@@ -15,7 +15,8 @@ function MyPathLayer({onHover, highlightColor, selFeature, data, type }: { data:
         highlightColor,
         pickable: !['par-path-extension', 'par-path-line'].includes(type),
         //widthScale: 20,
-        widthMinPixels: 2,
+        widthMinPixels: 1,
+        widthMaxPixels: 5,
         capRounded: true,
         jointRounded: true,
         getPath: (d) => {
@@ -55,7 +56,7 @@ function MyPathLayer({onHover, highlightColor, selFeature, data, type }: { data:
         },
         widthScale: 1.1,
         getWidth: (d) => {
-            const base = selFeature?.properties?.threshold?.lineWidth * SEL_LINE_WIDTH_MULTIPLIER
+            const base = getSelFeature?.properties?.threshold?.lineWidth * SEL_LINE_WIDTH_MULTIPLIER
             switch (type) {
                 case 'par-path-extension':
                     return base / 10
@@ -67,8 +68,6 @@ function MyPathLayer({onHover, highlightColor, selFeature, data, type }: { data:
                     return base
             }
         },
-        widthMaxPixels: 7
-        ,
         onHover,
     })
 }

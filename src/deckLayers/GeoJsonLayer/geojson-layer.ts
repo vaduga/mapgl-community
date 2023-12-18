@@ -26,17 +26,14 @@ const MyGeoJsonLayer = (props) => {
         lineWidthMinPixels: 2,
         //@ts-ignore
         getFillColor: (d: any) => {
-            const {threshold, isInParentLine} = d.properties
-            const {selColor, color} = threshold
-            return toRGB4Array(isInParentLine ? selColor : color)
+            const {threshold} = d.properties
+            const {color} = threshold
+            return toRGB4Array(color)
         },
         //@ts-ignore
         getLineColor: (d: any) => {
-            const {threshold, isInParentLine} = d.properties
-            const {color,selColor} = threshold
-            if (isInParentLine) {
-                return toRGB4Array(selColor)
-            }
+            const {threshold} = d.properties
+            const {color,} = threshold
             return toRGB4Array(color) },
         getPointRadius: 100,
         getLineWidth: (d) =>{

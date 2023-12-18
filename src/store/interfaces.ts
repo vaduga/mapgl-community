@@ -1,19 +1,41 @@
 import {Geometry, Position, GeoJsonProperties} from 'geojson'
+import {MultiLineString} from "@turf/helpers";
 
 export const AggrTypes = ['node', 'connector']
 
+export type CoordRef = string | Position
+
+
+export type LineExtraProps = {
+  isShowTooltip?: boolean | undefined,
+  displayProps?: string[] | [],
+  [key: string]: unknown
+}
+
+export type ParName = string
+export type ParentInfo = { lineId?: number | null, parPath: CoordRef[], lineExtraProps?: LineExtraProps }
+
+export type Sources = {[key: ParName]: ParentInfo }
+
+
+export type Vertices = {[key: string]: {
+  ptId?: number | undefined;
+  rxPtId?: number | undefined;
+  tarCoords?: Position;
+  sources?: Sources;
+  lineExtraProps: LineExtraProps
+}};
+
 export type PointFeatureProperties = GeoJsonProperties & {
   locName: string,
+  ptId?: number | undefined,
   colType: colTypes,
-  colIdx?: number,
   aggrType?: string,
-  refId: string,
-  parName: string,
-  parPath: [string | [number, number] ],
+  parPath?: CoordRef[] | null,
+  sources?: Sources,
   metric: number,
   threshold: {thresholdLevel: number,
   color: string,
-  selColor: string,
   lineWidth: number,
   label: string},
   [key: string]: unknown
@@ -50,21 +72,37 @@ export enum colTypes {
   Text = "text"
 }
 
+export enum pEditActions {
+  MoveNode= 'dragNode',
+  DragLine=  'dragLine',
+  SetLineId= 'setLineId',
+  DeleteSource = 'deleteSource'
+}
+
 
 export interface Feature<G extends Geometry | null = Geometry, P = PointFeatureProperties> {
   id: number;
-  type: 'Feature' | string;
-  colType?: colTypes,
-  colIdx?: number,
+  rxPtId?: number | undefined,
+  type: 'Feature' | 'LineString' | 'Polygon' | 'MultiLineString' ;
   geometry: G;
   properties: P;
 }
 
 export interface DeckLine<G extends Geometry | null = Geometry, P = PointFeatureProperties> {
   id: number;
+  pathIdx?: number;
   type: 'Feature';
-  geometry: G;
+  geometry: MultiLineString;
   // from: { coordinates: Position };
   // to: { coordinates: Position };
   properties: Partial<P>;
+}
+export type ViewState = {
+  longitude: number,
+  latitude: number,
+  zoom: number,
+  maxPitch: number,      // (45 * 0.95)
+  pitch?: number,
+  bearing?: number,
+  padding?: any
 }

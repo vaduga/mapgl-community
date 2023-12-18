@@ -18,7 +18,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
 
   constructor(props) {
     super(props);
-    this.selectedIp = props.selectedIp;
+    this.selectedIp = props.getSelectedIp;
     this.zoom = props.zoom
   }
   shouldUpdateState({ changeFlags }) {
@@ -39,7 +39,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
         props.data.map((d) => {
           return {
             geometry: { coordinates: d.coordinates },
-            properties: d.properties,
+            properties: {...d.properties, id: d.id },
           };
         }),
       );
@@ -80,7 +80,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
         getSize: (d) => {
           const isHead = this.selectedIp === d.properties?.locName
 
-          return isHead ? 60 : d.properties?.isInParentLine ? 50 : 30
+          return isHead ? 60 : 30
         },
         getPosition: (d) => d.geometry.coordinates,
         getIcon: (d) => {
@@ -106,10 +106,10 @@ export class IconClusterLayer extends CompositeLayer<params> {
            d.properties.colorCounts = colorCounts
           } else {
             // single point, not a cluster
-            const {threshold, isInParentLine} = d.properties
-            const {color, selColor, label} = threshold
+            const {threshold} = d.properties
+            const {color, label} = threshold
 
-            const singleColor = isInParentLine ? selColor : color;
+            const singleColor = color;
             colorCounts[singleColor] =   {
               count : 1,
               label

@@ -38,13 +38,13 @@ export const MarkersGeoJsonLayer = (props) => {
     // @ts-ignore
     getFillColor: (d) => {
       // @ts-ignore
-      const {threshold, isInParentLine} = d.properties
-      const {selColor, color} = threshold
-      return toRGB4Array(isInParentLine ? selColor : color)
+      const {threshold} = d.properties
+      const {color} = threshold
+      return toRGB4Array(color)
     },
     getPointRadius: (d) => {
       const isHead = getSelectedIp === d.properties?.locName
-      return isHead? 10 : d?.properties?.isInParentLine ? 9 : 8
+      return isHead? 10 : 8
     } ,
     pointRadiusScale: 0.3,
     // pointRadiusMinPixels: 2,

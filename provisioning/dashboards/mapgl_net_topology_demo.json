@@ -18,6 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "id": 7,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -41,22 +42,27 @@
         "dataLayers": [
           {
             "aggrTypeField": "aggrType",
+            "bandNumber": 1000000,
             "config": {
               "colIdx": 0,
+              "direction": "source",
               "jitterPoints": true,
               "searchProperties": [],
               "show": true,
-              "startId": 0
+              "startId": 0,
+              "vertices": {}
             },
             "displayProperties": [
               "city",
               "model",
               "aggrType",
-              "metricReduced"
+              "metricReduced",
+              "bps"
             ],
+            "edgeLabelField": "bps",
+            "isShowBW": true,
             "isShowTooltip": true,
             "locField": "target",
-            "locName": "target",
             "location": {
               "geojson": "geojson",
               "mode": "geojson"
@@ -69,6 +75,7 @@
             "searchProperties": [
               "city"
             ],
+            "throughputField": "bps",
             "type": "markers"
           }
         ],
@@ -76,15 +83,14 @@
           {
             "color": "rgb(224, 47, 68)",
             "label": "down",
-            "lineWidth": 0.4,
+            "lineWidth": 0.6,
             "overrides": [],
-            "selColor": "rgb(196, 22, 42)",
             "value": 0
           },
           {
             "color": "rgb(50, 116, 217)",
             "label": "node",
-            "lineWidth": 0.4,
+            "lineWidth": 0.6,
             "overrides": [
               {
                 "name": "aggrType",
@@ -92,13 +98,12 @@
                 "value": "node, connector"
               }
             ],
-            "selColor": "rgb(31, 96, 196)",
             "value": 1
           },
           {
             "color": "rgb(65, 41, 245)",
             "label": "upstream",
-            "lineWidth": 0.4,
+            "lineWidth": 0.6,
             "overrides": [
               {
                 "name": "name",
@@ -111,13 +116,12 @@
                 "value": "node"
               }
             ],
-            "selColor": "rgb(110, 86, 255)",
             "value": 1
           },
           {
             "color": "rgb(143, 59, 184)",
             "label": "connector",
-            "lineWidth": 0.4,
+            "lineWidth": 0.6,
             "overrides": [
               {
                 "name": "aggrType",
@@ -125,21 +129,19 @@
                 "value": "connector"
               }
             ],
-            "selColor": "rgb(143, 59, 184)",
             "value": 1
           },
           {
             "color": "rgb(86, 166, 75)",
             "label": "up",
-            "lineWidth": 0.3,
+            "lineWidth": 0.6,
             "overrides": [],
-            "selColor": "rgb(55, 135, 45)",
             "value": 1
           },
           {
             "color": "rgba(210, 118, 43, 0.72)",
             "label": "exception color",
-            "lineWidth": 0.4,
+            "lineWidth": 0.6,
             "overrides": [
               {
                 "name": "name",
@@ -147,23 +149,20 @@
                 "value": "U29"
               }
             ],
-            "selColor": "rgb(161, 92, 35)",
             "value": 1
           },
           {
             "color": "rgba(92, 170, 204, 0.92)",
             "label": "info",
-            "lineWidth": 0.4,
+            "lineWidth": 0.6,
             "overrides": [],
-            "selColor": "rgb(47, 156, 203)",
             "value": 2
           },
           {
             "color": "rgb(224, 180, 0)",
             "label": "danger",
-            "lineWidth": 0.4,
+            "lineWidth": 0.6,
             "overrides": [],
-            "selColor": "rgb(212, 185, 29)",
             "value": 3
           }
         ],
@@ -210,8 +209,8 @@
         {
           "id": "joinByField",
           "options": {
-            "byField": "name",
-            "mode": "outer"
+            "byField": "target",
+            "mode": "outerTabular"
           }
         },
         {
@@ -230,6 +229,112 @@
         }
       ],
       "type": "vaduga-mapgl-panel"
+    },
+    {
+      "datasource": {
+        "type": "marcusolsson-static-datasource",
+        "uid": "d02c7074-3fbc-4174-ad36-f549f4cd4174"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false,
+            "minWidth": 50
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "variable"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 91
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 19,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "marcusolsson-static-datasource",
+            "uid": "d02c7074-3fbc-4174-ad36-f549f4cd4174"
+          },
+          "frame": {
+            "fields": [
+              {
+                "config": {},
+                "name": "variable",
+                "type": "string",
+                "values": [
+                  "target",
+                  "source",
+                  "locRole"
+                ]
+              },
+              {
+                "config": {},
+                "name": "value",
+                "type": "string",
+                "values": [
+                  "$target",
+                  "$source",
+                  "$locRole"
+                ]
+              }
+            ],
+            "meta": {}
+          },
+          "refId": "A"
+        }
+      ],
+      "transparent": true,
+      "type": "table"
     }
   ],
   "refresh": "",
@@ -237,7 +342,64 @@
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "source",
+          "value": "source"
+        },
+        "hide": 2,
+        "includeAll": false,
+        "multi": false,
+        "name": "locRole",
+        "options": [
+          {
+            "selected": false,
+            "text": "target",
+            "value": "target"
+          },
+          {
+            "selected": true,
+            "text": "source",
+            "value": "source"
+          }
+        ],
+        "query": "target, source",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "multisource",
+          "value": "multisource"
+        },
+        "hide": 2,
+        "includeAll": false,
+        "multi": false,
+        "name": "target",
+        "options": [],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "new6",
+          "value": "new6"
+        },
+        "hide": 2,
+        "includeAll": false,
+        "multi": false,
+        "name": "source",
+        "options": [],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      }
+    ]
   },
   "time": {
     "from": "now-6h",
@@ -246,7 +408,6 @@
   "timepicker": {},
   "timezone": "",
   "title": "MapGL network topology",
-  "uid": "d5bd97ca-e373-438b-ba6b-bc01e2595481",
-  "version": 25,
+  "version": 1,
   "weekStart": ""
 }

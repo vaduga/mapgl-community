@@ -96,7 +96,6 @@ export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
                     const metric = metricName && props[metricName]
                     const threshold = getThresholdForValue(point, metric, thresholds)
                     const color = metric ? threshold.color : geoColor
-                    const selColor = metric ? threshold.selColor : geoColor
 
                     return {
                         id: config.startId+id,
@@ -107,11 +106,11 @@ export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
                             geometry,
                             locName: locName ? props[locName] : undefined,
                             metric,
-                            threshold: {...threshold, color, selColor},
+                            threshold: {...threshold, color},
                             colIdx,
                             colType,
                             isShowTooltip,
-                            displayProperties: isShowTooltip ? displayProperties : null
+                            displayProps: isShowTooltip ? displayProperties : null
                         },
                     }}
                 )

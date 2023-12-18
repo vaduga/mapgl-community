@@ -1,29 +1,33 @@
-import {autorun, makeAutoObservable, toJS} from 'mobx';
+import {action, autorun, makeAutoObservable, toJS} from 'mobx';
 import RootStore from './RootStore';
-import {AggrTypes, colTypes, DeckFeature, Feature, Info, PointFeatureProperties} from './interfaces';
+import {AggrTypes, colTypes, CoordRef, DeckFeature, Feature, Info, pEditActions, Sources} from './interfaces';
 import {genParentLine} from '../utils';
 import {Point, Position} from "geojson";
 import {getThresholdForValue} from "../editor/Thresholds/data/threshold_processor";
 import {thresholds} from "../components/Mapgl";
+import {parDelimiter} from "../components/defaults";
 
 class PointStore {
   root: RootStore;
   type: 'icons'|'polygons' = 'icons'
-  points: any[] = [];
+  points: Feature[] = [];
   polygons: any[] = [];
   path: any[] = [];
   geojson: any = [];
   pLinePoints: any[] = [];
   orgId: null | number = null
   comments: Map<string, string> = new Map()
-  isShowCluster = false;
-  mode = 'view' // 'modify'//
+  isShowCluster = true;
+  mode = 'view'
   isShowPoints = true;
   isOffset = true;
   selectedIp = '';
-  selFeature: Feature | undefined = undefined;
-  nodesCons: Map<string, [string]> = new Map()
-
+  selFeature: Feature | undefined;
+  selIds: number[] = []
+  selCoord =  {
+    coordinates: [],
+    type: "Point"
+  }
   updatedHost: Feature | null = null;
   blankHoverInfo: Info = {
     x: -3000,
@@ -55,18 +59,30 @@ class PointStore {
     return this.blankHoverInfo
   }
 
-  get getOrgId() {
-    return this.orgId;
+  get getSelCoord() {
+    return this.selCoord;
   }
 
-  setOrgId = (orgId: number)=>  {
-    this.orgId = orgId;
+  get getSelIds() {
+    return this.selIds;
   }
+
+  get getSelFeature() {
+    return this.selFeature;
+  }
+
+  setSelCoord = (newSelCoord) => {
+    this.selCoord = newSelCoord;
+  }
+
 
   setMode = (mode: string) => {
     this.mode = mode;
   };
 
+  setSelIds =(ids)=> {
+    this.selIds = ids
+  }
   get getisOffset() {
     return this.isOffset;
   }
@@ -79,17 +95,9 @@ class PointStore {
     return this.logTooltipObject;
   }
 
-  setComment = (key, comment) =>{
-    this.comments.set(key, comment)
-  }
 
-  delComment = (key) =>{
-    this.comments.delete(key)
-  }
 
-  setAllComments = (comments)=>{
-    this.comments = comments
-  }
+
 
   setTooltipObject = (info: any) => {
     this.tooltipObject = {
@@ -108,15 +116,20 @@ class PointStore {
   };
 
 
-  get getSelectedFeIndexes(): Map<string,[number]> {
-    const { id: index, properties } = this.selFeature || {};
-    const {colType} = properties || {}
+  get getSelectedFeIndexes(): Map<string,number[]> | null {
+    if (!this.selFeature) {
+      return null
+    }
+    const { id: index, properties } = this.selFeature
+    const {colType, locName} = properties
+    const {lineStore} = this.root
+    const selIds = this.selIds
 
-    const selectedIndexes: Map<string,[number]> = new Map()
+    const selectedIndexes: Map<string,number[]> = new Map()
 
     if (colType && index !== undefined) {
       selectedIndexes.set(colType, [index]);
-      colType === colTypes.Points && selectedIndexes.set(colTypes.Lines, [index]);
+      colType === colTypes.Points && selIds?.length && selectedIndexes.set(colTypes.Lines, selIds as number[]);
     }
     return selectedIndexes;
   }
@@ -151,48 +164,11 @@ class PointStore {
     return this.pLinePoints;
   }
 
-  get getNodeConnections() {
-    const nodeConnections = new Map()
-    this.points.reduce((acc,curr)=> acc.concat(curr), []).forEach((p) => {
-      const pProps = p?.properties
-      pProps?.parPath.forEach((pp, i) => {
-        if (Array.isArray(pp) || i === 0) {
-          return
-        }
-        const aggrType = this.switchMap?.get(pp)?.properties.aggrType
-        if (AggrTypes.includes(aggrType as string)) {
 
-          const prevValue = nodeConnections.get(pp)
-
-          const locName = this.switchMap?.get(pProps.locName)
-          if (!AggrTypes.includes(locName?.properties.aggrType as string)) {
-
-            const fromSet = new Set(prevValue?.from || []);
-            const toSet = new Set(prevValue?.to || []);
-
-
-            fromSet.add(p?.properties);
-            nodeConnections.set(p, {
-              from: Array.from(fromSet),
-              to: Array.from(toSet)
-            });
-
-            toSet.add(this.switchMap?.get(pProps.parName)?.properties);
-            nodeConnections.set(pp, {
-              from: Array.from(fromSet),
-              to: Array.from(toSet)
-            });
-
-          }
-        }
-      })
-    })
-    return nodeConnections
-  }
 
   get switchMap(): Map<string, Feature> | undefined {
-    const { points, polygons, path, geojson } = this;
-    const features = [points, polygons, path, geojson].reduce((acc,curr)=> acc.concat(curr), []); // Don't flatten the arrays yet
+    const { points } = this;
+    const features = points
 
     type f = [string, Feature]
     const relArr: f[] = [];
@@ -200,12 +176,13 @@ class PointStore {
     features.forEach((point) => {
       if (point && point.properties) {
         relArr.push([point.properties.locName, point]);
-      }
+     }
     })
 
     if (relArr.length === 0) {
       return;
     }
+
     return new Map(relArr);
   }
 
@@ -213,12 +190,12 @@ class PointStore {
     const selFeature = this.switchMap?.get(this.selectedIp)
     const parPath = selFeature?.properties.parPath
     const parPathExists = Array.isArray(parPath)
-    const parPathText = parPathExists? parPath.map((el, i) => {
+  const parPathText = parPathExists? parPath.map((el, i) => {
 
-      const geometry = typeof el === 'string' ? this.switchMap?.get(el)?.geometry as Point : null;
-      const coordinates = geometry?.coordinates ?? el;
-      return {text: i+1+'', coordinates, color: 'rgb(237, 71, 59)'} //selFeature?.properties.iconColor}
-    }) : []
+    const geometry = typeof el === 'string' ? this.switchMap?.get(el)?.geometry as Point : null;
+    const coordinates = geometry?.coordinates ?? el;
+    return {text: i+1+'', coordinates, color: 'rgb(237, 71, 59)'} //selFeature?.properties.iconColor}
+  }) : []
 
     return parPathText
   }
@@ -236,15 +213,28 @@ class PointStore {
     this.isOffset = flag;
   };
 
-  setSelectedIp = (ip) => {
-    this.selectedIp = ip;
-    this.selFeature = this.switchMap?.get(ip)
-    this.setpLinePoints(this.selFeature);
-  };
+  setSelectedIp = (ip, selIds: number[] | null = null) => {
+    //this.setpLinePoints(this.selFeature);
 
-  setNodeConnections = (node, connection) => {
-    this.nodesCons.set(node, connection);
+    if (ip !== null) {
+      const delimited = ip?.split(parDelimiter)
+      const normIp = delimited?.[0];
+      this.selectedIp = normIp ?? ''
+      this.selFeature = this.switchMap?.get(normIp)
+      const geom = this.selFeature?.geometry
+      if (geom) {this.setSelCoord(geom);}
+    }
+const sources = this.selFeature?.properties.sources
+
+  if (sources && Object.values(sources).length) {
+
+      const ids = selIds !== null ? selIds : ip ? Object.values(sources).map(s=>s?.lineId).filter(el=>el !== undefined) : []
+    this.setSelIds(ids)
+    } else {
+    this.setSelIds([])
   }
+
+  };
 
   setPoints = (payload: Feature[]) => {
     this.points = payload;
@@ -261,24 +251,21 @@ class PointStore {
     this.geojson = payload;
   };
 
-  setpLinePoints = (selFeature) => {
-    const lineSwitchMap = this.switchMap
+  editCoords = action((editFeature: Feature, value: string | Position | CoordRef[] | number , action: pEditActions, parName?: string) => {
 
-    let prev = this.pLinePoints.slice();
+    let sources: Sources | undefined = editFeature?.properties?.sources
+    let source = parName && sources && sources[parName]
 
-    prev.forEach((p) => {
-      if (p && p.properties?.isInParentLine) {
-        p.properties.isInParentLine = false;
-      }
-    });
+    switch (action) {
 
-    const [pLinePoints] = genParentLine(selFeature, this.switchMap)
+      case pEditActions.SetLineId:
+        if (source && value !== undefined) {
+          source.lineId = value as number
+        }
+        break;
+    }
 
-    pLinePoints?.forEach(el=> {
-      el.properties.isInParentLine = true;
-    })
-    this.pLinePoints = pLinePoints ?? []
-  }
+  });
 
 
 }
