@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 7,
+  "id": 12,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -346,8 +346,8 @@
       {
         "current": {
           "selected": false,
-          "text": "source",
-          "value": "source"
+          "text": "target",
+          "value": "target"
         },
         "hide": 2,
         "includeAll": false,
@@ -355,12 +355,12 @@
         "name": "locRole",
         "options": [
           {
-            "selected": false,
+            "selected": true,
             "text": "target",
             "value": "target"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "source",
             "value": "source"
           }
@@ -370,34 +370,31 @@
         "type": "custom"
       },
       {
-        "current": {
-          "selected": false,
-          "text": "multisource",
-          "value": "multisource"
-        },
+        "current": {},
         "hide": 2,
-        "includeAll": false,
-        "multi": false,
         "name": "target",
         "options": [],
         "query": "",
         "skipUrlSync": false,
-        "type": "custom"
+        "type": "textbox"
       },
       {
-        "current": {
-          "selected": false,
-          "text": "new6",
-          "value": "new6"
-        },
+        "current": {},
         "hide": 2,
-        "includeAll": false,
-        "multi": false,
         "name": "source",
         "options": [],
         "query": "",
         "skipUrlSync": false,
-        "type": "custom"
+        "type": "textbox"
+      },
+      {
+        "current": {},
+        "hide": 2,
+        "name": "lineIds",
+        "options": [],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
       }
     ]
   },
@@ -407,7 +404,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "MapGL network topology",
+  "title": "Mapgl network topology",  
   "version": 1,
   "weekStart": ""
 }

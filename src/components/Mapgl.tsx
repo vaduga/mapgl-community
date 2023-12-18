@@ -88,7 +88,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
     const [zoomGlobal, setZoom] = useState(15)
     const [source, setSource] = useState()
     const [isRenderNums, setIsRenderNums] = useState(true)
-    const [isShowCenter, setShowCenter] = useState(false)
+    const [isShowCenter, setShowCenter] = useState(getSelectedIp ? true : false)
     const [localViewState, setLocalViewState] = useState<ViewState | undefined>();
     const [cPlotCoords, setCPlotCoords] = useState<ViewState | undefined>()
     const [_, setLocation] = useState(locationService.getLocation())
@@ -335,7 +335,7 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
             path && setPath(path)
             geojson && setGeoJson(geojson)
         //})
-        setSelectedIp(replaceVariables('$target'), replaceVariables(`$lineIds`).split(',').map(el=>parseInt(el, 10)))
+        //setSelectedIp(replaceVariables('$target'), replaceVariables(`$lineIds`).split(',').map(el=>parseInt(el, 10)))
     }
 
     useEffect(() => {
@@ -588,7 +588,6 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
     }, [getViewState])
 
     useEffect(() => {
-        setShowCenter(false)
         getLayers();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [

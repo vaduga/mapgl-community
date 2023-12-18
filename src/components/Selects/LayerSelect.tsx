@@ -34,7 +34,7 @@ const LayerSelect: FC = observer(() => {
         getMode,
         setMode,
         getisShowPoints,
-        getisOffset, toggleOffset, setTooltipObject, getBlankInfo
+        getisOffset, toggleOffset, setSelectedIp, setTooltipObject, getBlankInfo
     } = pointStore;
     const {getDirection, setDirection}
         = lineStore
@@ -98,8 +98,9 @@ const LayerSelect: FC = observer(() => {
                   checked={getDirection === 'source'}
                   title="path reverse"
                   onChange={() => {
-                      locationService.partial({'var-locRole': getDirection === 'target' ? 'source' : 'target'}, true);
+                      setSelectedIp('');
                       setTooltipObject({...getBlankInfo});
+                      locationService.partial({'var-locRole': getDirection === 'target' ? 'source' : 'target'}, true);
                   }}
               >
                   &nbsp;swap tar-src
