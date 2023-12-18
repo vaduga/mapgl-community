@@ -42,6 +42,13 @@ function makeColorLighter(color) {
     return `rgb(${lightenedColorArr.join(", ")})`; // convert the array back to a string and return it
 }
 
+function makeColorDarker(color) {
+    if (!color) {return `rgb(${[100,100,0].join(", ")})`;}
+    const colorArr = color.match(/\d+/g); // extract the RGB values as an array
+    const lightenedColorArr = colorArr.map(value => Math.max(Number(value) - 45, 0)); // deduct 25 from each value, ensuring the result is at most 255
+    return `rgb(${lightenedColorArr.join(", ")})`; // convert the array back to a string and return it
+}
+
 function invertColor(color){
     const colorArr = color.match(/\d+/g); // extract the RGB values as an array
     const invertedColorArr = colorArr.map(value => 255 - Number(value)); // invert each value by subtracting it from 255
@@ -550,6 +557,6 @@ function offsetRelatedLines({ idx, locName, lineFeatures, newCoord }) {
 
 
 export {
-    toRGB4Array, colorToRGBA, getFirstCoordinate, toHex, hexToRgba, getBounds, getTurfAngle, stringify4D, findNearbyNodes, makeColorLighter, genParPathText,
+    toRGB4Array, colorToRGBA, getFirstCoordinate, toHex, hexToRgba, getBounds, getTurfAngle, stringify4D, findNearbyNodes, makeColorLighter, makeColorDarker, genParPathText,
     genParentLine, genExtendedPLine, genNodeNamesText, genNodeConnectionsText,findRelatedLines, offsetRelatedLines, findChildLines
 }

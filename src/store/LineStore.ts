@@ -165,7 +165,7 @@ class LineStore {
         lineFeatures: initLines,
       })
 
-      if (relLines?.length < 2) {return}
+      if (relLines?.length < 1) {return}
 
       let corr = 0
       relLines.forEach((feat, index) => {

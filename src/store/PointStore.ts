@@ -17,7 +17,7 @@ class PointStore {
   orgId: null | number = null
   comments: Map<string, string> = new Map()
   isShowCluster = false;
-  mode = 'modify'// 'view'
+  mode = 'view' // 'modify'//
   isShowPoints = true;
   isOffset = true;
   selectedIp = '';

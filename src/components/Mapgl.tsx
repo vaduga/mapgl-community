@@ -74,6 +74,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
     const [closedHint, setClosedHint] = useState(false);
     const [zoomGlobal, setZoom] = useState(15)
     const [source, setSource] = useState()
+    const [isRenderNums, setIsRenderNums] = useState(true)
 
     const expandTooltip = (info, event) => {
 
@@ -85,6 +86,8 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
             if (ip) {
                 setClosedHint(false);
                 setSelectedIp(ip);
+                const isAggr = AggrTypes.includes(switchMap.get(ip)?.properties?.aggrType)
+                setIsRenderNums(!isAggr)
                 setTooltipObject(info); // this pins tooltip
 
             } else if (getisShowCluster) {
@@ -396,7 +399,7 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
                         type: 'par-path-extension'
                     }) : null
 
-                const numsData = genParPathText(lineSwitchMap.get(getSelectedIp))
+                const numsData = isRenderNums && genParPathText(lineSwitchMap.get(getSelectedIp))
                 nums = numsData && numsData.length > 0 ? LineTextLayer({data: numsData, type: 'nums'}) : null
                 const genNodeConsText = genNodeConnectionsText(selFeature, getNodeConnections, lineSwitchMap)
                 const isAggregator =  AggrTypes.includes(selFeature?.properties.aggrType)

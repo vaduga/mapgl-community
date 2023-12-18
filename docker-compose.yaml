@@ -6,7 +6,7 @@ services:
     build:
       context: ./.config
       args:
-        grafana_version: ${GRAFANA_VERSION:-10.0.3}
+        grafana_version: ${GRAFANA_VERSION:-10.1.5}
     ports:
       - 3000:3000/tcp
     volumes:
@@ -25,14 +25,14 @@ services:
       - HTTP_USER="{{ GRAFANA_USER }}"
       - HTTP_PASS="{{ GRAFANA_PASSWD }}"
 
-  nginx:
-    container_name: 'mapgl-community-nginx'
-    build: ./nginx
-    restart: always
-    environment:
-      - GRAFANA_HOST=172.17.0.1
-    ports:
-      - 80:80/tcp
-    depends_on:
-      - grafana
+  # nginx:
+  #   container_name: 'mapgl-community-nginx'
+  #   build: ./nginx
+  #   restart: always
+  #   environment:
+  #     - GRAFANA_HOST=172.17.0.1
+  #   ports:
+  #     - 80:80/tcp
+  #   depends_on:
+  #     - grafana
 

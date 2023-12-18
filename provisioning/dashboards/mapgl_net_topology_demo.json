@@ -55,8 +55,8 @@
               "metricReduced"
             ],
             "isShowTooltip": true,
-            "locField": "name",
-            "locName": "name",
+            "locField": "target",
+            "locName": "target",
             "location": {
               "geojson": "geojson",
               "mode": "geojson"
@@ -64,8 +64,8 @@
             "metricField": "metricReduced",
             "metricName": "metric",
             "name": "Switches",
-            "parField": "parPath",
-            "parentName": "parent",
+            "parField": "srcPath",
+            "parentName": "source",
             "searchProperties": [
               "city"
             ],
@@ -89,7 +89,7 @@
               {
                 "name": "aggrType",
                 "type": "string",
-                "value": "node, socket"
+                "value": "node, connector"
               }
             ],
             "selColor": "rgb(31, 96, 196)",
@@ -116,7 +116,7 @@
           },
           {
             "color": "rgb(143, 59, 184)",
-            "label": "socket",
+            "label": "connector",
             "lineWidth": 0.4,
             "overrides": [
               {
