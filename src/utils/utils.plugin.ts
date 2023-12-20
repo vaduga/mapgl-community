@@ -741,10 +741,10 @@ function getColorByMetric(metricPercentage) {
         return 'rgba(163, 27, 50,1)';
     }
     if (metricPercentage <= 100) {
-        return 'rgba(276, 28, 62,0.9)';
+        return 'rgba(164, 50, 168,1)';
     }
     // Handle invalid metricPercentage values
-    return'rgb(255, 0, 255, 0.7)'; // Default color for invalid values
+    return'rgb(72, 190, 194)'; // Default color for invalid values
 }
 
 

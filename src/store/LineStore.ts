@@ -11,6 +11,9 @@ import lineString from "turf-linestring";
 import {parDelimiter} from "../components/defaults";
 import {MultiLineString} from "@turf/helpers";
 import {CoordsConvert, get2MiddleCoords, getMiddleCoords} from "../utils/utils.turf";
+import {getThresholdForValue} from "../editor/Thresholds/data/threshold_processor";
+import {thresholds} from "../components/Mapgl";
+import {isNumber} from "lodash";
 
 
 function isNode(item, switchMap){
@@ -101,6 +104,9 @@ const {getPoints, switchMap, getisOffset, editCoords} = this.root.pointStore
 
               const {locName, sources} = fromPoint.properties
               const extraProps = info?.lineExtraProps
+              const metric = extraProps?.metric
+              const threshold = isNumber(metric) && getThresholdForValue({...fromPoint.properties, ...extraProps}, metric, thresholds)
+
               const parName = info.parPath?.at(-1) as string //.at(-1) as string
                   // const parInfo = sources && sources[parName]
               const parPath = info?.parPath
@@ -147,6 +153,7 @@ const {getPoints, switchMap, getisOffset, editCoords} = this.root.pointStore
                       properties: {
                           ...fromPoint.properties,
                           ...extraProps,
+                          ...(threshold && {threshold}),
                           locName: sources && Object.keys(sources).length === 1 ? name : name + parDelimiter + k,
                           ptId,
                           parPath: Array.isArray(parPath) ? [...parPath] : null,   /// copying parPath for pathLine dragging skipping mobx

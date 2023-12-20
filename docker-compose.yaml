@@ -22,6 +22,7 @@ services:
     environment:
       - GF_INSTALL_PLUGINS=frser-sqlite-datasource, marcusolsson-static-datasource
       - GF_PLUGIN_ALLOW_LOCAL_MODE=true
+      - GF_USERS_VIEWERS_CAN_EDIT=true
       - HTTP_USER="{{ GRAFANA_USER }}"
       - HTTP_PASS="{{ GRAFANA_PASSWD }}"
 
