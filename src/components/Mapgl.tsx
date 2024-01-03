@@ -18,9 +18,9 @@ import {
     genParPathText,
     genParentLine,
     genNodeNamesText,
-    genNodeConnectionsText,
+    genLinksText,
     genExtendedPLine,
-    mergeVertices, initBasemap, initMapView, toRGB4Array
+    mergeVertices, initBasemap, initMapView, toRGB4Array, findComments, hexToRgba
 } from '../utils';
 
 import {MarkersGeoJsonLayer} from '../deckLayers/MarkersLines/geo-json-layer';
@@ -36,10 +36,11 @@ import { ScatterplotLayer } from '@deck.gl/layers';
 import {MyPolygonsLayer} from "../deckLayers/PolygonsLayer/polygons-layer";
 import {toJS} from "mobx";
 import {MyGeoJsonLayer} from "../deckLayers/GeoJsonLayer/geojson-layer";
+import {MyIconLayer} from "../deckLayers/IconLayer/icon-layer";
 import {PositionTracker} from "./Geocoder/PositionTracker";
 import {pushPath} from "../layers/data/markersLayer";
 import {flushSync} from "react-dom";
-import {CENTER_PLOT_FILL_COLOR, parDelimiter} from "./defaults";
+import {CENTER_PLOT_FILL_COLOR, DEFAULT_COMMENT_COLOR, parDelimiter} from "./defaults";
 import {RGBAColor} from "@deck.gl/core/utils/color";
 import {getThresholdForValue} from "../editor/Thresholds/data/threshold_processor";
 
@@ -61,6 +62,8 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
         setPath,
         getPath,
         setGeoJson,
+        getComments,
+        setAllComments,
         getGeoJson,
         getSelectedIp,
         getSelFeature,
@@ -332,7 +335,43 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
 
         //flushSync(()=> {
         setVertices(vertices)
-            setPoints(markers)
+
+        const commentsData: any = []
+        const comments = findComments(vertices)
+
+        let counter = 0
+        comments?.forEach((comment) => {
+            const { text, iconColor, orderId, coords,tar, src} = comment;
+            if (tar && src && text && orderId && coords) {
+
+                //const tarId = nameToScoreMap.get(tar)?.rxPtId
+               // const srcId = nameToScoreMap.get(src)?.rxPtId
+
+                //  console.log('iconColor',iconColor)
+                const hexColor = iconColor && theme2.visualization.getColorByName(iconColor)
+                commentsData.push({
+                    type: "Feature",
+                    id: counter,
+                    //comId: [tarId, srcId,orderId].join('|'),
+                    geometry: {
+                        type: 'Point',
+                        coordinates: coords
+                    },
+                    properties: {
+                        note: text,
+                        tIdx: orderId+1,
+                        tar,
+                        iconColor: iconColor?.indexOf('rgb') > -1 ? iconColor : (iconColor && hexToRgba(hexColor)) ?? DEFAULT_COMMENT_COLOR,
+                        isShowTooltip: true,
+                        displayProps: ['note', 'tar', 'tIdx']
+                    }
+                })
+                counter++
+            }
+
+        })
+        commentsData && setAllComments(commentsData)
+            markers && setPoints(markers)
             polygons && setPolygons(polygons)
             path && setPath(path)
             geojson && setGeoJson(geojson)
@@ -382,7 +421,7 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
     }
 
     const getLayers = () => {
-        let lines, icons, pathLine, pathLineExt, unames, list1, nums, clusterLayer
+        let lines, icons, pathLine, pathLineExt, unames, list1, nums, clusterLayer, commentsLayer
         const secLayers: any[] = []
         let newLayers: any = [];
         const iconLayers: any = []
@@ -450,11 +489,11 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
                 nums = numsData?.length > 0 ? LineTextLayer({data: numsData, type: 'nums', dir: 'to'}) : null
 
             }
-            const genNodeConsTexts = getEditableLines.map(f=> genNodeConnectionsText(f, switchMap))
+            const linksText = getEditableLines.map(f=> genLinksText(f, switchMap))
             //const isAggregator =  AggrTypes.includes(getSelFeature?.properties.aggrType ?? '')
 
-            list1 = !getisOffset && genNodeConsTexts?.length > 0 ? LineTextLayer({
-                data: genNodeConsTexts.reduce((acc: any,curr: any)=> curr.to ? acc.concat(curr.to) : acc,[]),
+            list1 = !getisOffset && linksText?.length > 0 ? LineTextLayer({
+                data: linksText.reduce((acc: any,curr: any)=> curr.to ? acc.concat(curr.to) : acc,[]),
                 dir: 'to',
                 type: 'list1'
             }) : null
@@ -540,6 +579,18 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
                 newLayers.unshift(pathLine)
                 newLayers.push(pathLineExt)
                 newLayers.push(nums)
+            }
+
+            if (getisShowPoints &&  getComments && getComments?.length > 0 ) {  /// comments for all collections
+                commentsLayer = MyIconLayer({
+                    ...layerProps,
+                    data: getComments,
+                    getSelectedFeIndexes,
+                    setClosedHint,
+                    setSelectedIp,
+                    zoom: zoomGlobal,
+                })
+                newLayers.push(commentsLayer)
             }
 
             let centerPlot

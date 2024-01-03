@@ -1,6 +1,16 @@
 import {action, autorun, makeAutoObservable, toJS} from 'mobx';
 import RootStore from './RootStore';
-import {AggrTypes, colTypes, CoordRef, DeckFeature, Feature, Info, pEditActions, Sources} from './interfaces';
+import {
+  AggrTypes,
+  colTypes,
+  ComFeature,
+  CoordRef,
+  DeckFeature,
+  Feature,
+  Info,
+  pEditActions,
+  Sources
+} from './interfaces';
 import {genParentLine} from '../utils';
 import {Point, Position} from "geojson";
 import {getThresholdForValue} from "../editor/Thresholds/data/threshold_processor";
@@ -16,13 +26,12 @@ class PointStore {
   geojson: any = [];
   pLinePoints: any[] = [];
   orgId: null | number = null
-  comments: Map<string, string> = new Map()
+  comments: ComFeature[] | undefined
   isShowCluster = true;
   mode = 'view'
   isShowPoints = true;
   isOffset = true;
   selectedIp = '';
-  selFeature: Feature | undefined;
   selIds: number[] = []
   selCoord =  {
     coordinates: [],
@@ -46,6 +55,7 @@ class PointStore {
 
   constructor(root: RootStore) {
     this.root = root;
+    this.mode = root.replaceVariables(`$mode`)
     makeAutoObservable(this);
     //autorun(() => console.log('pts ', toJS(this.points)));
 
@@ -68,7 +78,7 @@ class PointStore {
   }
 
   get getSelFeature() {
-    return this.selFeature;
+    return this.switchMap?.get(this.selectedIp);
   }
 
   setSelCoord = (newSelCoord) => {
@@ -76,7 +86,7 @@ class PointStore {
   }
 
 
-  setMode = (mode: string) => {
+  setMode = (mode) => {
     this.mode = mode;
   };
 
@@ -96,8 +106,9 @@ class PointStore {
   }
 
 
-
-
+  setAllComments = (comments)=>{
+    this.comments = comments
+  }
 
   setTooltipObject = (info: any) => {
     this.tooltipObject = {
@@ -117,10 +128,10 @@ class PointStore {
 
 
   get getSelectedFeIndexes(): Map<string,number[]> | null {
-    if (!this.selFeature) {
+    if (!this.getSelFeature) {
       return null
     }
-    const { id: index, properties } = this.selFeature
+    const { id: index, properties } = this.getSelFeature
     const {colType, locName} = properties
     const {lineStore} = this.root
     const selIds = this.selIds
@@ -141,6 +152,9 @@ class PointStore {
     return this.isShowPoints;
   }
 
+  get getComments() {
+    return this.comments
+  }
   get getPoints() {
     return this.points;
   }
@@ -163,8 +177,6 @@ class PointStore {
   get getpLinePoints() {
     return this.pLinePoints;
   }
-
-
 
   get switchMap(): Map<string, Feature> | undefined {
     const { points } = this;
@@ -220,11 +232,10 @@ class PointStore {
       const delimited = ip?.split(parDelimiter)
       const normIp = delimited?.[0];
       this.selectedIp = normIp ?? ''
-      this.selFeature = this.switchMap?.get(normIp)
-      const geom = this.selFeature?.geometry
+      const geom = this.getSelFeature?.geometry
       if (geom) {this.setSelCoord(geom);}
     }
-const sources = this.selFeature?.properties.sources
+const sources = this.getSelFeature?.properties.sources
 
   if (sources && Object.values(sources).length) {
 

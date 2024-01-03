@@ -17,6 +17,8 @@ export const DEFAULT_EDIT_HANDLE_COLOR = 'rgb(224, 52, 184, 0.8)'
 export const CENTER_PLOT_FILL_COLOR = 'rgb(255, 221, 87, 0.9)'
 
 export const DEFAULT_CLUSTER_BK_COLOR = 'rgb(230,230,230)'
+
+export const DEFAULT_COMMENT_COLOR = 'rgb(78, 194, 252)'
 export const DEFAULT_LINE_WIDTH = 1
 export const DEFAULT_SEL_LINE_WIDTH = 4
 export const SEL_LINE_WIDTH_MULTIPLIER = 3

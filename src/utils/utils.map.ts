@@ -5,30 +5,6 @@ import {MapViewConfig} from "../types";
 import {centerPointRegistry} from "../view";
 import {Position} from "geojson";
 
-/** For Yamaps3 external script loading
- * Extra security measure to check if the script has
- * already been included in the DOM
- */
-const scriptAlreadyExists = () =>
-    document.querySelector('script#ymaps3-script') !== null
-
-/**
- * Append the script to the document.
- * Whenever the script has been loaded it will
- * set the isLoaded state to true.
- */
-const appendYaScript = (apiKey: string | undefined, onLoadCallback) => {
-    const script = document.createElement('script')
-    script.id = 'ymaps3-script'
-    script.src = `https://api-maps.yandex.ru/3.0/?apikey=${apiKey}&lang=en_EN`
-    script.async = true
-    script.onload = () => onLoadCallback(true)
-    document.body.append(script)
-};
-
-//4bdc0d17-2586-457b-ba4e-6fb9f0e902d7
-
-
 const statusGuard = (status) => {
     return (status === null || status === undefined) ? "unknown" :
         ["0", 0].includes(status) ? 0 :
@@ -106,7 +82,5 @@ const initMapView = (config: MapViewConfig) => {
 
 
 
-export {
-    scriptAlreadyExists,
-    appendYaScript, statusGuard ,metricGuard, initBasemap, initMapView
+export { initBasemap, initMapView
 }

@@ -209,7 +209,7 @@ function getGeometryFromGeoJSON(geojson: Field<String>): Geometry[] {
   const points = new Array(count);
   for (let i = 0; i < geojson.values.length; i++) {
 
-  const feature = JSON.parse(geojson.values.get(i) as string)
+  const feature = JSON.parse(geojson.values[i] as string)
   points[i] = {type: feature.type, coordinates: feature.coordinates}
   }
   return points;
@@ -219,7 +219,7 @@ function getPointsFromLonLat(lon: Field<number>, lat: Field<number>): Geometry[]
   const count = lat.values.length;
   const points = new Array<Geometry>(count);
   for (let i = 0; i < count; i++) {
-    points[i] = {type: "Point", coordinates: [lon.values.get(i), lat.values.get(i)]}
+    points[i] = {type: "Point", coordinates: [lon.values[i], lat.values[i]]}
 
   }
   return points;
@@ -229,7 +229,7 @@ function getPointsFromGeohash(field: Field<string>): number[][] {
   const count = field.values.length;
   const points = new Array(count);
   for (let i = 0; i < count; i++) {
-    const coordinates = decodeGeohash(field.values.get(i));
+    const coordinates = decodeGeohash(field.values[i]);
     if (coordinates) {
       points[i] = {type: "Point", coordinates};
     }
@@ -240,7 +240,7 @@ function getPointsFromGazetteer(gaz: Gazetteer, field: Field<string>): number[][
   const count = field.values.length;
   const points = new Array(count);
   for (let i = 0; i < count; i++) {
-    const info = gaz.find(field.values.get(i));
+    const info = gaz.find(field.values[i]);
     if (info?.coords) {
       points[i] = {type: "Point", coordinates: info?.coords}
     }

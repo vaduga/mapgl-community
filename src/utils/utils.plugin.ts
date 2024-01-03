@@ -429,7 +429,7 @@ function genNodeNamesText(iconFeatures){
     return nodeNames
 }
 
-function genNodeConnectionsText(selLine, switchMap?) {
+function genLinksText(selLine, switchMap?) {
 
     if (!selLine) {
         return []
@@ -747,9 +747,50 @@ function getColorByMetric(metricPercentage) {
     return'rgb(72, 190, 194)'; // Default color for invalid values
 }
 
+function findComments(vertices) {
+    const comments: any = [];
+    let counter = 0
+
+    for (const vertexKey in vertices) {
+        const vertex = vertices[vertexKey];
+        const sources = vertex.sources;
+
+        if (sources) {
+            for (const sourceKey in sources) {
+                const parentInfo = sources[sourceKey];
+                const parPath = parentInfo.parPath;
+
+                if (Array.isArray(parPath)) {
+                    parPath.forEach((element, i) => {
+                        //  console.log('parpath forew', parPath)
+                        if (Array.isArray(element) && element.length > 2) {
+                            const text = element[3];
+                            const iconColor = element[4];
+                            const [tar, src, orderId] = [parPath[0], parPath.at(-1), i ]
+
+                            if (text !== undefined) {
+                                comments.push({
+                                    text,
+                                    iconColor,
+                                    orderId: i,
+                                    coords: element.slice(0,2),
+                                    tar, src
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    return comments;
+}
+
+
 
 
 export {
     toRGB4Array, colorToRGBA, getColorByMetric, genRndNums, getFirstCoordinate, toHex, hexToRgba, getBounds, getTurfAngle, stringify4D, findNearbyNodes, makeColorLighter, makeColorDarker, genParPathText,
-    genParentLine, genExtendedPLine, genNodeNamesText, genNodeConnectionsText,findRelatedLines, findChildLines, parseIfPossible, mergeVertices
+    genParentLine, genExtendedPLine, genNodeNamesText, genLinksText,findRelatedLines, findChildLines, parseIfPossible, mergeVertices, findComments
 }

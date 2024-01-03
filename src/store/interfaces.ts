@@ -97,6 +97,24 @@ export interface DeckLine<G extends Geometry | null = Geometry, P = PointFeature
   // to: { coordinates: Position };
   properties: Partial<P>;
 }
+
+export type ComFeature = {
+  type: "Feature",
+  id,
+  comId: string,
+  geometry: {
+    type: 'Point',
+    coordinates: Position
+  },
+  properties: {
+    note: string,
+    tIdx: number,
+    iconColor: string,
+    isShowTooltip: true,
+    displayProperties: ['note', 'tIdx']
+  }
+}
+
 export type ViewState = {
   longitude: number,
   latitude: number,
