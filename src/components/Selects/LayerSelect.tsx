@@ -17,7 +17,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
       display: inline-block;      
       //font-Size: 12;
       //font-Style: italic;
-      padding-left: 15px;
+      //padding-left: 5px;
        pointer-events: all;
       //margin: 1em 0em;
       //marginLeft: 1em;    

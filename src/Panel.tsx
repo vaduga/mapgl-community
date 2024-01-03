@@ -7,7 +7,7 @@ import { useStyles2 } from '@grafana/ui';
 import Mapgl from './components/Mapgl'
 interface Props extends PanelProps<PanelOptions> {}
 
-export const Panel: React.FC<Props> = ({ options, data, width, height, replaceVariables, ...props }) => {
+export const Panel: React.FC<Props> = ({ options, data, width, height, replaceVariables, eventBus }) => {
 
 
   /// migration from v1.0.0 with single dataLayer object
@@ -19,11 +19,11 @@ export const Panel: React.FC<Props> = ({ options, data, width, height, replaceVa
 
 
   return (
-      <RootStoreProvider props={{replaceVariables, options}}>
+      <RootStoreProvider props={{replaceVariables, options, data,width, height, eventBus}}>
 
 
 
-      <Mapgl options={options} data={data} width={width} height={height} replaceVariables={replaceVariables}/>
+      <Mapgl/>
 
 
 </RootStoreProvider>

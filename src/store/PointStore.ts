@@ -55,9 +55,8 @@ class PointStore {
 
   constructor(root: RootStore) {
     this.root = root;
-    this.mode = root.replaceVariables(`$mode`)
     makeAutoObservable(this);
-    //autorun(() => console.log('pts ', toJS(this.points)));
+    autorun(() => console.log('pts ', toJS(this.points)));
 
   }
 

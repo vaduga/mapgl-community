@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {GrafanaTheme2} from '@grafana/data';
 import {useStyles2, useTheme2} from '@grafana/ui';
-import { config, locationService } from '@grafana/runtime';
+import {config, locationService, RefreshEvent} from '@grafana/runtime';
 import {observer} from 'mobx-react-lite';
 import DeckGL from '@deck.gl/react';
 import MapLibre, {AttributionControl} from 'react-map-gl/maplibre';
@@ -45,11 +45,12 @@ import {RGBAColor} from "@deck.gl/core/utils/color";
 import {getThresholdForValue} from "../editor/Thresholds/data/threshold_processor";
 
 export let libreMapInstance, thresholds
-const Mapgl = ({ options, data, width, height, replaceVariables }) => {
+const Mapgl = () => {
+    const { pointStore, lineStore, viewStore, options, data, width, height, replaceVariables, eventBus  } = useRootStore();
     thresholds = options.globalThresholdsConfig
     const s = useStyles2(getStyles);
     const theme2 = useTheme2()
-    const { pointStore, lineStore, viewStore } = useRootStore();
+
     const {
         //<editor-fold desc="store imports">
         getPoints,
@@ -92,10 +93,23 @@ const Mapgl = ({ options, data, width, height, replaceVariables }) => {
     const [source, setSource] = useState()
     const [isRenderNums, setIsRenderNums] = useState(true)
     const [isShowCenter, setShowCenter] = useState(getSelectedIp ? true : false)
-    const [localViewState, setLocalViewState] = useState<ViewState | undefined>();
+    const [localViewState, setLocalViewState] = useState<ViewState | undefined>(getViewState);
     const [cPlotCoords, setCPlotCoords] = useState<ViewState | undefined>()
     const [_, setLocation] = useState(locationService.getLocation())
     const [layers, setLayers] = useState([])
+    const [refresh, setRefresh] = useState<any>({r:5})
+
+    useEffect(() => {
+        const subscriber = eventBus.getStream(RefreshEvent).subscribe(event => {
+            console.log(`Received event: ${event.type}`);
+            setRefresh(prev=> ({...prev}))
+        })
+
+        return () => {
+            subscriber.unsubscribe();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [eventBus]);
 
     const expandTooltip = (info, event) => {
         const position = info.coordinate
@@ -380,11 +394,15 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
     }
 
     useEffect(() => {
+
         if (data && data.series.length) {
+            console.log('data', data.series.length)
             loadPoints(data)
+        } else {
+            console.log('no data', data)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [_, data, width, height, options]);
+    }, [refresh, _, data, width, height, options]);
 
 
     const onMapLoad = useCallback(()=> {
@@ -641,6 +659,9 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
     }, [getViewState])
 
     useEffect(() => {
+        if (!getPoints.length) {
+            setRefresh(prev=> ({...prev}))
+            return}
         getLayers();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
@@ -666,7 +687,7 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
                         style={{
                             pointerEvents: 'all',
                             inset: 0,
-                            zIndex: 1
+                            // zIndex: 1
                         }}
                         layers={layers}
                         initialViewState={localViewState}

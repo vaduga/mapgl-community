@@ -3,7 +3,8 @@ import {Checkbox} from "@grafana/ui";
 
 const labeledCheckBox = ({children, ...args}) => {
       return (
-          <label style={{ marginRight: '1em', marginTop: '0.5em', paddingLeft: '5px' }}>
+          //, paddingLeft: '5px'
+          <label style={{ marginRight: '1em', marginTop: '0.5em' }}>
               <Checkbox style={{padding: 0}}{...args} />
               {children}
           </label>
