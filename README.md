@@ -34,6 +34,7 @@ Required datasource fields:<br/>
 * Coordinates for points in geojson, **lon / lat** or geohash format<br/>
 * Metric field for color thresholds
 
+![Overview](https://mapgl.org/img/aggr.gif)
 ![Overview](https://mapgl.org/img/screenshot1.png)
 ![Overview2](https://mapgl.org/img/screenshot2.png)
 
