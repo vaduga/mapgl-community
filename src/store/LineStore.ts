@@ -100,7 +100,8 @@ const {getPoints, switchMap, getisOffset, editCoords} = this.root.pointStore
 
 
           sources && Object.values(sources)?.forEach((info: ParentInfo, k)=> {
-                  //const {parPath, properties: extraProps} = s
+              // optional
+               //const {parPath, properties: extraProps} = s
 
               const {locName, sources} = fromPoint.properties
               const extraProps = info?.lineExtraProps
@@ -108,6 +109,7 @@ const {getPoints, switchMap, getisOffset, editCoords} = this.root.pointStore
               const threshold = isNumber(metric) && getThresholdForValue({...fromPoint.properties, ...extraProps}, metric, thresholds)
 
               const parName = info.parPath?.at(-1) as string //.at(-1) as string
+              // optional
                   // const parInfo = sources && sources[parName]
               const parPath = info?.parPath
 
@@ -118,7 +120,6 @@ const {getPoints, switchMap, getisOffset, editCoords} = this.root.pointStore
               if (toPoint) {
                   toPointGeometry = toPoint.geometry as Point;
               }
-           //   console.log('lines parpath: ', locName, parPath)
               const fromPtType = fromPoint.properties.aggrType
               const segrPath = Array.isArray(parPath) && parPath.length > 0 ? segregatePath(parPath, switchMap) : []
 
@@ -137,8 +138,6 @@ const {getPoints, switchMap, getisOffset, editCoords} = this.root.pointStore
 
               const parPathFormatted = Array.isArray(parPath) && parPath?.map((el, i) => ({item: el, gIdx: i}))
               const parPathCoords = parPathFormatted && parPathFormatted?.length ? CoordsConvert(parPathFormatted, switchMap) : []
-                  //Array.isArray(parPath) ? [{item: locName,  gIdx: 0}, {item: parPath.at(-1), gIdx: 1}] : []
-
 
               const name = this.direction === "target" ? locName : locName//parName
 
@@ -183,7 +182,6 @@ if (!line) {
 }
         const {locName, ptId, aggrType, parPath, isOffset} = line.properties
 
-        // if (isOffset) {return}  // TODO: skip duplicate offset operations
         const secondPoint = parPath ? parPath[1] : null
         const lastPoint =  parPath ? parPath[length-2] : null
         const parType = secondPoint ? switchMap?.get(secondPoint as string)?.properties.aggrType : ''
@@ -211,7 +209,6 @@ if (!line) {
             const {locName: relLocName, parPath, aggrType} = feat.properties
 
             if (AggrTypes.includes(aggrType)) {return}
-            //const parPath = parents && parents.length > 0 && Array.isArray(parents[0]) || parents;
 
             const dirPos = this.direction === 'target' ? parPath.length - 2 : 1
             const attachedToAggrType = switchMap?.get(parPath[dirPos])?.properties.aggrType
@@ -243,8 +240,6 @@ if (!line) {
                     const items = [off2Geom[0], off2Geom[1]].map((el,i)=> ({item: el, gIdx: prevGidx+1 }))
                     const dirPos3 = this.direction === 'target'? subline.length-1 : 1
                     subline.splice(dirPos3, 0, ...items )
-
-                    //feat.properties.isOffset = true
 
                 }
 

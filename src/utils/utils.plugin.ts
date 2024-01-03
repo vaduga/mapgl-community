@@ -1,5 +1,3 @@
-import lineString from "turf-linestring";
-import lineOffset from "@turf/line-offset";
 import bearing from "@turf/bearing";
 import turfbbox from "@turf/bbox";
 import {Geometry, Point, Position} from "geojson";
@@ -121,63 +119,6 @@ let angle
     return angle
 }
 
-const defaultCenter = {
-    type: "Feature",
-    geometry: {
-        type: "Point",
-        coordinates: [-74.0060, 40.7128],  // New York
-    },
-    properties: {}
-}
-
-/// deprecated
-const stringify4D = (coords, parPathComments)=> {
-    const coords4D = coords
-        .map((coord) => {
-            const comment = parPathComments?.get(''+coords); // Get the comment from comment map using the lon+lat as the key
-            if (Array.isArray(coord[0])) {return JSON.stringify([...coord, 0, comment]) }; // Add the 3D number to the coordinate array
-            return JSON.stringify([coord, 0, comment])
-        });
-    return coords4D
-}
-
-// Helper function to find nearby points within a tolerance range
-function findNearbyNodes(coordinate, features, tolerance) {
-
-        if (!coordinate.length) {return []}
-
-            const snappedPoint = coordinate;
-
-            // Compare the snapped point with other points in the dataset
-            const nearbyPoints = features.filter((dataPoint) => {
-                const types = AggrTypes
-
-                if (!types.includes(dataPoint.properties.aggrType)) {return}
-
-                const dataPointCoordinates = dataPoint.geometry.coordinates //?.[0]?.[0];
-
-                if (!dataPointCoordinates) {
-                    return false}
-
-                // Calculate the absolute difference between coordinates
-                const diffX = Math.abs(snappedPoint[0] - dataPointCoordinates[0]);
-                const diffY = Math.abs(snappedPoint[1] - dataPointCoordinates[1]);
-
-                // Check if the point falls within the tolerance range
-
-                return diffX <= tolerance && diffY <= tolerance;
-            });
-
-            return nearbyPoints;
-
-
-}
-export function genName(name, idx: null | number = null) {
-    // if (idx===0) {
-    //     return name
-    // }
-    return idx===null ? name : name + parDelimiter+ idx
-}
 function getBounds(points) {
     const featureCollection = {
         type: 'FeatureCollection',
@@ -224,7 +165,6 @@ const textCollection: any = []
     return textCollection.reduce((acc, curr)=> acc.concat(curr), [])
 }
 
-// used for insta-render of parentPath line onEditing lines/icons
 type CoordsAndColor = [Position[], string]
 function genParentLine(lineFeatures: DeckLine<Geometry, PointFeatureProperties>[], switchMap, lineSwitchMap, getisoffset): [DeckLine<Geometry, PointFeatureProperties>[], CoordsAndColor[]] {
 if (!lineFeatures || !Array.isArray(lineFeatures) || lineFeatures?.length < 1) { return [[],[]]}
@@ -375,7 +315,7 @@ function genExtendedPLine(features: DeckLine<Geometry, PointFeatureProperties>[]
      let pathCoords: Position[] = [];
      let nextSegment
     const occurences: string[] = []
-//return pathCoords
+
 features.forEach((feature, pathIdx)=>{
     if (feature && feature.properties?.locName) {
         const {locName, parPath} = feature.properties
@@ -398,12 +338,9 @@ features.forEach((feature, pathIdx)=>{
             occurences.push(locName)
 
             nextSegment = genParentLine([nextParent], switchMap, lineSwitchMap, getisoffset)[1] || undefined;
-            //console.log('nextSegment', toJS(nextSegment))
 
             if (nextSegment?.length > 0) {
-
-                pathCoords.push(nextSegment) //.reduce((acc,cur,i)=> acc.concat(cur), []))
-
+                pathCoords.push(nextSegment)
             }
             const {parPath} = nextParent?.properties
 
@@ -474,6 +411,7 @@ const {locName, edgeField} = selLine.properties
         const {value, unit} = convertBitsPerSecond(toText)
         toText = value+unit
     }
+// optional flip side edge text label
 
     // if (toText?.length>0) {
     //     toText.splice(0,0,'<\n' )
@@ -511,13 +449,11 @@ function convertBitsPerSecond(toText) {
         let result;
 
         if (mbps >= 1) {
-            // Display in megabits per second
             result = {
                 value: mbps.toFixed(2),
                 unit: ' Mbps',
             };
         } else if (kbps >= 1) {
-            // Display in kilobits per second
             result = {
                 value: kbps.toFixed(1),
                 unit: ' Kbps',
@@ -532,21 +468,11 @@ function convertBitsPerSecond(toText) {
 
         return result;
     } else {
-        // Handle the case where toText is not a number
         console.error('Invalid input. Please provide a number.');
-        return null; // You can choose to return a default value or handle the error differently
+        return null;
     }
 }
 
-
-function isNode(item, switchMap){
-
-    if (typeof item === 'string') {
-        const type = switchMap.get(item)?.properties.aggrType
-        return (AggrTypes.includes(type))
-    }
-    return false
-}
 
 // Interface to define RGB object
 interface RGB {
@@ -565,7 +491,7 @@ const colorNames: { [name: string]: RGB } = {
     // Add more colors as needed
 };
 
-// Function to convert a color to RGBA string
+
 function colorToRGBA(color: string, alpha = 1): string | null {
     if (!color) {return `rgba(600,200,0)`}
     // Check if the input color is a valid hexadecimal value
@@ -608,36 +534,6 @@ function getFirstCoordinate(geojson) {
     return undefined;
 }
 
-function findRelatedLines({
-                              locName,
-                              lineFeatures,
-                          }){
-
-
-    if (!lineFeatures.length) {return []}
-    const lines = lineFeatures
-    const relLines: any = []
-    lineFeatures.forEach((lineFeat, featIdx)=>{
-        lineFeat.properties.parPath?.forEach((point, pathIdx)=> {
-            if (point === locName) {
-                const line = lines[featIdx]
-                const segrPathVisible = line.properties.segrPathVisible
-                segrPathVisible.forEach((segm, multiLineIdx) =>{
-                    segm.forEach((p,subLineIdx)=> {
-                        if (p.item === locName) {
-
-                            relLines.push({featIdx, ...lineFeat, multiLineIdx, subLineIdx, gIdx: p.gIdx})
-                        }})
-                })
-            }
-        })
-    })
-
-    return relLines
-
-
-}
-
 function findChildLines({   locName,
                             lineFeatures, direction}){
     if (!lineFeatures.length) {return []}
@@ -660,14 +556,11 @@ function mergeVertices(first: Vertices, second: Vertices): Vertices {
     for (const key in second) {
         if (second.hasOwnProperty(key)) {
             if (merged[key]) {
-                // Merge ptId, rxPtId, tarCoords
+                // Merge ptId, tarCoords
                 merged[key].ptId = merged[key].ptId || second[key].ptId;
-                //merged[key].rxPtId = merged[key].rxPtId || second[key].rxPtId;
                 merged[key].tarCoords = merged[key].tarCoords || second[key].tarCoords;
 
                 // Merge sources
-                //merged[key].sources = { ...merged[key].sources, ...second[key].sources };
-
                 merged[key].sources = {
                     ...merged[key].sources,
                     ...Object.entries(second[key].sources || {}).reduce((acc, [sourceKey, sourceValue]) => {
@@ -691,8 +584,6 @@ function mergeVertices(first: Vertices, second: Vertices): Vertices {
                     }, {}),
                 };
 
-
-
             } else {
                 // If the key doesn't exist in the first object, simply copy it
                 merged[key] = { ...second[key] };
@@ -701,26 +592,6 @@ function mergeVertices(first: Vertices, second: Vertices): Vertices {
     }
 
     return merged;
-}
-
-
-function genRndNums(n: number, count: number): number[] {
-    if (count <= 0 || count > n + 1) {
-        console.error("Invalid count of numbers requested.");
-        return [];
-    }
-
-    const uniqueNumbers: Set<number> = new Set();
-
-    while (uniqueNumbers.size < count) {
-        const randomNumber = Math.floor(Math.random() * (n + 1));
-        uniqueNumbers.add(randomNumber);
-    }
-
-    // Convert Set to array
-    const randomNumbers = Array.from(uniqueNumbers);
-
-    return randomNumbers;
 }
 
 
@@ -749,8 +620,6 @@ function getColorByMetric(metricPercentage) {
 
 function findComments(vertices) {
     const comments: any = [];
-    let counter = 0
-
     for (const vertexKey in vertices) {
         const vertex = vertices[vertexKey];
         const sources = vertex.sources;
@@ -762,7 +631,6 @@ function findComments(vertices) {
 
                 if (Array.isArray(parPath)) {
                     parPath.forEach((element, i) => {
-                        //  console.log('parpath forew', parPath)
                         if (Array.isArray(element) && element.length > 2) {
                             const text = element[3];
                             const iconColor = element[4];
@@ -791,6 +659,6 @@ function findComments(vertices) {
 
 
 export {
-    toRGB4Array, colorToRGBA, getColorByMetric, genRndNums, getFirstCoordinate, toHex, hexToRgba, getBounds, getTurfAngle, stringify4D, findNearbyNodes, makeColorLighter, makeColorDarker, genParPathText,
-    genParentLine, genExtendedPLine, genNodeNamesText, genLinksText,findRelatedLines, findChildLines, parseIfPossible, mergeVertices, findComments
+    toRGB4Array, colorToRGBA, getColorByMetric, getFirstCoordinate, toHex, hexToRgba, getBounds, getTurfAngle, makeColorLighter, makeColorDarker, genParPathText,
+    genParentLine, genExtendedPLine, genNodeNamesText, genLinksText, findChildLines, parseIfPossible, mergeVertices, findComments
 }

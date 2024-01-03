@@ -1,20 +1,15 @@
 import {action, autorun, makeAutoObservable, toJS} from 'mobx';
 import RootStore from './RootStore';
 import {
-  AggrTypes,
   colTypes,
   ComFeature,
   CoordRef,
-  DeckFeature,
   Feature,
   Info,
   pEditActions,
   Sources
 } from './interfaces';
-import {genParentLine} from '../utils';
 import {Point, Position} from "geojson";
-import {getThresholdForValue} from "../editor/Thresholds/data/threshold_processor";
-import {thresholds} from "../components/Mapgl";
 import {parDelimiter} from "../components/defaults";
 
 class PointStore {
@@ -56,8 +51,7 @@ class PointStore {
   constructor(root: RootStore) {
     this.root = root;
     makeAutoObservable(this);
-    autorun(() => console.log('pts ', toJS(this.points)));
-
+    //autorun(() => console.log('pts ', toJS(this.points)));
   }
 
   get getMode(): string {
@@ -117,14 +111,6 @@ class PointStore {
     };
   };
 
-  setLogTooltipObject = (info: any) => {
-    this.logTooltipObject = {
-      ...info,
-      cluster: false,
-      object: info.object ?? {},
-    };
-  };
-
 
   get getSelectedFeIndexes(): Map<string,number[]> | null {
     if (!this.getSelFeature) {
@@ -132,7 +118,6 @@ class PointStore {
     }
     const { id: index, properties } = this.getSelFeature
     const {colType, locName} = properties
-    const {lineStore} = this.root
     const selIds = this.selIds
 
     const selectedIndexes: Map<string,number[]> = new Map()
@@ -197,21 +182,6 @@ class PointStore {
     return new Map(relArr);
   }
 
-  get getParPathText() {
-    const selFeature = this.switchMap?.get(this.selectedIp)
-    const parPath = selFeature?.properties.parPath
-    const parPathExists = Array.isArray(parPath)
-  const parPathText = parPathExists? parPath.map((el, i) => {
-
-    const geometry = typeof el === 'string' ? this.switchMap?.get(el)?.geometry as Point : null;
-    const coordinates = geometry?.coordinates ?? el;
-    return {text: i+1+'', coordinates, color: 'rgb(237, 71, 59)'} //selFeature?.properties.iconColor}
-  }) : []
-
-    return parPathText
-  }
-
-
   toggleShowCluster = (flag: boolean) => {
     this.isShowCluster = flag;
   };
@@ -225,7 +195,6 @@ class PointStore {
   };
 
   setSelectedIp = (ip, selIds: number[] | null = null) => {
-    //this.setpLinePoints(this.selFeature);
 
     if (ip !== null) {
       const delimited = ip?.split(parDelimiter)

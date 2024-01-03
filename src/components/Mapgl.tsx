@@ -48,7 +48,6 @@ export let libreMapInstance, thresholds
 const Mapgl = () => {
     const { pointStore, lineStore, viewStore, options, data, width, height, replaceVariables, eventBus  } = useRootStore();
     thresholds = options.globalThresholdsConfig
-    const s = useStyles2(getStyles);
     const theme2 = useTheme2()
 
     const {
@@ -101,7 +100,7 @@ const Mapgl = () => {
 
     useEffect(() => {
         const subscriber = eventBus.getStream(RefreshEvent).subscribe(event => {
-            console.log(`Received event: ${event.type}`);
+           // console.log(`Received event: ${event.type}`);
             setRefresh(prev=> ({...prev}))
         })
 
@@ -185,9 +184,6 @@ const Mapgl = () => {
 
 
             }
-            //if (getMode === 'modify') {
-                //setClosedHint(true);
-            //}
         } else {
             // reset tooltip by clicking blank space
             setShowCenter(true)
@@ -290,10 +286,8 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
                 maxPitch: 45 * 0.95 // for non-wgs projection
             };
 
-            //flushSync(()=> {
                 setViewState({...deckInitViewState})
                 setZoom(zoom)
-            //})
 
             initBasemap(options.basemap, setSource, false, theme2)
 
@@ -347,7 +341,6 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
 
         })
 
-        //flushSync(()=> {
         setVertices(vertices)
 
         const commentsData: any = []
@@ -356,17 +349,12 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
         let counter = 0
         comments?.forEach((comment) => {
             const { text, iconColor, orderId, coords,tar, src} = comment;
-            if (tar && src && text && orderId && coords) {
+            if (tar && text && orderId && coords) {
 
-                //const tarId = nameToScoreMap.get(tar)?.rxPtId
-               // const srcId = nameToScoreMap.get(src)?.rxPtId
-
-                //  console.log('iconColor',iconColor)
                 const hexColor = iconColor && theme2.visualization.getColorByName(iconColor)
                 commentsData.push({
                     type: "Feature",
                     id: counter,
-                    //comId: [tarId, srcId,orderId].join('|'),
                     geometry: {
                         type: 'Point',
                         coordinates: coords
@@ -389,14 +377,11 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
             polygons && setPolygons(polygons)
             path && setPath(path)
             geojson && setGeoJson(geojson)
-        //})
-        //setSelectedIp(replaceVariables('$target'), replaceVariables(`$lineIds`).split(',').map(el=>parseInt(el, 10)))
     }
 
     useEffect(() => {
 
         if (data && data.series.length) {
-            console.log('data', data.series.length)
             loadPoints(data)
         } else {
             console.log('no data', data)
@@ -482,7 +467,7 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
 
             const lineSwitchMap = getLineSwitchMap
             if (getSelFeature?.properties.colType === colTypes.Points) {
-                /// ParentLine
+                /// Path to tar/src
 
                 const selPathPts = getSelIds.map((id)=> getEditableLines[id]).filter(el=>el)
 
@@ -651,17 +636,15 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
 
     useEffect(()=> {
         if (!getViewState) {return}
-        //flushSync(()=>{
             setLocalViewState(getViewState)
             setCPlotCoords(getViewState)
-        //})
-
     }, [getViewState])
 
     useEffect(() => {
-        if (!getPoints.length) {
+        if (!getPoints.length && !getPolygons.length && !getPath.length && !getGeoJson.length && data?.series?.length) {
             setRefresh(prev=> ({...prev}))
             return}
+        setShowCenter(false)
         getLayers();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
@@ -725,6 +708,4 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
 }
 
 export default observer(Mapgl);
-
-const getStyles = (theme: GrafanaTheme2) => ({})
 

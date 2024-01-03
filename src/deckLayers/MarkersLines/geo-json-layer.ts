@@ -1,10 +1,7 @@
 import {
   toRGB4Array,
-  findRelatedLines,
 } from '../../utils';
 import { GeoJsonLayer } from '@deck.gl/layers/typed';
-import {FEATURE_EDIT_HANDLE_COLOR, DEFAULT_EDIT_HANDLE_COLOR} from '../../components/defaults';
-import {toJS} from "mobx";
 import {colTypes} from "../../store/interfaces";
 
 export const MarkersGeoJsonLayer = (props) => {

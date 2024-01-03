@@ -10,7 +10,7 @@ services:
     ports:
       - 3000:3000/tcp
     volumes:
-      - $PWD/dist:/var/lib/grafana/plugins/geo-map-panel
+      - $PWD/dist:/var/lib/grafana/plugins/mapgl-panel
       - $PWD/provisioning:/etc/grafana/provisioning
       - $PWD/docker_data/grafana_data:/var/lib/grafana
       - $PWD/docker_data/certs:/certs
@@ -21,6 +21,7 @@ services:
     restart: always
     environment:
       - GF_INSTALL_PLUGINS=frser-sqlite-datasource, marcusolsson-static-datasource
+      - GF_FEATURE_TOGGLES_ENABLE=enableDatagridEditing, editPanelCSVDragAndDrop
       - GF_PLUGIN_ALLOW_LOCAL_MODE=true
       - GF_USERS_VIEWERS_CAN_EDIT=true
       - HTTP_USER="{{ GRAFANA_USER }}"

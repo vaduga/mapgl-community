@@ -10,8 +10,10 @@
       "cluster map",
       "geomap",
       "geojson",
+      "network",
+      "topology",
       "deck.gl","deck.gl"],
-    "description": "Geospatial map for large datasets using deck.gl",
+    "description": "Network topology geomap with deck.gl",
     "author": {
       "name": "Vadim Pyatakov"
     },
@@ -30,13 +32,13 @@
       }
     ],
     "screenshots": [
-         {
-        "name": "Overview",
-        "path": "img/screenshot1.png"
-      },
       {
         "name": "Aggregation",
         "path": "img/aggr.gif"
+      },
+         {
+        "name": "Overview",
+        "path": "img/screenshot1.png"
       },
        {
         "name": "Options",

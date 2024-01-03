@@ -1,6 +1,6 @@
 import {
     toRGB4Array,
-    findNearbyNodes, getColorByMetric,
+    getColorByMetric,
 } from '../../utils';
 import { GeoJsonLayer } from '@deck.gl/layers/typed';
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";

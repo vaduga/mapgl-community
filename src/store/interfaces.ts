@@ -101,7 +101,7 @@ export interface DeckLine<G extends Geometry | null = Geometry, P = PointFeature
 export type ComFeature = {
   type: "Feature",
   id,
-  comId: string,
+  comId?: string,
   geometry: {
     type: 'Point',
     coordinates: Position

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0
+
+* Multi-source, multi-target support
+* Switch path direction by declaring dashboard variable 'locRole'.
+* Data-links: icon in tooltip to sets values for 'target' and 'source' dashboard variables. 
+This lets you show charts dynamically in other panels.
+* Comment icons for intermediate locations from text and color inlined in coordinates (ex.: [37.560447,55.550818, 0, "comment", "green"])
+* Aggregation nodes and offset for overlapping lines.
+* stat1/stat2 switch to disable offset and show secondary metric
+* edge labels in stat2 mode , aggregation nodes labels.
+
 ## 1.0.2
 
 * New: support for parent path as an array of coordinates or location names
