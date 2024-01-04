@@ -383,8 +383,6 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
 
         if (data && data.series.length) {
             loadPoints(data)
-        } else {
-            console.log('no data', data)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [refresh, _, data, width, height, options]);

@@ -118,11 +118,13 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
         let counterId = 0
             coords.forEach((geom, i) => {
 
-                const {type, coordinates} = geom
-                const point = dataFrame[i]
+              const {type, coordinates} = geom
+              const point = dataFrame[i]
 
               const locName = locField && point[locField]
-              if (!locName) {return}
+              if (!locName) {
+                return
+              }
               const edgeField = edgeLabelField
               const bandNumber = options.bandNumber
               const bandWidth = bandField && point[bandField]
@@ -130,28 +132,26 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
 
               const metric = metricField && point[metricField]
 
-              try {
-                const geometry: Point = {
-                  type: 'Point',
-                  coordinates: coordinates.slice(),
-                }
+              const geometry: Point = {
+                type: 'Point',
+                coordinates: coordinates.slice(),
+              }
 
-                const dsParents = parField && point[parField]
-                const parsedParents = parseIfPossible(dsParents)
+              const dsParents = parField && point[parField]
+              const parsedParents = parseIfPossible(dsParents)
 
-                const parents = parsedParents
-                let lineExtraProps: LineExtraProps | undefined
-                const excludes = [locField , parField, 'locName', 'sources', 'geojson', '$streamId', '$time', 'threshold', 'colType', 'isShowTooltip', 'displayProps']
-                ///Object.keys(point)?.filter(el=> !excludes.includes(el))  - should i by default show more props?
-                const includes = ['ack', 'msg']
+              const parents = parsedParents
+              let lineExtraProps: LineExtraProps | undefined
+              const excludes = [locField, parField, 'locName', 'sources', 'geojson', '$streamId', '$time', 'threshold', 'colType', 'isShowTooltip', 'displayProps']
+              ///Object.keys(point)?.filter(el=> !excludes.includes(el))  - should i by default show more props?
+              const includes = ['ack', 'msg']
 
-                const displayProps = (isShowTooltip && displayProperties && displayProperties?.length) ? [...displayProperties, 'ack', 'msg']  : includes
+              const displayProps = (isShowTooltip && displayProperties && displayProperties?.length) ? [...displayProperties, 'ack', 'msg'] : includes
 
-               if (locName && (!vertices.hasOwnProperty(locName) || direction === 'source'))
-                {
-                  const ptId = startId + counterId /// removes duplicate pts from dataframe
-                  if (!vertices[locName]?.ptId) {
-                    vertices[locName]= {...vertices[locName], ptId, tarCoords: coordinates.slice()}
+              if (locName && (!vertices.hasOwnProperty(locName) || direction === 'source')) {
+                const ptId = startId + counterId /// removes duplicate pts from dataframe
+                if (!vertices[locName]?.ptId) {
+                  vertices[locName] = {...vertices[locName], ptId, tarCoords: coordinates.slice()}
 
                   /// 'Jitter points' grouping initializes only on non-edited points
                   if (isJitterPoints && coordinates?.length === 2) {
@@ -175,55 +175,52 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
                       ...point,
                       locName,
                       edgeField,
-                      ...(isShowBW && throughput && { bandNumber, bandWidth, throughput }),
+                      ...(isShowBW && throughput && {bandNumber, bandWidth, throughput}),
                       aggrType: aggrTypeField && point[aggrTypeField],
                       metric,
                       colType,
-                      ...(isShowTooltip && { isShowTooltip }),
-                      ...(displayProps && { displayProps }),
+                      ...(isShowTooltip && {isShowTooltip}),
+                      ...(displayProps && {displayProps}),
                     },
                   }
                   points.push(newFeature)
                   counterId++
+                }
+              } else {
+                const lineExcludes = [locField, parField, 'locName', 'sources', 'geojson', 'longitude', 'latitude', '$streamId', '$time', 'colType']
+
+                lineExtraProps = Object.fromEntries(
+                    Object.entries({
+                      ...point, metric, ...(throughput && {
+                        bandNumber,
+                        bandWidth,
+                        throughput
+                      })
+                    })     /// metric could be changes by status updates live
+                        .filter(([key]) => !lineExcludes.includes(key))
+                );
+              }
+
+              isParFieldArray = Array.isArray(parents)
+              if (isParFieldArray && Array.isArray(parents[0])) {
+                for (let i = 0; i < parents.length; i++) {
+                  const parPath = getParPath(parents, counterId, i, locName)
+                  if (!parPath.length) {
+                    continue;
                   }
-                } else {
-                 const lineExcludes = [locField , parField, 'locName', 'sources', 'geojson', 'longitude', 'latitude', '$streamId', '$time', 'colType']
-
-                 lineExtraProps = Object.fromEntries(
-                     Object.entries({...point, metric, ...(throughput && { bandNumber, bandWidth, throughput })})     /// metric could be changes by status updates live
-                         .filter(([key]) => !lineExcludes.includes(key))
-                 );
-               }
-
-                isParFieldArray = Array.isArray(parents)
-                if (isParFieldArray && Array.isArray(parents[0])) {
-                  for (let i = 0; i < parents.length; i++) {
-                    const parPath = getParPath(parents, counterId, i, locName)
-                    if (!parPath.length) {
-                      continue;
-                    }
-                    pushPath(vertices, parPath, direction, lineExtraProps);
-                  }
-                } else if (parents) {
-                  const parPath = getParPath(parents, counterId, null, locName)
-
-                  if (parPath.filter(el=> el && (typeof el === 'string' || Array.isArray(el))).length < 2) {
-                    return;
-                  }
-
                   pushPath(vertices, parPath, direction, lineExtraProps);
                 }
+              } else if (parents) {
+                const parPath = getParPath(parents, counterId, null, locName)
 
-
-
-              }
-              catch (error ){
-                  console.log('locName: '+locName+'. '+error)
-                //throw new Error('locName: '+locName+'. '+error);
+                if (parPath.filter(el => el && (typeof el === 'string' || Array.isArray(el))).length < 2) {
+                  return;
                 }
 
-            }
+                pushPath(vertices, parPath, direction, lineExtraProps);
+              }
 
+            }
         );
 
         ///'Jitter points': spiral out coords in each group of geopoints with same coordinates
@@ -278,7 +275,7 @@ function getParPath(parents, id, idx,locName){
     if (typeof parents === 'string') {
       return [locName, parents]
     }
-    console.log('Wrong format: '+toJS(parents))
+  //  console.log('Wrong format: '+toJS(parents))
     return []
   }
 
@@ -287,7 +284,7 @@ function getParPath(parents, id, idx,locName){
 
   const isInitString = (Array.isArray(parPath) && typeof parPath[0] === 'string') || (!Array.isArray(parPath[0]) && typeof parPath === 'string') // #TODO : better handling for single names like [["U1"],"M1"]
   if (!isInitString) {
-    console.log('Wrong path format: No coords, numbers, nulls allowed as 0 element), no deeper nesting arrays, or empty arrays. Info: id: '+id+' locName: '+locName+' sources: '+parents)
+   // console.log('Wrong path format: No coords, numbers, nulls allowed as 0 element), no deeper nesting arrays, or empty arrays. Info: id: '+id+' locName: '+locName+' sources: '+parents)
     return []
   }
 
