@@ -10,16 +10,7 @@ This lets you show charts dynamically in other panels.
 * Aggregation nodes and offset for overlapping lines.
 * stat1/stat2 switch to disable offset and show secondary metric
 * edge labels in stat2 mode , aggregation nodes labels.
-
-## 1.0.2
-
-* New: support for parent path as an array of coordinates or location names
-* New: aggregation nodes and offset for overlapping lines in parent path.
-* Parent line style improvements:
-  -Extended path to root as a separate dotted line.    
-* Bug fixes: 
- - isolate config options for different layers;  
-
+  
 
 ## 1.0.2
 
