@@ -38,4 +38,4 @@ export const generateValuesWithIncrement = (start: number, end: number, incremen
   return values;
 };
 
-export const LineWidthStates: SelectableValue[] = generateValuesWithIncrement(0.1, 5, 0.1);
+export const LineWidthStates: SelectableValue[] = generateValuesWithIncrement(0.1, 25, 0.1);

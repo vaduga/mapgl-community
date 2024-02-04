@@ -1,6 +1,6 @@
 import React, { FC, useMemo, useState, useEffect } from 'react';
 import { StandardEditorProps, SelectableValue, GrafanaTheme2 } from '@grafana/data';
-import { Alert, Select, stylesFactory, useTheme2 } from '@grafana/ui';
+import {Alert, Select, useStyles2, useTheme2} from '@grafana/ui';
 import { COUNTRIES_GAZETTEER_PATH, Gazetteer, getGazetteer } from '../gazetteer/gazetteer';
 import { css } from '@emotion/css';
 
@@ -18,7 +18,7 @@ const paths: Array<SelectableValue<string>> = [
 ];
 
 export const GazetteerPathEditor: FC<StandardEditorProps<string, any, any>> = ({ value, onChange, context }) => {
-  const styles = getStyles(useTheme2());
+  const s = useStyles2(getStyles);
   const [gaz, setGaz] = useState<Gazetteer>();
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export const GazetteerPathEditor: FC<StandardEditorProps<string, any, any>> = ({
         <>
           {gaz.error && <Alert title={gaz.error} severity={'warning'} />}
           {gaz.count && (
-            <div className={styles.keys}>
+            <div className={s.keys}>
               <b>({gaz.count})</b>
               {gaz.examples(10).map((k) => (
                 <span key={k}>{k},</span>
@@ -70,7 +70,7 @@ export const GazetteerPathEditor: FC<StandardEditorProps<string, any, any>> = ({
   );
 };
 
-const getStyles = stylesFactory((theme: GrafanaTheme2) => {
+const getStyles = (theme: GrafanaTheme2) => {
   return {
     keys: css`
       margin-top: 4px;
@@ -83,4 +83,4 @@ const getStyles = stylesFactory((theme: GrafanaTheme2) => {
       }
     `,
   };
-});
+};

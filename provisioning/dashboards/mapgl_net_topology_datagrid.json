@@ -27,7 +27,7 @@
         "uid": "-- Dashboard --"
       },
       "gridPos": {
-        "h": 14,
+        "h": 17,
         "w": 16,
         "x": 0,
         "y": 0
@@ -53,7 +53,8 @@
             "displayProperties": [
               "aggrType",
               "stat1",
-              "bps"
+              "bps",
+              "tooltipExtraProp"
             ],
             "edgeLabelField": "bps",
             "isShowBW": true,
@@ -322,10 +323,10 @@
         "uid": "-- Grafana --"
       },
       "gridPos": {
-        "h": 8,
+        "h": 9,
         "w": 23,
         "x": 0,
-        "y": 14
+        "y": 17
       },
       "id": 1,
       "options": {
@@ -768,7 +769,7 @@
                     null,
                     "[\"multisource_host\",\"multisource_node\",\"new6\"]",
                     "[\"multisource_host\",\"multisource_node\",\"new7\"]",
-                    "[\"multisource_host\",\"multisource_node\",\"new8\"]"
+                    "[\"multisource_host\",\"multisource_node\",[37.561537, 55.551166, 0, \"test comment\", \"#B0E0E6\"] \n,\"new8\"]"
                   ],
                   [
                     1,
@@ -1087,9 +1088,9 @@
                     "someprop6",
                     null,
                     "someprop",
-                    null,
-                    "someprop10",
-                    null
+                    "prop1",
+                    "prop2",
+                    "prop3"
                   ],
                   [
                     null,
@@ -1194,9 +1195,9 @@
                     null,
                     null,
                     "click anywhere on the map and copy GEOJSON button at the bottom left to use for the new records.",
-                    "",
-                    null,
-                    "for multisources every new source record target coordinates field should not be blank"
+                    "for multisources every new source record target coordinates (geojson, or lon/lat) field should not be blank",
+                    "for multisources every subsequent source record target coordinates (geojson, or lon/lat) field should not be blank",
+                    "for multisources every subsequent source record target coordinates (geojson, or lon/lat) field should not be blank"
                   ]
                 ]
               },
@@ -1288,13 +1289,13 @@
       {
         "current": {
           "selected": false,
-          "text": "10.250.2.20",
-          "value": "10.250.2.20"
+          "text": "10.250.2.25",
+          "value": "10.250.2.25"
         },
         "hide": 2,
         "name": "target",
         "options": [],
-        "query": "10.250.2.20",
+        "query": "10.250.2.25",
         "skipUrlSync": false,
         "type": "textbox"
       },
@@ -1319,7 +1320,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Mapgl network topology datagrid",
+  "title": "Mapgl network datagrid",
   "version": 1,
   "weekStart": ""
 }

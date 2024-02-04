@@ -519,7 +519,7 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
                     linesCollection
                 })
                 lineLayers.push(lines)
-                lineLayers.push(unames)
+                //lineLayers.push(unames)
             }
 
             let clusterLayerData;
@@ -564,6 +564,7 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
             if (clusters) {
                 clusterLayer = new IconClusterLayer({
                         ...layerProps,
+                    layerProps,
                         getPosition: (d) => d.coordinates,
                         data: clusters.reduce((acc,curr)=> acc.concat(curr), []),
                         id: 'icon-cluster',

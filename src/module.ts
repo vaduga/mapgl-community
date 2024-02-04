@@ -8,6 +8,8 @@ import { MapViewEditor } from './editor/MapViewEditor';
 import { DEFAULT_BASEMAP_CONFIG } from './layers/registry';
 
 export const plugin = new PanelPlugin<PanelOptions>(Panel)
+    .setNoPadding()
+    //.useFieldConfig()
     .setPanelOptions((builder) => {
         let category = ['Map view'];
         builder.addCustomEditor({

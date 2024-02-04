@@ -1,25 +1,48 @@
 import { CompositeLayer } from '@deck.gl/core';
-import { IconLayer } from '@deck.gl/layers';
+import {GeoJsonLayer, IconLayer } from '@deck.gl/layers';
 import Supercluster from 'supercluster';
 import { svgToDataURL, createDonutChart } from './donutChart';
 import {Feature} from "geojson";
+import {MyIconLayer} from "../IconLayer/icon-layer";
+import {MarkersGeoJsonLayer} from "../MarkersLines/geo-json-layer";
+import {toJS} from "mobx";
+import {colTypes} from "../../store/interfaces";
+import {toRGB4Array} from "../../utils";
+import { CollisionFilterExtension } from '@deck.gl/extensions/typed';
+//import iconAtlas from '/img/location-icon-atlas.png';
+
+import mySvg from '/img/content-switch.svg';
+
+
+const ICON_MAPPING = {
+  marker: { x: 0, y: 0, width: 49, height: 65, mask: false},
+};
 
 type params =
 {
   selectedIp: string;
   zoom: number;
   uPoint: Feature | null;
+  layerProps: any;
 
 }
 
 export class IconClusterLayer extends CompositeLayer<params> {
   selectedIp;
   zoom;
+  layerProps;
+  isVisible;
+  getSelectedFeIndexes;
 
   constructor(props) {
     super(props);
+    this.layerProps = props.layerProps;
     this.selectedIp = props.getSelectedIp;
     this.zoom = props.zoom
+    this.isVisible = props.isVisible;
+    this.getSelectedFeIndexes = props.getSelectedFeIndexes
+
+
   }
   shouldUpdateState({ changeFlags }) {
     return changeFlags.somethingChanged;
@@ -38,7 +61,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
       index.load(
         props.data.map((d) => {
           return {
-            geometry: { coordinates: d.coordinates },
+            geometry: { coordinates: d.coordinates, type: "Point" },
             properties: {...d.properties, id: d.id },
           };
         }),
@@ -70,58 +93,131 @@ export class IconClusterLayer extends CompositeLayer<params> {
 
   renderLayers() {
     const { data } = this.state;
+    const featureCollection = {
+      type: 'FeatureCollection',
+      features: data,
+    };
 
-    return new IconLayer( /// cluster sublayer
-      this.getSubLayerProps({
-        id: 'icon',
-        data,
-        stroked: true,
-        sizeScale: 1.1,
-        getSize: (d) => {
-          const isHead = this.selectedIp === d.properties?.locName
+    // const {
+    //   onHover,
+    //   highlightColor,
+    // } = this.props;
 
-          return isHead ? 60 : 30
-        },
-        getPosition: (d) => d.geometry.coordinates,
-        getIcon: (d) => {
-          const isSelected = this.selectedIp === d.properties?.locName;
-          const colorCounts = {};
 
-          let clPoints = d.properties.cluster
+    return new GeoJsonLayer(this.getSubLayerProps({
+      visible: true, //this.isVisible,
+      // highlightColor,
+      // onHover,
+      id: colTypes.Points,
+      data: featureCollection,
+      selectedFeatureIndexes:   this.getSelectedFeIndexes?.get(colTypes.Points) ?? [],
+      getText: (f: any) => f.properties.locName,
+      getTextAlignmentBaseline: 'center',
+      getTextPixelOffset: [0, 15],
+      // @ts-ignore
+      getTextColor: (d) => {
+        // @ts-ignore
+        const {threshold, cluster} = d.properties
+        if (cluster) {return [0,0,0]}
+        const {color} = threshold
+        return toRGB4Array(color)
+      },
+      getTextSize: 12,
+
+      pointType: 'icon+text',
+     // iconAtlas: mySvg,
+      loadOptions: {
+        imagebitmap: {
+          resizeWidth: 28,
+          resizeHeight: 28,
+          resizeQuality: 'high'
+        }},
+      //iconMapping: ICON_MAPPING,
+
+
+      getIcon: (d) => {
+        const isSelected = this.selectedIp === d.properties?.locName;
+        const colorCounts = {};
+
+        let clPoints = d.properties.cluster
             ? this.state.index.getLeaves(d.properties.cluster_id, 'infinity')
             : '';
-          if (clPoints) {
-            clPoints.forEach((p) => {
-              const { color, label } = p.properties?.threshold;
-              colorCounts[color] = colorCounts[color] ?
-                  {
-                    count : colorCounts[color].count +1,
-                    label : colorCounts[color].label
-                  } :
-                  {
-                    count : 1,
-                    label
-                  }
-              })
-           d.properties.colorCounts = colorCounts
-          } else {
-            // single point, not a cluster
-            const {threshold} = d.properties
-            const {color, label} = threshold
+        if (clPoints) {
+          clPoints.forEach((p) => {
+            const { color, label } = p.properties?.threshold;
+            colorCounts[color] = colorCounts[color] ?
+                {
+                  count : colorCounts[color].count +1,
+                  label : colorCounts[color].label
+                } :
+                {
+                  count : 1,
+                  label
+                }
+          })
+          d.properties.colorCounts = colorCounts
+        } else {
 
-            const singleColor = color;
-            colorCounts[singleColor] =   {
-              count : 1,
-              label
-            }
-            }
           return {
-            url: svgToDataURL(createDonutChart(colorCounts)),
-            width: isSelected ? 256 : 128,
-            height: isSelected ? 256 : 128,
+            url: mySvg,
+            width: isSelected ? 256 : 51,
+            height: isSelected ? 256 : 81,
           };
+          // single point, not a cluster
+
+          const {threshold} = d.properties
+          const {color, label} = threshold
+
+          const singleColor = color;
+          colorCounts[singleColor] =   {
+            count : 1,
+            label
+          }
+        }
+        return {
+          url: svgToDataURL(createDonutChart(colorCounts)),
+          width: isSelected ? 256 : 128,
+          height: isSelected ? 256 : 128,
+        };
+      },
+
+      sizeScale: 2,
+      getIconSize: (d) => {
+        const isHead = this.selectedIp === d.properties?.locName
+        const {cluster} = d.properties
+        if (cluster) {
+          return 30
+        }
+        else {return isHead ? 30 : 15}
+
+
+      },
+      iconSizeUnits: 'pixels',
+      // @ts-ignore
+      getIconColor: (d) => {
+        // @ts-ignore
+        const {threshold, cluster} = d.properties
+        if (cluster) {return [0,0,0]}
+        const {color} = threshold
+        return toRGB4Array(color)
+      },
+
+      _subLayerProps: {
+        "points-text": {
+          extensions: [new CollisionFilterExtension()],
+          collisionTestProps:
+              {
+                sizeScale: 4,
+                radiusScale: 4,
+              }
         },
-      }),
-    );
+      },
+
+      // Interactive props
+      pickable: true,
+      autoHighlight: true,
+    }))
+
+
   }
 }

@@ -3,6 +3,11 @@ import {
 } from '../../utils';
 import { GeoJsonLayer } from '@deck.gl/layers/typed';
 import {colTypes} from "../../store/interfaces";
+import iconAtlas from '/img/location-icon-atlas.png';
+import { CollisionFilterExtension } from '@deck.gl/extensions/typed';
+const ICON_MAPPING = {
+  marker: { x: 0, y: 0, width: 128, height: 128, mask: true},
+};
 
 export const MarkersGeoJsonLayer = (props) => {
   const {
@@ -21,29 +26,45 @@ export const MarkersGeoJsonLayer = (props) => {
     id: colTypes.Points,
     data: featureCollection,
     selectedFeatureIndexes:   getSelectedFeIndexes?.get(colTypes.Points) ?? [],
+    getText: f => f.properties.locName,
+    getTextAlignmentBaseline: 'bottom',
     // @ts-ignore
-    getFillColor: (d) => {
+    getTextColor: (d) => {
       // @ts-ignore
       const {threshold} = d.properties
       const {color} = threshold
       return toRGB4Array(color)
     },
-    getPointRadius: (d) => {
-      const isHead = getSelectedIp === d.properties?.locName
-      return isHead? 10 : 8
-    } ,
-    pointRadiusScale: 0.3,
-    // pointRadiusMinPixels: 2,
-    // pointRadiusMaxPixels: 15,
-    _subLayerProps: {
-      geojson: {
+    getTextSize: 12,
 
-      },
+    pointType: 'icon+text',
+    iconAtlas,
+    iconMapping: ICON_MAPPING,
+    getIcon: ()=>  'marker',
+
+
+   getIconSize: (d)=> {
+        const isHead = getSelectedIp === d.properties?.locName
+        return isHead? 10 : 8
+   } ,
+    iconSizeUnits: 'pixels',
+    // @ts-ignore
+    getIconColor: (d) => {
+      // @ts-ignore
+      const {threshold} = d.properties
+      const {color} = threshold
+      return toRGB4Array(color)
     },
 
-    // Styles
-    filled: true,
-    stroked: false,
+      _subLayerProps: {
+        "points-text": {
+            extensions: [new CollisionFilterExtension()],
+            collisionTestProps:
+                {
+                    sizeScale: 4
+                }
+        },
+    },
 
     // Interactive props
     pickable: true,
