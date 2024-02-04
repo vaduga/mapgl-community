@@ -82,17 +82,17 @@ const LayerSelect: FC = observer(() => {
                 toggleShowCluster(true)
           }}  }
         >
-            &nbsp;clusters
+            &nbsp;svg
         </Checkbox>
               <Checkbox
-                  checked={getisOffset}
+                  checked={!getisOffset}
                   title="stat1/stat2 & offset"
                   onChange={() => {
                       setMode('view')
                       toggleOffset(!getisOffset);
                   }}
               >
-                  &nbsp;stat1/stat2
+                  &nbsp;stat2
               </Checkbox>
               {replaceVariables(`$locRole`) !== '$locRole' && <Checkbox
                   checked={getDirection === 'source'}

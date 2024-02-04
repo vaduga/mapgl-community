@@ -76,8 +76,8 @@ export const LinesGeoJsonLayer = (props) => {
         // Styles
 
         lineWidthScale: 1,
-        lineWidthMinPixels: 1,
-        lineWidthMaxPixels: 15,
+        lineWidthMinPixels: 0.1,
+        //lineWidthMaxPixels: 15,
 
     // Interactive props
         pickable: true,

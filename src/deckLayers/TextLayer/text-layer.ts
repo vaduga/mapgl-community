@@ -53,8 +53,10 @@ const LineTextLayer = ({ data, type = 'nums', dir ='to'}: {data: any, type: 'num
     getTextAnchor: isList ? 'start':'middle',
     sizeUnits: units,
    // sizeScale: isList ? 1 : 1.1,
-    extensions: [new CollisionFilterExtension()],
-    collisionTestProps: {sizeScale: 4},
+    //extensions: [new CollisionFilterExtension()],
+    //collisionGroup: 'visualization',
+    //collisionTestProps: {sizeScale: 40
+    //},
     getSize: ()=> {
       switch (type) {
         case 'unames':
