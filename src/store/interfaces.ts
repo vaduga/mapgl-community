@@ -34,7 +34,7 @@ export type PointFeatureProperties = GeoJsonProperties & {
   parPath?: CoordRef[] | null,
   sources?: Sources,
   metric: number,
-  threshold: {thresholdLevel: number,
+  threshold: {
   color: string,
   lineWidth: number,
   label: string},

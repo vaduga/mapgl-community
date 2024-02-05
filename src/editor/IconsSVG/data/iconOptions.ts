@@ -296,6 +296,7 @@ export const NetworkingIcons = [
     'atm-switch',
     'biometric-reader',
     'bridge',
+    'data-pipe',
     'building',
     'camera',
     'card-reader',
@@ -416,17 +417,3 @@ export const DatabaseIcons = [
     'sqlite',
 ];
 
-export const ComputerIcons = [
-    'crt-monitor',
-    'data-pipe',
-    'keyboard',
-    'laptop-device',
-    'lcd-monitor',
-    'mouse',
-    'pc',
-    'pda',
-    'slate',
-    'tablet',
-    'terminal',
-    'virtual-pc',
-];

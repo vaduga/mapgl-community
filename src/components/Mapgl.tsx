@@ -19,7 +19,7 @@ import {
     genParentLine,
     genLinksText,
     genExtendedPLine,
-    mergeVertices, initBasemap, initMapView, toRGB4Array, findComments, hexToRgba
+    mergeVertices, initBasemap, initMapView, toRGB4Array, findComments, hexToRgba, loadSvgIcons
 } from '../utils';
 
 import {Tooltip} from './Tooltips/Tooltip';
@@ -41,11 +41,13 @@ import {flushSync} from "react-dom";
 import {CENTER_PLOT_FILL_COLOR, DEFAULT_COMMENT_COLOR, parDelimiter} from "./defaults";
 import {RGBAColor} from "@deck.gl/core/utils/color";
 import {getThresholdForValue} from "../editor/Thresholds/data/threshold_processor";
+import {getIconRuleForFeature} from "../editor/IconsSVG/data/rules_processor";
 
 export let libreMapInstance, thresholds
 const Mapgl = () => {
     const { pointStore, lineStore, viewStore, options, data, width, height, replaceVariables, eventBus  } = useRootStore();
     thresholds = options.globalThresholdsConfig
+    const svgIconRules = options.svgIconsConfig
     const theme2 = useTheme2()
 
     const {
@@ -73,6 +75,8 @@ const Mapgl = () => {
         getTooltipObject,
         getBlankInfo,
         getisShowPoints,
+        setSvgIcons,
+        getSvgIcons
         //</editor-fold>
     } = pointStore;
     const {
@@ -206,6 +210,12 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
 
         const transformed: any = [];
 
+        const svgIcons = await loadSvgIcons(svgIconRules)
+        if (Object.keys(svgIcons).length) {
+            setSvgIcons(svgIcons)
+        }
+
+
         if (options?.dataLayers?.length > 0) {
             const vertices: Vertices = {}
             for (let i = 0; i < options.dataLayers.length; i++) {
@@ -309,7 +319,9 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
 
                             const metric = f.properties?.metric
                             const threshold = getThresholdForValue(f.properties, metric, thresholds)
-                            const status = {threshold}
+                            const rulesThreshold = getIconRuleForFeature(f.properties, svgIconRules)
+
+                            const status = {threshold: {...threshold, ...rulesThreshold}}
 
                             const sources = vertices[locName]?.sources ? {...vertices[locName]?.sources} : undefined
                             return {...f,
@@ -542,6 +554,7 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
                 clusterLayer = new IconClusterLayer({
                         ...layerProps,
                         layerProps,
+                        getSvgIcons,
                         isVisible: getisShowPoints,
                         getPosition: (d) => d.coordinates,
                         data: clusters.reduce((acc,curr)=> acc.concat(curr), []),

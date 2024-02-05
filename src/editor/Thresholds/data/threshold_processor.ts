@@ -2,7 +2,6 @@ import {
   DEFAULT_COLOR_LABEL,
   DEFAULT_LINE_WIDTH,
   DEFAULT_NO_DATA_COLOR_RGBA,
-  DEFAULT_NO_DATA_COLOR_SELECTED_RGBA
 } from '../../../components/defaults';
 import {OverField} from '../threshold-types';
 import {FieldType} from "@grafana/data";
@@ -47,10 +46,9 @@ function getThresholdForValue(
     value: number | null | undefined,
     thresh: [] = [],
     defaultColor: string = DEFAULT_NO_DATA_COLOR_RGBA,
-    defaultSelColor: string = DEFAULT_NO_DATA_COLOR_SELECTED_RGBA,
     defaultLineWidth: number = DEFAULT_LINE_WIDTH,
     defaultColorLabel: string = DEFAULT_COLOR_LABEL
-): { thresholdLevel: number, color: string; selColor: string; lineWidth: number, label: string } {
+): { color: string; lineWidth: number, label: string } {
   const thresholds = getThresholdsWithOverridesCounts(properties, thresh).sort((a, b) => {
     if (a.value === b.value) {
       return a.overrides - b.overrides;
@@ -62,16 +60,13 @@ function getThresholdForValue(
   });
   //console.log(thresholds)
   let currentColor = defaultColor;
-  let currentSelColor = defaultSelColor;
   let currentLineWidth = defaultLineWidth;
   let currentColorLabel = 'ok'//defaultColorLabel;
   let currentLevel = -1;
 
   if (value === null || value === undefined) {
     return {
-      thresholdLevel: 3,
       color: defaultColor,
-      selColor: defaultSelColor,
       lineWidth: defaultLineWidth,
       label: defaultColorLabel,
     }; // No Data
@@ -81,9 +76,7 @@ function getThresholdForValue(
 
   if (thresholdCount === 0) {
     return {
-      thresholdLevel: currentLevel,
       color: defaultColor,
-      selColor: defaultSelColor,
       lineWidth: defaultLineWidth,
       label: defaultColorLabel,
     };
@@ -95,7 +88,6 @@ function getThresholdForValue(
     if (threshold.value <= value) {
       currentLevel = threshold.overrides;
       currentColor = threshold.color;
-      currentSelColor = threshold.selColor;
       currentLineWidth = threshold.lineWidth;
       currentColorLabel = threshold.label;
 
@@ -105,9 +97,7 @@ function getThresholdForValue(
   }
 
   return {
-    thresholdLevel: currentLevel,
     color: currentColor,
-    selColor: currentSelColor,
     lineWidth: currentLineWidth,
     label: currentColorLabel,
   };

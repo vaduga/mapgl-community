@@ -11,7 +11,6 @@ import {
 } from '../../extension';
 import {colTypes, LineExtraProps, Feature, Vertices} from '../../store/interfaces';
 import { Point} from "geojson";
-import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
 import {parseIfPossible} from "../../utils";
 import {toJS} from "mobx";
 
@@ -90,7 +89,6 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
 
     const displayProperties = options.displayProperties
     searchProperties = options.searchProperties
-    const thresholds = options.config?.globalThresholdsConfig
     const isJitterPoints = config.jitterPoints
     const startId = config.startId
     const direction = config.direction

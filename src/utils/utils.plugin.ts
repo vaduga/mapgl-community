@@ -2,7 +2,7 @@ import bearing from "@turf/bearing";
 import turfbbox from "@turf/bbox";
 import {Geometry, Point, Position} from "geojson";
 import {toJS} from "mobx";
-import {DEFAULT_NUMS_COLOR, parDelimiter} from "../components/defaults";
+import {DEFAULT_ICON_NAME2, DEFAULT_NUMS_COLOR, parDelimiter} from "../components/defaults";
 import {AggrTypes, DeckLine, Feature, ParentInfo, PointFeatureProperties, Sources, Vertices} from "../store/interfaces";
 import {MultiLineString} from "@turf/helpers";
 import {RGBAColor} from "@deck.gl/core/utils/color";
@@ -645,7 +645,10 @@ function findComments(vertices) {
     return comments;
 }
 
-async function parseSvgFileToString(svgFilePath) {
+async function parseSvgFileToString(options) {
+    console.log('options', options)
+    const {iconName: svgIconName, svgColor: svgIconColor, iconWidth: width, iconHeight: height} = options
+    const svgFilePath = 'public/plugins/vaduga-mapgl-panel/img/icons/'+svgIconName+'.svg'
     try {
         const response = await fetch(svgFilePath);
 
@@ -653,11 +656,51 @@ async function parseSvgFileToString(svgFilePath) {
             throw new Error(`Failed to fetch SVG file. Status: ${response.status}`);
         }
 
-        const svgText = await response.text();
-        return svgText;
+        let svgText = await response.text();
+
+        // Modify the SVG text to include width, height, and circular background
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(svgText, 'image/svg+xml');
+        const svgElement = xmlDoc.getElementsByTagName('svg')[0];
+
+        if (svgElement) {
+            // Add a circle element as the background
+            const circleElement = xmlDoc.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            const circleRadius = Math.max(parseInt(width, 10), parseInt(height, 10)) * 2;
+            const circleCenterX = parseInt(width, 10) / 2;
+            const circleCenterY = parseInt(height, 10) / 2;
+
+            circleElement.setAttribute('cx', circleCenterX.toString());
+            circleElement.setAttribute('cy', circleCenterY.toString());
+            circleElement.setAttribute('r', circleRadius.toString());
+            circleElement.setAttribute('fill', svgIconColor);
+
+            // Insert the circle as the first child of the SVG
+            svgElement.insertBefore(circleElement, svgElement.firstChild);
+
+            // Set the width and height attributes
+            svgElement.setAttribute('width', width);
+            svgElement.setAttribute('height', height);
+
+            // Convert the modified XML back to a string
+            svgText = new XMLSerializer().serializeToString(xmlDoc);
+        }
+
+        return [svgIconName, svgText];
     } catch (error) {
         console.error('Error fetching SVG file:', error);
         return null;
+    }
+}
+
+async function loadSvgIcons(svgIconRules) {
+    if (svgIconRules.length) {
+        const promises = svgIconRules.concat({iconName: DEFAULT_ICON_NAME2, iconWidth: 128, iconHeight:128}).filter(el=>el).map(parseSvgFileToString)
+        const res = await Promise.all(promises)
+        return Object.fromEntries(res)
+return {res}
+    } else {
+        return {}
     }
 }
 
@@ -682,5 +725,6 @@ const generateValuesWithIncrement = (start: number, end: number, increment: numb
 
 export {
     toRGB4Array, colorToRGBA, getColorByMetric, getFirstCoordinate, toHex, hexToRgba, getBounds, getTurfAngle, makeColorLighter, makeColorDarker, genParPathText,
-    genParentLine, genExtendedPLine, genLinksText, findChildLines, parseIfPossible, mergeVertices, findComments, parseSvgFileToString, generateValuesWithIncrement
+    genParentLine, genExtendedPLine, genLinksText, findChildLines, parseIfPossible, mergeVertices, findComments, parseSvgFileToString, generateValuesWithIncrement,
+    loadSvgIcons
 }

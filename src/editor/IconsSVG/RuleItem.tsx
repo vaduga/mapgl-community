@@ -15,7 +15,7 @@ import {css} from '@emotion/css';
 import {OverrideField} from "./OverrideField";
 import {IconSvgSizes, OverField, OverrideTracker, Rule} from './svg-types';
 import {makeColorLighter} from "../../utils";
-import {CiscoIcons, ComputerIcons, DatabaseIcons, NetworkingIcons} from "./data/iconOptions";
+import {CiscoIcons, DatabaseIcons, NetworkingIcons} from "./data/iconOptions";
 import {DEFAULT_COLOR_PICKER_RGBA, DEFAULT_OK_COLOR_RGBA} from "../../components/defaults";
 
 
@@ -65,9 +65,7 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
   const databaseIconsFormatted = DatabaseIcons.map((t) => {
     return { label: t, value: 'databases/' + t };
   });
-  const computerIconsFormatted = ComputerIcons.map((t) => {
-    return { label: t, value: 'computers_monitors/' + t };
-  });
+
 
 
   const setTracker = (v: OverrideTracker[]) => {
@@ -128,7 +126,7 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
   const [iconWidth, setIconWidth] = useState<any>(options.rule.iconWidth);
   const [iconHeight, setIconHeight] = useState<any>(options.rule.iconHeight);
   const [iconName, setIconName] = useState<string>(options.rule.iconName)
-  const [showColor, setShowColor] = useState<string>(options.rule.color)
+  const [showColor, setShowColor] = useState<string>(options.rule.svgColor)
   const handleIconChange = (icon: string | undefined) => {
     if (typeof icon !== 'string') {return}
       options.iconNameSetter(options.index, icon)
@@ -139,7 +137,7 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
       <InlineFieldRow className={styles.inlineRow}>
         <div className={styles.colorPicker}>
           {showColor ? <ColorPicker
-              color={options.rule.color ?? DEFAULT_COLOR_PICKER_RGBA}
+              color={options.rule.svgColor ?? DEFAULT_COLOR_PICKER_RGBA}
               onChange={(color) => {
                 console.log('color', color)
                 options.colorSetter(options.index, color)
@@ -231,7 +229,6 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
                     { label: 'Cisco Icons', value: 'cisco', options: ciscoIconsFormatted },
                     { label: 'Networking Icons', value: 'networking', options: networkingIconsFormatted },
                     { label: 'Database Icons', value: 'databases', options: databaseIconsFormatted },
-                    { label: 'Computer Icons', value: 'computers_monitors', options: computerIconsFormatted },
                     { label: 'Custom Icon', value: 'custom_icon' },
                   ]}
                   className={styles.nodeSelect}

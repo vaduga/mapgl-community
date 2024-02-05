@@ -32,7 +32,7 @@ class PointStore {
     coordinates: [],
     type: "Point"
   }
-  updatedHost: Feature | null = null;
+  svgIcons: {} = {}
   blankHoverInfo: Info = {
     x: -3000,
     y: -3000,
@@ -62,6 +62,10 @@ class PointStore {
     return this.blankHoverInfo
   }
 
+  get getSvgIcons() {
+    return this.svgIcons
+  }
+
   get getSelCoord() {
     return this.selCoord;
   }
@@ -74,6 +78,9 @@ class PointStore {
     return this.switchMap?.get(this.selectedIp);
   }
 
+  setSvgIcons = (icons: {}) => {
+    this.svgIcons = icons;
+  }
   setSelCoord = (newSelCoord) => {
     this.selCoord = newSelCoord;
   }

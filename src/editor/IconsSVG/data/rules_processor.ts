@@ -1,8 +1,6 @@
 import {
-  DEFAULT_COLOR_LABEL,
-  DEFAULT_LINE_WIDTH,
-  DEFAULT_NO_DATA_COLOR_RGBA,
-  DEFAULT_NO_DATA_COLOR_SELECTED_RGBA
+  DEFAULT_ICON_HEIGHT,
+  DEFAULT_ICON_NAME2, DEFAULT_ICON_WIDTH,
 } from '../../../components/defaults';
 import {OverField} from '../svg-types';
 import {FieldType} from "@grafana/data";
@@ -42,70 +40,60 @@ const getRulesWithOverridesCounts = (properties, thresholds) => thresholds.map((
   ...item, overrides: countMatchingKeysAndValues(properties, item.overrides),
 })).filter((item) => item.overrides !== -1)
 
-function getThresholdForValue(
+function getIconRuleForFeature(
     properties: any,
-    value: number | null | undefined,
     thresh: [] = [],
-    defaultColor: string = DEFAULT_NO_DATA_COLOR_RGBA,
-    defaultLineWidth: number = DEFAULT_LINE_WIDTH,
-    defaultColorLabel: string = DEFAULT_COLOR_LABEL
-): { thresholdLevel: number, color: string; lineWidth: number, label: string } {
+    defaultIconName: string = DEFAULT_ICON_NAME2,
+    defaultIconWidth: number = DEFAULT_ICON_WIDTH,
+    defaultIconHeight: number = DEFAULT_ICON_HEIGHT
+): { svgColor?: string; iconName: string, iconWidth: number, iconHeight: number} {
+
   const thresholds = getRulesWithOverridesCounts(properties, thresh).sort((a, b) => {
-    if (a.value === b.value) {
-      return a.overrides - b.overrides;
-    } else {
-      return a.value - b.value;
-    }
-
-
+      return b.overrides - a.overrides
   });
-  //console.log(thresholds)
-  let currentColor = defaultColor;
-  let currentLineWidth = defaultLineWidth;
-  let currentColorLabel = 'ok'//defaultColorLabel;
+
+  let currentIconName = defaultIconName;
+  let currentIconWidth = defaultIconWidth;
+  let currentIconHeight = defaultIconHeight;
+  let currentColor
   let currentLevel = -1;
 
-  if (value === null || value === undefined) {
+  if (!thresh.length || !thresholds.length) {
     return {
-      thresholdLevel: 3,
-      color: defaultColor,
-      lineWidth: defaultLineWidth,
-      label: defaultColorLabel,
+      svgColor: currentColor,
+      iconName: defaultIconName,
+      iconWidth: defaultIconWidth,
+      iconHeight: defaultIconHeight
     }; // No Data
   }
 
-  const thresholdCount = thresholds.length;
 
-  if (thresholdCount === 0) {
+
+  if (thresholds[0] && !thresholds?.[0]?.overrides) {
     return {
-      thresholdLevel: currentLevel,
-      color: defaultColor,
-      lineWidth: defaultLineWidth,
-      label: defaultColorLabel,
+      svgColor: currentColor,
+      iconName: defaultIconName,
+      iconWidth: defaultIconWidth,
+      iconHeight: defaultIconHeight
     };
   }
 
-
-  for (let i = thresholdCount - 1; i >= 0; i--) {
-    const threshold = thresholds[i];
-    if (threshold.value <= value) {
+    const threshold = thresholds[0];
+    if (true) {
       currentLevel = threshold.overrides;
-      currentColor = threshold.color;
-      currentLineWidth = threshold.lineWidth;
-      currentColorLabel = threshold.label;
-
-      break;
-
+      currentIconName = threshold.iconName;
+      currentColor = threshold.svgColor;
     }
-  }
+
 
   return {
-    thresholdLevel: currentLevel,
-    color: currentColor,
-    lineWidth: currentLineWidth,
-    label: currentColorLabel,
+    svgColor: currentColor,
+    iconName: currentIconName,
+    iconWidth: currentIconWidth,
+    iconHeight: currentIconHeight
+
   };
 
 }
 
-export { getThresholdForValue };
+export { getIconRuleForFeature };

@@ -67,7 +67,7 @@ export const RulesEditor: React.FC<Props> = (options) => {
     if (typeof theme2.visualization !== 'undefined') {
       useColor = theme2.visualization.getColorByName(color);
     }
-    tracker[index].rule.color = hexToRgba(useColor);
+    tracker[index].rule.svgColor = hexToRgba(useColor);
     setTracker([...tracker]);
   };
 
@@ -107,7 +107,7 @@ export const RulesEditor: React.FC<Props> = (options) => {
     const order = tracker.length;
     const aRule: Rule = {
       overrides: [],
-      color: '',
+      svgColor: '',
       iconWidth: DEFAULT_ICON_WIDTH,
       iconHeight: DEFAULT_ICON_HEIGHT,
       iconName: DEFAULT_ICON_NAME,
