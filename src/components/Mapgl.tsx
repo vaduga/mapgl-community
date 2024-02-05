@@ -17,7 +17,6 @@ import {
     useRootStore,
     genParPathText,
     genParentLine,
-    genNodeNamesText,
     genLinksText,
     genExtendedPLine,
     mergeVertices, initBasemap, initMapView, toRGB4Array, findComments, hexToRgba
@@ -422,7 +421,7 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
     }
 
     const getLayers = () => {
-        let lines, icons, pathLine, pathLineExt, unames, list1, nums, clusterLayer, commentsLayer
+        let lines, pathLine, pathLineExt, list1, nums, clusterLayer, commentsLayer
         const secLayers: any[] = []
         let newLayers: any = [];
         const iconLayers: any = []
@@ -502,8 +501,6 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
                 const lFeatures = getEditableLines
                 const iconFeatures= markers
 
-                const nodeNames = genNodeNamesText(iconFeatures)
-                unames = nodeNames.length > 0 ? LineTextLayer({data: nodeNames, type: 'unames', dir:'to'}) : null
 
             /// Edges render
             if (getisShowLines && lFeatures?.length > 0) {
@@ -519,7 +516,6 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
                     linesCollection
                 })
                 lineLayers.push(lines)
-                //lineLayers.push(unames)
             }
 
             let clusterLayerData;
