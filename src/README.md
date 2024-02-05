@@ -18,12 +18,13 @@ with [Deck.gl](https://deck.gl/) rendering and other features
 * path to source/target as an array of coordinates or refs to intermediate locations
 * multi-source support
 * switch path direction by declaring dashboard variable 'locRole'.
-* data-links: icon in tooltip to set values for 'target' and 'source' dashboard variables. Lets you show charts dynamically in other panels.
 * donut-chart clusters with arc lengths by color threshold labels set by metric and other user-defined properties
+* svg icons for nodes
+* text labels with collision filter.
+* data-links: icon in tooltip to set values for 'target' and 'source' dashboard variables. Lets you show charts dynamically in other panels.
 * comment icons for intermediate locations from text and color inlined in coordinates (ex.: [37.560447,55.550818, 0, "comment", "green"])
 * aggregation nodes and offset for overlapping lines.
 * stat1/stat2 switch to disable offset and show secondary metric
-* edge labels in stat2 mode , aggregation nodes labels.
 * optimized rendering of large datasets using WebGL
 * multi layers support of Clusters, Polygons, LineStrings (path)
 * tooltips with customizable fields

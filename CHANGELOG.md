@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+* svg icons for nodes
+* text labels with collision filter.
+* bug fixes: allow lineWidth custom size, no min/max
+
 ## 1.1.0
 
 * Multi-source, multi-target support
