@@ -101,18 +101,19 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
 
   const getThreshold = (thresholdId: number) => {
     const keys = LineWidthStates.keys();
-    for (const aKey of keys) {
-      if (LineWidthStates[aKey].value === thresholdId) {
-        return LineWidthStates[aKey];
-      }
-    }
-    // no match, return current by default
-    return LineWidthStates[1];
+    // allow custom values
+    return thresholdId
+
+    // for (const aKey of keys) {
+    //   if (LineWidthStates[aKey].value === thresholdId) {
+    //     return LineWidthStates[aKey];
+    //   }
+    // }
+    // // no match, return current by default
+    // return LineWidthStates[9];
   };
 
-
-
-  const [lineWidth, setLineWidth] = useState<SelectableValue>(getThreshold(options.threshold.lineWidth));
+  const [lineWidth, setLineWidth] = useState<any>(getThreshold(options.threshold.lineWidth));
 
   return (
 
@@ -148,8 +149,10 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
                     menuShouldPortal={true}
                     value={lineWidth}
                     onChange={(v) => {
+                      const intValue = typeof v.value === 'string' ? parseInt(v.value, 10) : v.value
+                      if (!intValue) {return}
                       setLineWidth(v);
-                      options.lineWidthSetter(options.index, v.value)
+                      options.lineWidthSetter(options.index, intValue)
                     }}
                     options={LineWidthStates}
                     allowCustomValue={true}

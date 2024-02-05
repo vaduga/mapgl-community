@@ -643,7 +643,7 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
         if (!getPoints.length && !getPolygons.length && !getPath.length && !getGeoJson.length && data?.series?.length) {
             setRefresh(prev=> ({...prev}))
             return}
-        setShowCenter(false)
+        //setShowCenter(false)
         getLayers();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [

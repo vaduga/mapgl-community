@@ -22,7 +22,7 @@ function countMatchingKeysAndValues(props, overrides) {
       if (override.type === FieldType.number) {
         valuesArr = override.value.split(',').map(el => parseInt(el, 10));
       } else {
-        valuesArr = override.value.split(',');
+        valuesArr = override.value.split(',').map(el=>el.trim());
       }
 
       const pointValue = props[key];

@@ -31,11 +31,19 @@ export interface OverrideTracker {
 
 export const generateValuesWithIncrement = (start: number, end: number, increment: number): SelectableValue[] => {
   const values: SelectableValue[] = [];
-  for (let value = start; value <= end; value += increment) {
+  let currentIncrement = 0.1;
+
+  for (let value = start; value <= end; value += currentIncrement) {
     const roundedValue = parseFloat(value.toFixed(1));
     values.push({ value: roundedValue, label: roundedValue.toString() });
+
+    // Switch to the provided increment after reaching 1
+    if (roundedValue === 1) {
+      currentIncrement = increment;
+    }
   }
+
   return values;
 };
 
-export const LineWidthStates: SelectableValue[] = generateValuesWithIncrement(0.1, 25, 0.1);
+export const LineWidthStates: SelectableValue[] = generateValuesWithIncrement(0.1, 100, 1);
