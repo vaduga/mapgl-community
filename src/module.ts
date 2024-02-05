@@ -6,6 +6,7 @@ import { BaseLayerEditor } from './editor/BaseLayerEditor';
 import { DataLayersEditor } from './editor/DataLayersEditor';
 import { MapViewEditor } from './editor/MapViewEditor';
 import { DEFAULT_BASEMAP_CONFIG } from './layers/registry';
+import {GlobalSvgRulesEditor} from "./editor/IconsSVG/GlobalSvgRulesEditor";
 
 export const plugin = new PanelPlugin<PanelOptions>(Panel)
     .setNoPadding()
@@ -38,6 +39,15 @@ export const plugin = new PanelPlugin<PanelOptions>(Panel)
             name: 'Data layers',
             editor: DataLayersEditor,
         })
+
+        builder.addCustomEditor({
+            category: ['Svg icons'],
+            id: 'svgIconsConfig',
+            path: 'svgIconsConfig',
+            name: 'Svg icons',
+            editor: GlobalSvgRulesEditor,
+        })
+
 
 
         builder.addCustomEditor({

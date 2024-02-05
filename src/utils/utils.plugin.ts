@@ -6,6 +6,8 @@ import {DEFAULT_NUMS_COLOR, parDelimiter} from "../components/defaults";
 import {AggrTypes, DeckLine, Feature, ParentInfo, PointFeatureProperties, Sources, Vertices} from "../store/interfaces";
 import {MultiLineString} from "@turf/helpers";
 import {RGBAColor} from "@deck.gl/core/utils/color";
+import { v4 as uuidv4 } from 'uuid';
+import {GrafanaTheme2, SelectableValue} from "@grafana/data";
 
 function toHex(rgbaColor) {
     // Parse the rgbaColor string to extract the red, green, blue, and alpha values
@@ -354,18 +356,6 @@ features.forEach((feature, pathIdx)=>{
 
   };
 
-function genNodeNamesText(iconFeatures){
-
-    const nodeNames = iconFeatures?.filter(el=>AggrTypes.includes(el?.properties?.aggrType))
-        .map((node)=> {
-            const {locName, threshold } = node?.properties
-            const {color}= threshold
-            const geometry = node?.geometry as Point
-            return {text: locName, coordinates: geometry.coordinates ?? [0,0], color}
-        })
-    return nodeNames
-}
-
 function genLinksText(selLine, switchMap?) {
 
     if (!selLine) {
@@ -655,10 +645,42 @@ function findComments(vertices) {
     return comments;
 }
 
+async function parseSvgFileToString(svgFilePath) {
+    try {
+        const response = await fetch(svgFilePath);
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch SVG file. Status: ${response.status}`);
+        }
+
+        const svgText = await response.text();
+        return svgText;
+    } catch (error) {
+        console.error('Error fetching SVG file:', error);
+        return null;
+    }
+}
+
+const generateValuesWithIncrement = (start: number, end: number, increment: number, slowStart=false): SelectableValue[] => {
+    const values: SelectableValue[] = [];
+    let currentIncrement = slowStart? 0.1 : increment;
+
+    for (let value = start; value <= end; value += currentIncrement) {
+        const roundedValue = parseFloat(value.toFixed(1));
+        values.push({ value: roundedValue, label: roundedValue.toString() });
+
+        // Switch to the provided increment after reaching 1
+        if (roundedValue === 1) {
+            currentIncrement = increment;
+        }
+    }
+
+    return values;
+};
 
 
 
 export {
     toRGB4Array, colorToRGBA, getColorByMetric, getFirstCoordinate, toHex, hexToRgba, getBounds, getTurfAngle, makeColorLighter, makeColorDarker, genParPathText,
-    genParentLine, genExtendedPLine, genNodeNamesText, genLinksText, findChildLines, parseIfPossible, mergeVertices, findComments
+    genParentLine, genExtendedPLine, genLinksText, findChildLines, parseIfPossible, mergeVertices, findComments, parseSvgFileToString, generateValuesWithIncrement
 }

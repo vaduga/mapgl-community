@@ -4,7 +4,7 @@ import {AutoSizeInput, ColorPicker, IconButton, Input, Select, useStyles2} from 
 import {v4 as uuidv4} from 'uuid';
 import {css} from '@emotion/css';
 import {OverrideField} from "./OverrideField";
-import {LineWidthStates, OverField, OverrideTracker, Threshold} from './types';
+import {LineWidthStates, OverField, OverrideTracker, Threshold} from './threshold-types';
 import {makeColorLighter} from "../../utils";
 
 

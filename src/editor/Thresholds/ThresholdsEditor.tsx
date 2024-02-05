@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { orderBy } from 'lodash';
 import { Button, useTheme, useTheme2} from '@grafana/ui';
 import { v4 as uuidv4 } from 'uuid';
-import {OverrideTracker, Threshold, ThresholdTracker} from './types';
+import {OverrideTracker, Threshold, ThresholdTracker} from './threshold-types';
 import { ThresholdItem } from './ThresholdItem';
 import {
   DEFAULT_LINE_WIDTH,

@@ -29,7 +29,7 @@ export const FieldSelectEditor: React.FC<Props> = ({
 
     return (
         <Select
-            width={'auto'}
+            width={20}
             // isClearable
             isLoading={false}
             value={value as string | null}

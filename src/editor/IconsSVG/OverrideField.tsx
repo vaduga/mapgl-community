@@ -1,5 +1,5 @@
-import {AutoSizeInput, IconButton, Select, useStyles2} from "@grafana/ui";
-import {OverField} from "./threshold-types";
+import {AutoSizeInput, IconButton, InlineField, InlineFieldRow, Select, useStyles2} from "@grafana/ui";
+import {OverField} from "./svg-types";
 import React, {useState} from "react";
 import {GrafanaTheme2, SelectableValue} from "@grafana/data";
 import {css} from "@emotion/css";
@@ -33,6 +33,7 @@ export const OverrideField: React.FC<OverrideFieldProps> = (options: OverrideFie
 
         return (
             <>
+            <InlineField>
                 <FieldSelectEditor
                     context={options.context}
                     options={fields}
@@ -45,7 +46,8 @@ export const OverrideField: React.FC<OverrideFieldProps> = (options: OverrideFie
                         }
                     }}
                 />
-
+            </InlineField>
+            <InlineField>
                 <AutoSizeInput
                     minWidth={10}
                     disabled={!options.overrideField.name}
@@ -54,14 +56,17 @@ export const OverrideField: React.FC<OverrideFieldProps> = (options: OverrideFie
                     }}
                     placeholder={options.overrideField.value ? options.overrideField.value : 'v1,v2...'}
                 />
+            </InlineField>
+            <InlineField>
                 <IconButton
                     disabled={options.disabled}
                     key="deleteThresholdField"
                     variant="destructive"
                     name="trash-alt"
-                    tooltip="Delete Threshold Field"
+                    tooltip="Delete Rule Field"
                     onClick={() => options.remover(options.index)}
                 />
+            </InlineField>
             </>
         )
     }
@@ -73,10 +78,6 @@ export const OverrideField: React.FC<OverrideFieldProps> = (options: OverrideFie
 
 const getThresholdFieldStyles = (theme: GrafanaTheme2) => {
     return {
-        inputPrefix: css`
-      display: flex;
-      align-items: center;
-    `,
         colorPicker: css`
       padding: 0 ${theme.spacing(1)};
     `,

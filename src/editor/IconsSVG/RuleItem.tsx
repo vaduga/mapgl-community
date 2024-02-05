@@ -1,0 +1,298 @@
+import React, {useState} from 'react';
+import {FieldType, GrafanaTheme2, SelectableValue} from '@grafana/data';
+import {
+  AutoSizeInput,
+  ColorPicker,
+  IconButton,
+  InlineField,
+  InlineFieldRow,
+  Input,
+  Select,
+  useStyles2
+} from '@grafana/ui';
+import {v4 as uuidv4} from 'uuid';
+import {css} from '@emotion/css';
+import {OverrideField} from "./OverrideField";
+import {IconSvgSizes, OverField, OverrideTracker, Rule} from './svg-types';
+import {makeColorLighter} from "../../utils";
+import {CiscoIcons, ComputerIcons, DatabaseIcons, NetworkingIcons} from "./data/iconOptions";
+
+
+interface RuleItemProps {
+  rule: Rule;
+  key: string;
+  ID: string;
+  valueSetter: any;
+  colorSetter: any;
+  iconWidthSetter: any;
+  iconHeightSetter: any;
+  iconNameSetter: any;
+  overrideSetter: any;
+  remover: any;
+  index: number;
+  disabled: boolean;
+  context: any
+}
+
+export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
+  const styles = useStyles2(getRuleStyles);
+  const [oTracker, _setoTracker] = useState((): OverrideTracker[] => {
+    if (!options.rule.overrides) {
+      const empty: OverrideTracker[] = [];
+      return empty;
+    }
+    const items: OverrideTracker[] = [];
+    Object.values(options.rule.overrides).forEach((field: OverField, index: number) => {
+      items[index] = {
+        overrideField: field,
+        order: index,
+        ID: uuidv4(),
+      };
+    });
+
+    // console.log(options.rule.overrides)
+    // console.log(items)
+    return items;
+  });
+
+  const ciscoIconsFormatted = CiscoIcons.map((t) => {
+    return { label: t, value: 'cisco/' + t };
+  });
+  const networkingIconsFormatted = NetworkingIcons.map((t) => {
+    return { label: t, value: 'networking/' + t };
+  });
+  const databaseIconsFormatted = DatabaseIcons.map((t) => {
+    return { label: t, value: 'databases/' + t };
+  });
+  const computerIconsFormatted = ComputerIcons.map((t) => {
+    return { label: t, value: 'computers_monitors/' + t };
+  });
+
+
+  const setTracker = (v: OverrideTracker[]) => {
+    _setoTracker(v);
+    const allOverrides: OverField[] = [];
+    v.forEach((element) => {
+      allOverrides.push(element.overrideField);
+    });
+    options.overrideSetter(options.index, allOverrides);
+  };
+
+  const updateOverrideFieldNameType = (index: number, name: string, type: FieldType) => {
+    oTracker[index].overrideField.name = name;
+    oTracker[index].overrideField.type = type;
+    setTracker([...oTracker]);
+  };
+
+  const updateOverrideFieldValue = (index: string, value: string) => {
+    oTracker[index].overrideField.value = value;
+    setTracker([...oTracker]);
+  };
+
+
+  const addField = () => {
+    const order = oTracker.length;
+    const aOverrideField: OverField = {
+      name: '',
+      value: '',
+      type: FieldType.string
+    };
+    const aTracker: OverrideTracker = {
+      overrideField: aOverrideField,
+      order: order,
+      ID: uuidv4(),
+    };
+    setTracker([...oTracker, aTracker]);
+  };
+
+  const removeRuleField = (index: number) => {
+    const allRules = [...oTracker];
+    let removeIndex = 0;
+    for (let i = 0; i < allRules.length; i++) {
+      if (allRules[i].order === index) {
+        removeIndex = i;
+        break;
+      }
+    }
+    allRules.splice(removeIndex, 1);
+    // reorder
+    for (let i = 0; i < allRules.length; i++) {
+      allRules[i].order = i;
+    }
+    setTracker([...allRules]);
+  };
+
+
+
+  const [iconWidth, setIconWidth] = useState<any>(options.rule.iconWidth);
+  const [iconHeight, setIconHeight] = useState<any>(options.rule.iconHeight);
+ const [iconName, setIconName] = useState<string>(options.rule.iconName)
+  const handleIconChange = (icon: string | undefined) => {
+    if (typeof icon !== 'string') {return}
+      options.iconNameSetter(options.index, icon)
+    setIconName(icon)
+  }
+
+  return (
+      <InlineFieldRow className={styles.inlineRow}>
+        <div className={styles.colorPicker} title="Constant color">
+          <ColorPicker
+              color={options.rule.color}
+              onChange={(color) => {
+                //options.selColorSetter(options.index, color)
+                options.colorSetter(options.index, color)
+              }}
+              enableNamedColors={true}
+          />
+        </div>
+      {/*<Input*/}
+      {/*    disabled={options.disabled}*/}
+      {/*    type="number"*/}
+      {/*    step="1.0"*/}
+      {/*    key={options.ID}*/}
+      {/*    onChange={(e) => options.valueSetter(options.index, Number(e.currentTarget.value))}*/}
+      {/*    value={options.rule.value}*/}
+      {/*    //width={15}*/}
+      {/*/>*/}
+
+        <InlineField grow>
+        <Select
+              disabled={options.disabled}
+              menuShouldPortal={true}
+              value={iconWidth}
+              onChange={(v) => {
+                const intValue = typeof v.value === 'string' ? parseInt(v.value, 10) : v.value
+                if (!intValue) {return}
+                setIconWidth(v);
+                options.iconWidthSetter(options.index, intValue)
+              }}
+              options={IconSvgSizes}
+              allowCustomValue={true}
+          />
+        </InlineField>
+        <InlineField grow>
+        <Select
+              disabled={options.disabled}
+              menuShouldPortal={true}
+              value={iconHeight}
+              onChange={(v) => {
+                const intValue = typeof v.value === 'string' ? parseInt(v.value, 10) : v.value
+                if (!intValue) {return}
+                setIconHeight(v);
+                options.iconHeightSetter(options.index, intValue)
+              }}
+              options={IconSvgSizes}
+              allowCustomValue={true}
+          />
+        </InlineField>
+
+
+        {oTracker &&
+                  oTracker.map((tracker: OverrideTracker, index: number) => {
+                    return (
+                        <OverrideField
+                            disabled={options.disabled || false}
+                            key={`rule-field-index-${tracker.ID}`}
+                            ID={tracker.ID}
+                            overrideField={tracker.overrideField}
+                            nameTypeSetter={updateOverrideFieldNameType}
+                            valueSetter={updateOverrideFieldValue}
+                            remover={removeRuleField}
+                            index={index}
+                            context={options.context}
+                        />
+                    );
+                  })}
+        <InlineField grow>
+  <Select
+                  onChange={(v) => {
+                    if (!v.value) {return}
+                    if (v.value === 'custom_icon') {
+                      setIconName(v.value)
+                    } else {
+                    handleIconChange(v.value); }
+                  }}
+                  value={options.rule.iconName}
+                  options={[
+                    { label: 'Cisco Icons', value: 'cisco', options: ciscoIconsFormatted },
+                    { label: 'Networking Icons', value: 'networking', options: networkingIconsFormatted },
+                    { label: 'Database Icons', value: 'databases', options: databaseIconsFormatted },
+                    { label: 'Computer Icons', value: 'computers_monitors', options: computerIconsFormatted },
+                    { label: 'Custom Icon', value: 'custom_icon' },
+                  ]}
+                  className={styles.nodeSelect}
+                  placeholder={'Select an icon'}
+
+              ></Select>
+        </InlineField>
+              {iconName && iconName === 'custom_icon' ? (
+                  <>
+                    <InlineField
+                        grow
+                        label="Custom Icon Source"
+                        className={styles.inlineField}
+                        style={{ marginLeft: '24px' }}
+                    >
+                      <Input
+                          value={options.rule.iconName}
+                          placeholder={'https://example.com/icon.svg'}
+                          type={'text'}
+                          name={'iconImageURL'}
+                          onChange={(e) => {
+                            const v = e.currentTarget?.value
+                            if (!v) {return}
+                            handleIconChange(v );
+                          }}
+                      ></Input>
+                    </InlineField>
+                  </>
+              ) : (
+                  ''
+              )}
+
+
+              <IconButton
+                  disabled={options.disabled}
+                  key="addRuleField"
+                  variant="primary"
+                  name="plus"
+                  tooltip="Add override"
+                  onClick={addField}
+              />
+              <IconButton
+                  disabled={options.disabled}
+                  key="deleteRule"
+                  variant="destructive"
+                  name="trash-alt"
+                  tooltip="Delete Rule"
+                  onClick={() => options.remover(options.index)}
+              />
+
+
+</InlineFieldRow>
+  );
+};
+
+const getRuleStyles = (theme: GrafanaTheme2) => {
+  return {
+    ruleContainer: css`
+      display: flex;
+      align-items: center;
+      //flex: 1; // Use flex: 1 to distribute space equally among child elements
+      justify-content: space-between;
+    `,
+    colorPicker: css`
+      padding: 0 ${theme.spacing(1)};
+    `,
+    nodeSelect: css`
+      margin: 5px 0px;
+    `,
+    inlineField: css`
+      flex: 1 0 auto;
+    `,
+    inlineRow: css`
+      display: flex;
+      align-items: center;      
+    `,
+  };
+};
