@@ -135,7 +135,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
       pointRadiusScale: 1,
       filled: true,
       stroked: false,
-      pointType: this.layerProps.getisShowCluster ? 'icon+text' : 'circle+text',
+      pointType: this.layerProps.getisShowSVG ? 'icon+text' : 'circle+text',
      // iconAtlas: mySvg,
       loadOptions: {
         imagebitmap: {

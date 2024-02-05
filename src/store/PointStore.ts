@@ -22,7 +22,7 @@ class PointStore {
   pLinePoints: any[] = [];
   orgId: null | number = null
   comments: ComFeature[] | undefined
-  isShowCluster = true;
+  isShowSVG = true;
   mode = 'view'
   isShowPoints = true;
   isOffset = true;
@@ -129,8 +129,8 @@ class PointStore {
     return selectedIndexes;
   }
 
-  get getisShowCluster() {
-    return this.isShowCluster;
+  get getisShowSVG() {
+    return this.isShowSVG;
   }
   get getisShowPoints() {
     return this.isShowPoints;
@@ -182,8 +182,8 @@ class PointStore {
     return new Map(relArr);
   }
 
-  toggleShowCluster = (flag: boolean) => {
-    this.isShowCluster = flag;
+  toggleShowSVG = (flag: boolean) => {
+    this.isShowSVG = flag;
   };
 
   toggleShowPoints = (flag: boolean) => {

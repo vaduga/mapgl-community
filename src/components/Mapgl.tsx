@@ -67,7 +67,7 @@ const Mapgl = () => {
         getSelFeature,
         getSelIds,
         switchMap,
-        getisShowCluster,
+        getisShowSVG,
         getSelectedFeIndexes,
         setSelectedIp,setTooltipObject,
         getTooltipObject,
@@ -158,7 +158,7 @@ const Mapgl = () => {
                 setSelectedIp(ip, lineId ? [lineId] : null)
 
 
-            } else if (getisShowCluster) {
+            } else if (getisShowSVG) {
                 // zoom on cluster click
                 const featureGeometry = switchMap && switchMap.get(info.objects?.[0].properties.locName)?.geometry as Point;
                 if (featureGeometry && Array.isArray(featureGeometry.coordinates)) {
@@ -402,7 +402,7 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
         setShowCenter,
         getEditableLines,
         getSelectedFeIndexes,
-        getisShowCluster,
+        getisShowSVG,
         getPoints,
         getSelFeature,
         switchMap,
@@ -635,7 +635,7 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
         getGeoJson,
         getSelectedIp,
         getisOffset,
-        getisShowCluster,
+        getisShowSVG,
         getisShowLines,
         getisShowPoints,
     ]);

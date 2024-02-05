@@ -28,9 +28,9 @@ const LayerSelect: FC = observer(() => {
     const s = useStyles2(getStyles);
     const {pointStore, lineStore, replaceVariables} = useRootStore()
     const {
-        toggleShowCluster,
+        toggleShowSVG,
         toggleShowPoints,
-        getisShowCluster,
+        getisShowSVG,
         getMode,
         setMode,
         getisShowPoints,
@@ -54,7 +54,7 @@ const LayerSelect: FC = observer(() => {
           title="nodes"
           onChange={() => {
               if (getisShowPoints) {
-                  toggleShowCluster(false)
+                  toggleShowSVG(false)
               }
               toggleShowPoints(!getisShowPoints);
           }}
@@ -72,21 +72,21 @@ const LayerSelect: FC = observer(() => {
           </Checkbox>
         <Checkbox
           //disabled={getMode === 'modify'}
-          checked={getisShowCluster}
-          title="cluster"
+          checked={getisShowSVG}
+          title="svg"
           onChange={() => {
-            toggleShowCluster(!getisShowCluster);
+            toggleShowSVG(!getisShowSVG);
             toggleShowPoints(true)
-            if (!getisShowCluster && getMode === 'modify') {
+            if (!getisShowSVG && getMode === 'modify') {
                 setMode('view')
-                toggleShowCluster(true)
+                toggleShowSVG(true)
           }}  }
         >
             &nbsp;svg
         </Checkbox>
               <Checkbox
                   checked={!getisOffset}
-                  title="stat1/stat2 & offset"
+                  title="stat1/stat2 no offset"
                   onChange={() => {
                       setMode('view')
                       toggleOffset(!getisOffset);
