@@ -30,4 +30,4 @@ export interface OverrideTracker {
 }
 
 
-export const LineWidthStates: SelectableValue[] = generateValuesWithIncrement(0.1, 100, 1);
+export const LineWidthStates: SelectableValue[] = generateValuesWithIncrement(0.1, 100, 1, true);

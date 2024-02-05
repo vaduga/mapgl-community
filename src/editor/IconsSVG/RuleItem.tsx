@@ -16,6 +16,7 @@ import {OverrideField} from "./OverrideField";
 import {IconSvgSizes, OverField, OverrideTracker, Rule} from './svg-types';
 import {makeColorLighter} from "../../utils";
 import {CiscoIcons, ComputerIcons, DatabaseIcons, NetworkingIcons} from "./data/iconOptions";
+import {DEFAULT_COLOR_PICKER_RGBA, DEFAULT_OK_COLOR_RGBA} from "../../components/defaults";
 
 
 interface RuleItemProps {
@@ -126,7 +127,8 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
 
   const [iconWidth, setIconWidth] = useState<any>(options.rule.iconWidth);
   const [iconHeight, setIconHeight] = useState<any>(options.rule.iconHeight);
- const [iconName, setIconName] = useState<string>(options.rule.iconName)
+  const [iconName, setIconName] = useState<string>(options.rule.iconName)
+  const [showColor, setShowColor] = useState<string>(options.rule.color)
   const handleIconChange = (icon: string | undefined) => {
     if (typeof icon !== 'string') {return}
       options.iconNameSetter(options.index, icon)
@@ -135,15 +137,27 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
 
   return (
       <InlineFieldRow className={styles.inlineRow}>
-        <div className={styles.colorPicker} title="Constant color">
-          <ColorPicker
-              color={options.rule.color}
+        <div className={styles.colorPicker}>
+          {showColor ? <ColorPicker
+              color={options.rule.color ?? DEFAULT_COLOR_PICKER_RGBA}
               onChange={(color) => {
-                //options.selColorSetter(options.index, color)
+                console.log('color', color)
                 options.colorSetter(options.index, color)
               }}
               enableNamedColors={true}
-          />
+          /> :
+            <IconButton
+            disabled={options.disabled}
+          key="addColorPickerRuleField"
+          variant="primary"
+          name="lock"
+          tooltip="Set constant color"
+          onClick={()=> {
+            options.colorSetter(options.index, DEFAULT_COLOR_PICKER_RGBA)
+            setShowColor(DEFAULT_COLOR_PICKER_RGBA)
+          }}
+        />
+          }
         </div>
       {/*<Input*/}
       {/*    disabled={options.disabled}*/}

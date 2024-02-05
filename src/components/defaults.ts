@@ -3,6 +3,7 @@
  */
 
 export const DEFAULT_OK_COLOR_RGBA = 'rgba(154, 205, 50)'; // #299c46
+export const DEFAULT_COLOR_PICKER_RGBA = '#9acd32'
 
 export const DEFAULT_OK_COLOR_SELECTED_RGBA = 'rgba(41, 156, 70, 0.9)';
 
