@@ -105,7 +105,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
 
 
     return new GeoJsonLayer(this.getSubLayerProps({
-      visible: true, //this.isVisible,
+      visible: this.isVisible,
       // highlightColor,
       // onHover,
       id: colTypes.Points,

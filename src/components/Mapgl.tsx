@@ -542,6 +542,7 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
                 clusterLayer = new IconClusterLayer({
                         ...layerProps,
                         layerProps,
+                        isVisible: getisShowPoints,
                         getPosition: (d) => d.coordinates,
                         data: clusters.reduce((acc,curr)=> acc.concat(curr), []),
                         id: 'icon-cluster',
