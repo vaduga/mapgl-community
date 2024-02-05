@@ -5,7 +5,7 @@ import {config, locationService, RefreshEvent} from '@grafana/runtime';
 import {observer} from 'mobx-react-lite';
 import DeckGL from '@deck.gl/react';
 import MapLibre, {AttributionControl} from 'react-map-gl/maplibre';
-import {LinesGeoJsonLayer} from '../deckLayers/MarkersLines/lines-geo-json-layer';
+import {LinesGeoJsonLayer} from '../deckLayers/LinesLayer/lines-geo-json-layer';
 import {MyPathLayer} from '../deckLayers/PathLayer/path-layer';
 import {IconClusterLayer} from '../deckLayers/IconClusterLayer/icon-cluster-layer';
 import {AggrTypes, colTypes, DeckFeature, Feature, Vertices,
@@ -23,7 +23,6 @@ import {
     mergeVertices, initBasemap, initMapView, toRGB4Array, findComments, hexToRgba
 } from '../utils';
 
-import {MarkersGeoJsonLayer} from '../deckLayers/MarkersLines/geo-json-layer';
 import {Tooltip} from './Tooltips/Tooltip';
 import {PanelOptions, MapViewConfig} from "../types";
 import {Point, Position} from "geojson";
@@ -404,6 +403,7 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
         setShowCenter,
         getEditableLines,
         getSelectedFeIndexes,
+        getisShowCluster,
         getPoints,
         getSelFeature,
         switchMap,
@@ -523,9 +523,7 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
             }
 
             let clusterLayerData;
-            let iconLayerData;
 
-            if (getisShowCluster) {
                 clusterLayerData = markers
                     .map((el): DeckFeature | undefined => {
                         if (el) {
@@ -539,32 +537,15 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
                         return undefined;
                     })
                     .filter((val): val is DeckFeature => val !== undefined);
-            }
-            else {
-            iconLayerData = markers
-            }
 
-            if (iconLayerData?.length>0) {
-                const featureCollection = {
-                    type: 'FeatureCollection',
-                    features: iconLayerData,
-                };
-
-                icons = MarkersGeoJsonLayer({
-                    ...layerProps,
-                    ...iconLayersProps,
-                    featureCollection, isVisible: !getisShowCluster && getisShowPoints,
-                })
-                iconLayers.push(icons)
-            }
-            if (clusterLayerData) {
+            if (clusterLayerData.length) {
                 clusters.push(clusterLayerData)
             }
 
-            if (clusters) {
+            if (clusters.length) {
                 clusterLayer = new IconClusterLayer({
                         ...layerProps,
-                    layerProps,
+                        layerProps,
                         getPosition: (d) => d.coordinates,
                         data: clusters.reduce((acc,curr)=> acc.concat(curr), []),
                         id: 'icon-cluster',
@@ -576,7 +557,7 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
                     }
                 );
             }
-            newLayers = [...secLayers, ...iconLayers, ...lineLayers, list1]
+            newLayers = [...secLayers, ...lineLayers, list1]
             if (pathLine) {
                 newLayers.unshift(pathLine)
                 newLayers.push(pathLineExt)

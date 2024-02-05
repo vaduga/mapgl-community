@@ -3,11 +3,9 @@ import {GeoJsonLayer, IconLayer } from '@deck.gl/layers';
 import Supercluster from 'supercluster';
 import { svgToDataURL, createDonutChart } from './donutChart';
 import {Feature} from "geojson";
-import {MyIconLayer} from "../IconLayer/icon-layer";
-import {MarkersGeoJsonLayer} from "../MarkersLines/geo-json-layer";
 import {toJS} from "mobx";
 import {colTypes} from "../../store/interfaces";
-import {toRGB4Array} from "../../utils";
+import {parseSvgFileToString, toRGB4Array} from "../../utils";
 import { CollisionFilterExtension } from '@deck.gl/extensions/typed';
 //import iconAtlas from '/img/location-icon-atlas.png';
 
@@ -125,8 +123,19 @@ export class IconClusterLayer extends CompositeLayer<params> {
         return toRGB4Array(color)
       },
       getTextSize: 12,
-
-      pointType: 'icon+text',
+      getFillColor: (d: any) => {
+        const {threshold, isInParentLine} = d.properties
+        const {color} = threshold
+        return toRGB4Array(color)
+      },
+      getPointRadius: (d) => {
+        const isHead = this.selectedIp === d.properties?.locName
+        return isHead? 4 : 2
+      } ,
+      pointRadiusScale: 1,
+      filled: true,
+      stroked: false,
+      pointType: this.layerProps.getisShowCluster ? 'icon+text' : 'circle+text',
      // iconAtlas: mySvg,
       loadOptions: {
         imagebitmap: {
@@ -159,6 +168,18 @@ export class IconClusterLayer extends CompositeLayer<params> {
           })
           d.properties.colorCounts = colorCounts
         } else {
+
+
+          // Example usage:
+          const svgFilePath = mySvg;
+          // parseSvgFileToString(svgFilePath)
+          //     .then(svgString => {
+          //       if (svgString) {
+          //         console.log('SVG String:', svgString);
+          //       } else {
+          //         console.error('Failed to fetch SVG file.');
+          //       }
+          //     });
 
 
           function createSVGIcon(color) {
