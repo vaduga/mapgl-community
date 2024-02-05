@@ -646,7 +646,6 @@ function findComments(vertices) {
 }
 
 async function parseSvgFileToString(options) {
-    console.log('options', options)
     const {iconName: svgIconName, svgColor: svgIconColor, iconWidth: width, iconHeight: height} = options
     const svgFilePath = 'public/plugins/vaduga-mapgl-panel/img/icons/'+svgIconName+'.svg'
     try {
@@ -656,29 +655,15 @@ async function parseSvgFileToString(options) {
             throw new Error(`Failed to fetch SVG file. Status: ${response.status}`);
         }
 
+
         let svgText = await response.text();
 
-        // Modify the SVG text to include width, height, and circular background
+        // Modify the SVG text to include width and height properties
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(svgText, 'image/svg+xml');
         const svgElement = xmlDoc.getElementsByTagName('svg')[0];
 
         if (svgElement) {
-            // Add a circle element as the background
-            const circleElement = xmlDoc.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            const circleRadius = Math.max(parseInt(width, 10), parseInt(height, 10)) * 2;
-            const circleCenterX = parseInt(width, 10) / 2;
-            const circleCenterY = parseInt(height, 10) / 2;
-
-            circleElement.setAttribute('cx', circleCenterX.toString());
-            circleElement.setAttribute('cy', circleCenterY.toString());
-            circleElement.setAttribute('r', circleRadius.toString());
-            circleElement.setAttribute('fill', svgIconColor);
-
-            // Insert the circle as the first child of the SVG
-            svgElement.insertBefore(circleElement, svgElement.firstChild);
-
-            // Set the width and height attributes
             svgElement.setAttribute('width', width);
             svgElement.setAttribute('height', height);
 
@@ -695,9 +680,9 @@ async function parseSvgFileToString(options) {
 
 async function loadSvgIcons(svgIconRules) {
     if (svgIconRules.length) {
-        const promises = svgIconRules.concat({iconName: DEFAULT_ICON_NAME2, iconWidth: 128, iconHeight:128}).filter(el=>el).map(parseSvgFileToString)
+        const promises = svgIconRules.filter(el=>el).map(parseSvgFileToString)
         const res = await Promise.all(promises)
-        return Object.fromEntries(res)
+        return res?.[0]?.length === 2 ? Object.fromEntries(res) : {}
 return {res}
     } else {
         return {}

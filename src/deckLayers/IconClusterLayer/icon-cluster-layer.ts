@@ -137,7 +137,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
       pointRadiusScale: 1,
       filled: true,
       stroked: false,
-      pointType: this.layerProps.getisShowSVG ? 'icon+text' : 'circle+text',
+      pointType: this.layerProps.getisShowSVG ? 'circle+icon+text' : 'circle+text',
      // iconAtlas: mySvg,
       //iconMapping: ICON_MAPPING,
 
@@ -163,40 +163,48 @@ export class IconClusterLayer extends CompositeLayer<params> {
                 }
           })
           d.properties.colorCounts = colorCounts
+          return {
+            url: svgToDataURL(createDonutChart(colorCounts)),
+            width: isSelected ? 256 : 128,
+            height: isSelected ? 256 : 128,
+          };
         } else {
 
           const {threshold} = d.properties
           const {color, label, iconName, iconWidth, iconHeight} = threshold
 
-          // single point, not a cluster
-
 
 if (this.getSvgIcons[iconName]) {
   return {
     url: svgToDataURL(this.getSvgIcons[iconName]),//mySvg,
-    width: isSelected ? iconWidth *1.5 : iconWidth,
-    height: isSelected ? iconHeight *1.5 : iconHeight,
+    width: iconWidth,
+    height: iconHeight,
   };
-} else {
-
 }
-          // single point, not a cluster
+// single point no customIcon, not a cluster
+          const singleColor = color;
+          colorCounts[singleColor] =   {
+            count : 1,
+            label
+          }
         }
+
         return {
           url: svgToDataURL(createDonutChart(colorCounts)),
-          width: isSelected ? 256 : 128,
-          height: isSelected ? 256 : 128,
+          width: isSelected ? 256 : 0,
+          height: isSelected ? 256 : 0,
         };
       },
 
-      sizeScale: 2,
+      iconSizeScale: 1,
+      getIconPixelOffset: [0, -20],
       getIconSize: (d) => {
-        const isHead = this.selectedIp === d.properties?.locName
+        const isSelected = this.selectedIp === d.properties?.locName;
         const {cluster} = d.properties
         if (cluster) {
-          return 30
+          return 38
         }
-        else {return isHead ? 30 : 15}
+        else {return isSelected ? 60 : 30}
 
 
       },

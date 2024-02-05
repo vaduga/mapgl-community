@@ -38,7 +38,7 @@ import {MyIconLayer} from "../deckLayers/IconLayer/icon-layer";
 import {PositionTracker} from "./Geocoder/PositionTracker";
 import {pushPath} from "../layers/data/markersLayer";
 import {flushSync} from "react-dom";
-import {CENTER_PLOT_FILL_COLOR, DEFAULT_COMMENT_COLOR, parDelimiter} from "./defaults";
+import {CENTER_PLOT_FILL_COLOR, DEFAULT_COMMENT_COLOR, DEFAULT_ICON_NAME2, parDelimiter} from "./defaults";
 import {RGBAColor} from "@deck.gl/core/utils/color";
 import {getThresholdForValue} from "../editor/Thresholds/data/threshold_processor";
 import {getIconRuleForFeature} from "../editor/IconsSVG/data/rules_processor";
@@ -209,9 +209,12 @@ const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
         }
 
         const transformed: any = [];
+let svgIcons
+        if (svgIconRules?.length) {
+            svgIcons = await loadSvgIcons(svgIconRules)
+        }
 
-        const svgIcons = await loadSvgIcons(svgIconRules)
-        if (Object.keys(svgIcons).length) {
+        if (svgIcons && Object.keys(svgIcons).length) {
             setSvgIcons(svgIcons)
         }
 
