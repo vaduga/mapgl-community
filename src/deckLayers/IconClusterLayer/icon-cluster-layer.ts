@@ -126,6 +126,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
       },
       getTextSize: 12,
       getFillColor: (d: any) => {
+        if (d.properties.cluster) {return}
         const {threshold, isInParentLine} = d.properties
         const {color} = threshold
         return toRGB4Array(color)
@@ -171,14 +172,17 @@ export class IconClusterLayer extends CompositeLayer<params> {
         } else {
 
           const {threshold} = d.properties
-          const {color, label, iconName, iconWidth, iconHeight} = threshold
+          const {color, label, iconName} = threshold
 
+          const svgIcon = this.getSvgIcons[iconName]
+if (svgIcon) {
+  const {svgText, width, height} = svgIcon
 
-if (this.getSvgIcons[iconName]) {
   return {
-    url: svgToDataURL(this.getSvgIcons[iconName]),//mySvg,
-    width: iconWidth,
-    height: iconHeight,
+    url: svgToDataURL(svgText),
+    width,
+    height,
+    id: iconName
   };
 }
 // single point no customIcon, not a cluster
@@ -189,22 +193,28 @@ if (this.getSvgIcons[iconName]) {
           }
         }
 
-        return {
-          url: svgToDataURL(createDonutChart(colorCounts)),
-          width: isSelected ? 256 : 0,
-          height: isSelected ? 256 : 0,
+
+return        {
+          url: svgToDataURL(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+  <!-- Add any additional attributes or elements as needed -->
+</svg>`),
+          width: 1,
+          height: 1,
+  id: 'blank'
         };
       },
 
-      iconSizeScale: 1,
+      iconSizeScale: 1.1,
       getIconPixelOffset: [0, -20],
       getIconSize: (d) => {
         const isSelected = this.selectedIp === d.properties?.locName;
-        const {cluster} = d.properties
+        const {cluster, threshold} = d.properties
         if (cluster) {
-          return 38
+          return 30
         }
-        else {return isSelected ? 60 : 30}
+        else {
+          const {iconSize} = threshold
+          return iconSize ? isSelected ? iconSize*1.5 : iconSize : 30}
 
 
       },
@@ -224,7 +234,7 @@ if (this.getSvgIcons[iconName]) {
           collisionTestProps:
               {
                 sizeScale: 4,
-                radiusScale: 4,
+
               }
         },
       },

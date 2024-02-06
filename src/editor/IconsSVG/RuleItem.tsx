@@ -13,7 +13,7 @@ import {
 import {v4 as uuidv4} from 'uuid';
 import {css} from '@emotion/css';
 import {OverrideField} from "./OverrideField";
-import {IconSvgSizes, OverField, OverrideTracker, Rule} from './svg-types';
+import {IconSvgSizes, IconSvgWHSizes, OverField, OverrideTracker, Rule} from './svg-types';
 import {makeColorLighter} from "../../utils";
 import {CiscoIcons, DatabaseIcons, NetworkingIcons} from "./data/iconOptions";
 import {DEFAULT_COLOR_PICKER_RGBA, DEFAULT_OK_COLOR_RGBA} from "../../components/defaults";
@@ -25,8 +25,7 @@ interface RuleItemProps {
   ID: string;
   valueSetter: any;
   colorSetter: any;
-  iconWidthSetter: any;
-  iconHeightSetter: any;
+  iconSizeSetter: any;
   iconNameSetter: any;
   overrideSetter: any;
   remover: any;
@@ -121,10 +120,7 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
     setTracker([...allRules]);
   };
 
-
-
-  const [iconWidth, setIconWidth] = useState<any>(options.rule.iconWidth);
-  const [iconHeight, setIconHeight] = useState<any>(options.rule.iconHeight);
+  const [iconSize, setIconSize] = useState<any>(options.rule.iconSize);
   const [iconName, setIconName] = useState<string>(options.rule.iconName)
   const [showColor, setShowColor] = useState<string>(options.rule.svgColor)
   const handleIconChange = (icon: string | undefined) => {
@@ -167,36 +163,21 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
       {/*    //width={15}*/}
       {/*/>*/}
 
-        <InlineField grow>
-        <Select
-              disabled={options.disabled}
-              menuShouldPortal={true}
-              value={iconWidth}
-              onChange={(v) => {
-                const intValue = typeof v.value === 'string' ? parseInt(v.value, 10) : v.value
-                if (!intValue) {return}
-                setIconWidth(v);
-                options.iconWidthSetter(options.index, intValue)
-              }}
-              options={IconSvgSizes}
-              allowCustomValue={true}
-          />
-        </InlineField>
-        <InlineField grow>
-        <Select
-              disabled={options.disabled}
-              menuShouldPortal={true}
-              value={iconHeight}
-              onChange={(v) => {
-                const intValue = typeof v.value === 'string' ? parseInt(v.value, 10) : v.value
-                if (!intValue) {return}
-                setIconHeight(v);
-                options.iconHeightSetter(options.index, intValue)
-              }}
-              options={IconSvgSizes}
-              allowCustomValue={true}
-          />
-        </InlineField>
+          <InlineField grow label="size">
+              <Select
+                  disabled={options.disabled}
+                  menuShouldPortal={true}
+                  value={iconSize}
+                  onChange={(v) => {
+                      const intValue = typeof v.value === 'string' ? parseInt(v.value, 10) : v.value
+                      if (!intValue) {return}
+                      setIconSize(v);
+                      options.iconSizeSetter(options.index, intValue)
+                  }}
+                  options={IconSvgSizes}
+                  allowCustomValue={true}
+              />
+          </InlineField>
 
 
         {oTracker &&

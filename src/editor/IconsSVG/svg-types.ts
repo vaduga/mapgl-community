@@ -4,8 +4,7 @@ import {generateValuesWithIncrement} from "../../utils";
 export interface Rule {
   overrides: OverrideTracker | [];
   svgColor: string;
-  iconWidth: number;
-  iconHeight: number;
+  iconSize: number;
   iconName: string;
   value: number;
 }
@@ -30,4 +29,5 @@ export interface OverrideTracker {
 }
 
 
-export const IconSvgSizes: SelectableValue[] = generateValuesWithIncrement(10, 300, 10, false);
+export const IconSvgWHSizes: SelectableValue[] = generateValuesWithIncrement(16, 320, 16, false);
+export const IconSvgSizes: SelectableValue[] = generateValuesWithIncrement(10, 100, 10, false);

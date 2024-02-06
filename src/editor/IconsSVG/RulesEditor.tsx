@@ -6,7 +6,12 @@ import {OverrideTracker, Rule, RuleTracker} from './svg-types';
 import { RuleItem } from './RuleItem';
 import {
   DEFAULT_LINE_WIDTH,
-  DEFAULT_OK_COLOR_SELECTED_RGBA, DEFAULT_OK_COLOR_RGBA, DEFAULT_ICON_WIDTH, DEFAULT_ICON_HEIGHT, DEFAULT_ICON_NAME,
+  DEFAULT_OK_COLOR_SELECTED_RGBA,
+  DEFAULT_OK_COLOR_RGBA,
+  DEFAULT_ICON_WIDTH,
+  DEFAULT_ICON_HEIGHT,
+  DEFAULT_ICON_NAME,
+  DEFAULT_ICON_SIZE,
 } from '../../components/defaults';
 import {hexToRgba} from "../../utils/utils.plugin";
 interface Props {
@@ -71,15 +76,12 @@ export const RulesEditor: React.FC<Props> = (options) => {
     setTracker([...tracker]);
   };
 
-  const updateIconWidth = (index: number, width: number) => {
-    tracker[index].rule.iconWidth = width;
+
+  const updateIconSize = (index: number, size: number) => {
+    tracker[index].rule.iconSize = size;
     setTracker([...tracker]);
   };
 
-  const updateIconHeight = (index: number, height: number) => {
-    tracker[index].rule.iconHeight = height;
-    setTracker([...tracker]);
-  };
 
   const updateIconName = (index: number, name: string) => {
     tracker[index].rule.iconName = name;
@@ -108,8 +110,7 @@ export const RulesEditor: React.FC<Props> = (options) => {
     const aRule: Rule = {
       overrides: [],
       svgColor: '',
-      iconWidth: DEFAULT_ICON_WIDTH,
-      iconHeight: DEFAULT_ICON_HEIGHT,
+      iconSize: DEFAULT_ICON_SIZE,
       iconName: DEFAULT_ICON_NAME,
       value: 0,
     };
@@ -136,8 +137,7 @@ export const RulesEditor: React.FC<Props> = (options) => {
                       ID={tracker.ID}
                       rule={tracker.rule}
                       colorSetter={updateRuleColor}
-                      iconWidthSetter={updateIconWidth}
-                      iconHeightSetter={updateIconHeight}
+                      iconSizeSetter={updateIconSize}
                       iconNameSetter={updateIconName}
                       valueSetter={updateRuleValue}
                       overrideSetter={updateRuleOverrides}

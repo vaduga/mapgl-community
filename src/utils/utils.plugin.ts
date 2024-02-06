@@ -646,7 +646,7 @@ function findComments(vertices) {
 }
 
 async function parseSvgFileToString(options) {
-    const {iconName: svgIconName, svgColor: svgIconColor, iconWidth: width, iconHeight: height} = options
+    const {iconName: svgIconName, svgColor: svgIconColor} = options
     const svgFilePath = 'public/plugins/vaduga-mapgl-panel/img/icons/'+svgIconName+'.svg'
     try {
         const response = await fetch(svgFilePath);
@@ -658,20 +658,31 @@ async function parseSvgFileToString(options) {
 
         let svgText = await response.text();
 
-        // Modify the SVG text to include width and height properties
+        // Modify the SVG text to include width and height properties from viewBox
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(svgText, 'image/svg+xml');
         const svgElement = xmlDoc.getElementsByTagName('svg')[0];
 
+        let viewBoxHeight, viewBoxWidth
+
         if (svgElement) {
-            svgElement.setAttribute('width', width);
-            svgElement.setAttribute('height', height);
+            // Get width and height from the viewBox attribute
+            const viewBox = svgElement.getAttribute('viewBox');
+            if (viewBox) {
+                const viewBoxValues = viewBox.split(' ').map(parseFloat);
+                viewBoxWidth = viewBoxValues[2];
+                viewBoxHeight = viewBoxValues[3];
+
+                // Set width and height attributes
+                svgElement.setAttribute('width', viewBoxWidth.toString());
+                svgElement.setAttribute('height', viewBoxHeight.toString());
+            }
 
             // Convert the modified XML back to a string
             svgText = new XMLSerializer().serializeToString(xmlDoc);
         }
 
-        return [svgIconName, svgText];
+        return [svgIconName, {svgText, width: viewBoxWidth, height: viewBoxHeight}];
     } catch (error) {
         console.error('Error fetching SVG file:', error);
         return null;

@@ -1,9 +1,10 @@
 import {
   DEFAULT_ICON_HEIGHT,
-  DEFAULT_ICON_NAME2, DEFAULT_ICON_WIDTH,
+  DEFAULT_ICON_NAME2, DEFAULT_ICON_SIZE, DEFAULT_ICON_WIDTH,
 } from '../../../components/defaults';
 import {OverField} from '../svg-types';
 import {FieldType} from "@grafana/data";
+import {toJS} from "mobx";
 
 
 function countMatchingKeysAndValues(props, overrides) {
@@ -44,17 +45,15 @@ function getIconRuleForFeature(
     properties: any,
     thresh: [] = [],
     defaultIconName: string = DEFAULT_ICON_NAME2,
-    defaultIconWidth: number = DEFAULT_ICON_WIDTH,
-    defaultIconHeight: number = DEFAULT_ICON_HEIGHT
-): { svgColor?: string; iconName: string, iconWidth: number, iconHeight: number} {
+    defaultIconSize: number = DEFAULT_ICON_SIZE
+): { svgColor?: string; iconName: string, iconSize: number} {
 
   const thresholds = getRulesWithOverridesCounts(properties, thresh).sort((a, b) => {
       return b.overrides - a.overrides
   });
 
   let currentIconName = defaultIconName;
-  let currentIconWidth = defaultIconWidth;
-  let currentIconHeight = defaultIconHeight;
+  let currentIconSize = defaultIconSize;
   let currentColor
   let currentLevel = -1;
 
@@ -62,26 +61,37 @@ function getIconRuleForFeature(
     return {
       svgColor: currentColor,
       iconName: defaultIconName,
-      iconWidth: defaultIconWidth,
-      iconHeight: defaultIconHeight
+      iconSize: defaultIconSize
     }; // No Data
   }
 
 
 
   if (thresholds[0] && !thresholds?.[0]?.overrides) {
-    return {
-      svgColor: currentColor,
-      iconName: defaultIconName,
-      iconWidth: defaultIconWidth,
-      iconHeight: defaultIconHeight
-    };
+    console.log('thres', toJS(thresh))
+    const threshold: any = thresh.find((el: any)=> el.overrides.length === 0)
+    if (threshold) {
+      return {
+        svgColor: threshold.svgColor,
+        iconName: threshold.iconName,
+        iconSize: threshold.iconSize
+      };
+    }
+    else {
+      return {
+        svgColor: currentColor,
+        iconName: defaultIconName,
+        iconSize: defaultIconSize
+      };
+    }
+
   }
 
     const threshold = thresholds[0];
     if (true) {
       currentLevel = threshold.overrides;
       currentIconName = threshold.iconName;
+      currentIconSize = threshold.iconSize;
       currentColor = threshold.svgColor;
     }
 
@@ -89,8 +99,7 @@ function getIconRuleForFeature(
   return {
     svgColor: currentColor,
     iconName: currentIconName,
-    iconWidth: currentIconWidth,
-    iconHeight: currentIconHeight
+    iconSize: currentIconSize
 
   };
 
