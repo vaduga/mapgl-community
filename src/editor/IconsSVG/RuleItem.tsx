@@ -13,10 +13,9 @@ import {
 import {v4 as uuidv4} from 'uuid';
 import {css} from '@emotion/css';
 import {OverrideField} from "./OverrideField";
-import {IconSvgSizes, IconSvgWHSizes, OverField, OverrideTracker, Rule} from './svg-types';
-import {makeColorLighter} from "../../utils";
+import {IconSvgSizes, OverField, OverrideTracker, Rule} from './svg-types';
 import {CiscoIcons, DatabaseIcons, NetworkingIcons} from "./data/iconOptions";
-import {DEFAULT_COLOR_PICKER_RGBA, DEFAULT_OK_COLOR_RGBA} from "../../components/defaults";
+import {DEFAULT_COLOR_PICKER_RGBA} from "../../components/defaults";
 
 
 interface RuleItemProps {
@@ -169,12 +168,12 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
                   menuShouldPortal={true}
                   value={iconSize}
                   onChange={(v) => {
-                      const intValue = typeof v.value === 'string' ? parseInt(v.value, 10) : v.value
+                      const intValue = typeof v.value === 'string' ? parseFloat(v.value) : v.value
                       if (!intValue) {return}
                       setIconSize(v);
                       options.iconSizeSetter(options.index, intValue)
                   }}
-                  options={IconSvgSizes}
+                  options={typeof iconSize === 'number' ? IconSvgSizes.concat([{value: iconSize,label: iconSize.toString()}]) : IconSvgSizes}
                   allowCustomValue={true}
               />
           </InlineField>

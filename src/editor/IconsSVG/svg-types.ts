@@ -28,6 +28,4 @@ export interface OverrideTracker {
   ID: string;
 }
 
-
-export const IconSvgWHSizes: SelectableValue[] = generateValuesWithIncrement(16, 320, 16, false);
-export const IconSvgSizes: SelectableValue[] = generateValuesWithIncrement(10, 100, 10, false);
+export const IconSvgSizes: SelectableValue[] = generateValuesWithIncrement(10, 150, 5, false);

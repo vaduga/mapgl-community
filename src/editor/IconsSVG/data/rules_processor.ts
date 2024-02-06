@@ -68,7 +68,6 @@ function getIconRuleForFeature(
 
 
   if (thresholds[0] && !thresholds?.[0]?.overrides) {
-    console.log('thres', toJS(thresh))
     const threshold: any = thresh.find((el: any)=> el.overrides.length === 0)
     if (threshold) {
       return {

@@ -149,12 +149,12 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
                     menuShouldPortal={true}
                     value={lineWidth}
                     onChange={(v) => {
-                      const intValue = typeof v.value === 'string' ? parseInt(v.value, 10) : v.value
+                      const intValue = typeof v.value === 'string' ? parseFloat(v.value) : v.value
                       if (!intValue) {return}
                       setLineWidth(v);
                       options.lineWidthSetter(options.index, intValue)
                     }}
-                    options={LineWidthStates}
+                    options={typeof lineWidth === 'number' ? LineWidthStates.concat([{value: lineWidth,label: lineWidth.toString()}]) : LineWidthStates}
                     allowCustomValue={true}
                     width="auto"
                 />

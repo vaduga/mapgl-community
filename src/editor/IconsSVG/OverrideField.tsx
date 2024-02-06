@@ -50,10 +50,11 @@ export const OverrideField: React.FC<OverrideFieldProps> = (options: OverrideFie
             <InlineField>
                 <AutoSizeInput
                     minWidth={10}
-                    disabled={!options.overrideField.name}
-                    onInput={(v) => {
+                    // disabled={!options.overrideField.name}
+                    onCommitChange={(v) => {
                         options.valueSetter(options.index, v.currentTarget.value);
                     }}
+                    value={options.overrideField.value}
                     placeholder={options.overrideField.value ? options.overrideField.value : 'v1,v2...'}
                 />
             </InlineField>

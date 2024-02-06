@@ -647,7 +647,7 @@ function findComments(vertices) {
 
 async function parseSvgFileToString(options) {
     const {iconName: svgIconName, svgColor: svgIconColor} = options
-    const svgFilePath = 'public/plugins/vaduga-mapgl-panel/img/icons/'+svgIconName+'.svg'
+    const svgFilePath = svgIconName.startsWith('http') ? svgIconName : 'public/plugins/vaduga-mapgl-panel/img/icons/'+svgIconName+'.svg'
     try {
         const response = await fetch(svgFilePath);
 
