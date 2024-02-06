@@ -5,6 +5,7 @@ export interface Rule {
   overrides: OverrideTracker | [];
   svgColor?: string;
   iconSize: number;
+  iconVOffset: number;
   iconName: string;
 }
 export interface RuleTracker {
@@ -28,3 +29,4 @@ export interface OverrideTracker {
 }
 
 export const IconSvgSizes: SelectableValue[] = generateValuesWithIncrement(10, 150, 5, false);
+export const IconVOffsetValues: SelectableValue[] = generateValuesWithIncrement(-20, 20, 5, false);

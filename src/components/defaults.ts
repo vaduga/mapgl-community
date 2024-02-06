@@ -24,7 +24,7 @@ export const DEFAULT_LINE_WIDTH = 1
 export const DEFAULT_ICON_SIZE = 20
 export const DEFAULT_ICON_NAME = ''
 export const DEFAULT_ICON_NAME2 = 'cisco/atm-switch'
-export const DEFAULT_SEL_LINE_WIDTH = 4
+export const DEFAULT_SVG_ICON_V_OFFSET = -20
 export const SEL_LINE_WIDTH_MULTIPLIER = 3
 
 export const DEFAULT_COLOR_LABEL = 'no label'

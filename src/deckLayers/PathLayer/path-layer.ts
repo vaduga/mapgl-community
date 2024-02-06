@@ -1,7 +1,7 @@
 import {makeColorLighter, toRGB4Array} from '../../utils';
 import { PathLayer } from '@deck.gl/layers/typed';
 import {DeckLine, Feature, colTypes} from "../../store/interfaces";
-import {DEFAULT_SEL_LINE_WIDTH, SEL_LINE_WIDTH_MULTIPLIER} from "../../components/defaults";
+import {SEL_LINE_WIDTH_MULTIPLIER} from "../../components/defaults";
 import {PathStyleExtension} from "@deck.gl/extensions";
 import {toJS} from "mobx";
 

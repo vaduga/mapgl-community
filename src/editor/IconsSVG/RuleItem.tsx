@@ -13,7 +13,7 @@ import {
 import {v4 as uuidv4} from 'uuid';
 import {css} from '@emotion/css';
 import {OverrideField} from "./OverrideField";
-import {IconSvgSizes, OverField, OverrideTracker, Rule} from './svg-types';
+import {IconSvgSizes, IconVOffsetValues, OverField, OverrideTracker, Rule} from './svg-types';
 import {CiscoIcons, DatabaseIcons, NetworkingIcons} from "./data/iconOptions";
 import {DEFAULT_COLOR_PICKER_RGBA} from "../../components/defaults";
 
@@ -25,6 +25,7 @@ interface RuleItemProps {
   colorSetter: any;
   iconSizeSetter: any;
   iconNameSetter: any;
+  iconVOffsetSetter: any;
   overrideSetter: any;
   remover: any;
   index: number;
@@ -119,6 +120,7 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
   };
 
   const [iconSize, setIconSize] = useState<any>(options.rule.iconSize);
+  const [iconVOffset, setIconVOffset] = useState<any>(options.rule.iconVOffset);
   const [iconName, setIconName] = useState<string>(options.rule.iconName)
   // const [showColor, setShowColor] = useState<string>(options.rule.svgColor)
   const handleIconChange = (icon: string | undefined) => {
@@ -169,6 +171,21 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
                   allowCustomValue={true}
               />
           </InlineField>
+      <InlineField grow label="v.offset">
+        <Select
+            disabled={options.disabled}
+            menuShouldPortal={true}
+            value={iconVOffset}
+            onChange={(v) => {
+              const intValue = typeof v.value === 'string' ? parseFloat(v.value) : v.value
+              if (typeof intValue !== 'number') {return}
+              setIconVOffset(v);
+              options.iconVOffsetSetter(options.index, intValue)
+            }}
+            options={typeof iconVOffset === 'number' ? IconVOffsetValues.concat([{value: iconVOffset,label: iconVOffset.toString()}]) : IconVOffsetValues}
+            allowCustomValue={true}
+        />
+      </InlineField>
 
 
         {oTracker &&

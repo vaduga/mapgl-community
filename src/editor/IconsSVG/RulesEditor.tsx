@@ -6,7 +6,7 @@ import {OverrideTracker, Rule, RuleTracker} from './svg-types';
 import { RuleItem } from './RuleItem';
 import {
   DEFAULT_ICON_NAME,
-  DEFAULT_ICON_SIZE,
+  DEFAULT_ICON_SIZE, DEFAULT_SVG_ICON_V_OFFSET,
 } from '../../components/defaults';
 import {hexToRgba} from "../../utils/utils.plugin";
 interface Props {
@@ -70,6 +70,12 @@ export const RulesEditor: React.FC<Props> = (options) => {
     setTracker([...tracker]);
   };
 
+  const updateIconVOffset = (index: number, size: number) => {
+    tracker[index].rule.iconVOffset = size;
+    setTracker([...tracker]);
+  };
+
+
 
   const updateIconName = (index: number, name: string) => {
     tracker[index].rule.iconName = name;
@@ -99,6 +105,7 @@ export const RulesEditor: React.FC<Props> = (options) => {
       overrides: [],
       // svgColor: '',
       iconSize: DEFAULT_ICON_SIZE,
+      iconVOffset: DEFAULT_SVG_ICON_V_OFFSET,
       iconName: DEFAULT_ICON_NAME,
     };
     const aTracker: RuleTracker = {
@@ -125,6 +132,7 @@ export const RulesEditor: React.FC<Props> = (options) => {
                       rule={tracker.rule}
                       colorSetter={updateRuleColor}
                       iconSizeSetter={updateIconSize}
+                      iconVOffsetSetter={updateIconVOffset}
                       iconNameSetter={updateIconName}
                       overrideSetter={updateRuleOverrides}
                       remover={removeRule}

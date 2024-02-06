@@ -647,6 +647,7 @@ function findComments(vertices) {
 
 async function parseSvgFileToString(options) {
     const {iconName: svgIconName, svgColor: svgIconColor} = options
+    if (!svgIconName) {return null}
     const svgFilePath = svgIconName.startsWith('http') ? svgIconName : 'public/plugins/vaduga-mapgl-panel/img/icons/'+svgIconName+'.svg'
     try {
         const response = await fetch(svgFilePath);
@@ -693,7 +694,8 @@ async function loadSvgIcons(svgIconRules) {
     if (svgIconRules.length) {
         const promises = svgIconRules.filter(el=>el).map(parseSvgFileToString)
         const res = await Promise.all(promises)
-        return res?.[0]?.length === 2 ? Object.fromEntries(res) : {}
+        const pairs = res.filter(el=>el)
+        return pairs.length ? Object.fromEntries(pairs) : {}
 return {res}
     } else {
         return {}

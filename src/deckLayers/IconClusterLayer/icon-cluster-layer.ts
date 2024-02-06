@@ -127,7 +127,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
       getTextSize: 12,
       getFillColor: (d: any) => {
         if (d.properties.cluster) {return}
-        const {threshold, isInParentLine} = d.properties
+        const {threshold} = d.properties
         const {color} = threshold
         return toRGB4Array(color)
       },
@@ -204,13 +204,18 @@ return        {
         };
       },
 
-      iconSizeScale: 1.1,
-      getIconPixelOffset: [0, -10],
+      iconSizeScale: 1,
+      getIconPixelOffset: (d)=> {
+        const {threshold, cluster} = d.properties
+        if (cluster) {return [0,0]}
+        const {iconVOffset} = threshold
+        return  [0, iconVOffset ?? 0]
+      },
       getIconSize: (d) => {
         const isSelected = this.selectedIp === d.properties?.locName;
         const {cluster, threshold} = d.properties
         if (cluster) {
-          return 30
+          return 40
         }
         else {
           const {iconSize} = threshold
