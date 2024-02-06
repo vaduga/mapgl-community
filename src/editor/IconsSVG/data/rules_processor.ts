@@ -1,6 +1,5 @@
 import {
-  DEFAULT_ICON_HEIGHT,
-  DEFAULT_ICON_NAME2, DEFAULT_ICON_SIZE, DEFAULT_ICON_WIDTH,
+  DEFAULT_ICON_NAME2, DEFAULT_ICON_SIZE
 } from '../../../components/defaults';
 import {OverField} from '../svg-types';
 import {FieldType} from "@grafana/data";

@@ -3,10 +3,9 @@ import {generateValuesWithIncrement} from "../../utils";
 
 export interface Rule {
   overrides: OverrideTracker | [];
-  svgColor: string;
+  svgColor?: string;
   iconSize: number;
   iconName: string;
-  value: number;
 }
 export interface RuleTracker {
   rule: Rule;

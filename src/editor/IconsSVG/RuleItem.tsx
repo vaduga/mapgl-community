@@ -22,7 +22,6 @@ interface RuleItemProps {
   rule: Rule;
   key: string;
   ID: string;
-  valueSetter: any;
   colorSetter: any;
   iconSizeSetter: any;
   iconNameSetter: any;
@@ -121,7 +120,7 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
 
   const [iconSize, setIconSize] = useState<any>(options.rule.iconSize);
   const [iconName, setIconName] = useState<string>(options.rule.iconName)
-  const [showColor, setShowColor] = useState<string>(options.rule.svgColor)
+  // const [showColor, setShowColor] = useState<string>(options.rule.svgColor)
   const handleIconChange = (icon: string | undefined) => {
     if (typeof icon !== 'string') {return}
       options.iconNameSetter(options.index, icon)
@@ -130,37 +129,30 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
 
   return (
       <InlineFieldRow className={styles.inlineRow}>
-        <div className={styles.colorPicker}>
-          {showColor ? <ColorPicker
-              color={options.rule.svgColor ?? DEFAULT_COLOR_PICKER_RGBA}
-              onChange={(color) => {
-                console.log('color', color)
-                options.colorSetter(options.index, color)
-              }}
-              enableNamedColors={true}
-          /> :
-            <IconButton
-            disabled={options.disabled}
-          key="addColorPickerRuleField"
-          variant="primary"
-          name="lock"
-          tooltip="Set constant color"
-          onClick={()=> {
-            options.colorSetter(options.index, DEFAULT_COLOR_PICKER_RGBA)
-            setShowColor(DEFAULT_COLOR_PICKER_RGBA)
-          }}
-        />
-          }
-        </div>
-      {/*<Input*/}
-      {/*    disabled={options.disabled}*/}
-      {/*    type="number"*/}
-      {/*    step="1.0"*/}
-      {/*    key={options.ID}*/}
-      {/*    onChange={(e) => options.valueSetter(options.index, Number(e.currentTarget.value))}*/}
-      {/*    value={options.rule.value}*/}
-      {/*    //width={15}*/}
-      {/*/>*/}
+        {/*Disabled for now. No way to fill custom svg background properly  */}
+        {/*<div className={styles.colorPicker}>*/}
+
+        {/*  {showColor ? <ColorPicker*/}
+        {/*      color={options.rule.svgColor ?? DEFAULT_COLOR_PICKER_RGBA}*/}
+        {/*      onChange={(color) => {*/}
+        {/*        console.log('color', color)*/}
+        {/*        options.colorSetter(options.index, color)*/}
+        {/*      }}*/}
+        {/*      enableNamedColors={true}*/}
+        {/*  /> :*/}
+        {/*    <IconButton*/}
+        {/*    disabled={options.disabled}*/}
+        {/*  key="addColorPickerRuleField"*/}
+        {/*  variant="primary"*/}
+        {/*  name="lock"*/}
+        {/*  tooltip="Set constant color"*/}
+        {/*  onClick={()=> {*/}
+        {/*    options.colorSetter(options.index, DEFAULT_COLOR_PICKER_RGBA)*/}
+        {/*    setShowColor(DEFAULT_COLOR_PICKER_RGBA)*/}
+        {/*  }}*/}
+        {/*/>*/}
+        {/*  }*/}
+        {/*</div>*/}
 
           <InlineField grow label="size">
               <Select

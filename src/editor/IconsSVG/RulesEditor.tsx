@@ -5,11 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import {OverrideTracker, Rule, RuleTracker} from './svg-types';
 import { RuleItem } from './RuleItem';
 import {
-  DEFAULT_LINE_WIDTH,
-  DEFAULT_OK_COLOR_SELECTED_RGBA,
-  DEFAULT_OK_COLOR_RGBA,
-  DEFAULT_ICON_WIDTH,
-  DEFAULT_ICON_HEIGHT,
   DEFAULT_ICON_NAME,
   DEFAULT_ICON_SIZE,
 } from '../../components/defaults';
@@ -59,13 +54,6 @@ export const RulesEditor: React.FC<Props> = (options) => {
     setTracker([...tracker]);
   };
 
-  const updateRuleValue = (index: number, value: number) => {
-    tracker[index].rule.value = Number(value);
-    // reorder
-    const allRules = [...tracker];
-    const orderedRules = orderBy(allRules, ['rule.value'], ['asc']) as RuleTracker[];
-    setTracker([...orderedRules]);
-  };
 
   const updateRuleColor = (index: number, color: string) => {
     let useColor = color;
@@ -109,10 +97,9 @@ export const RulesEditor: React.FC<Props> = (options) => {
     const order = tracker.length;
     const aRule: Rule = {
       overrides: [],
-      svgColor: '',
+      // svgColor: '',
       iconSize: DEFAULT_ICON_SIZE,
       iconName: DEFAULT_ICON_NAME,
-      value: 0,
     };
     const aTracker: RuleTracker = {
       rule: aRule,
@@ -139,7 +126,6 @@ export const RulesEditor: React.FC<Props> = (options) => {
                       colorSetter={updateRuleColor}
                       iconSizeSetter={updateIconSize}
                       iconNameSetter={updateIconName}
-                      valueSetter={updateRuleValue}
                       overrideSetter={updateRuleOverrides}
                       remover={removeRule}
                       index={index}

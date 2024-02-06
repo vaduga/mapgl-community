@@ -205,7 +205,7 @@ return        {
       },
 
       iconSizeScale: 1.1,
-      getIconPixelOffset: [0, -20],
+      getIconPixelOffset: [0, -10],
       getIconSize: (d) => {
         const isSelected = this.selectedIp === d.properties?.locName;
         const {cluster, threshold} = d.properties
