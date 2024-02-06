@@ -5,7 +5,7 @@ FROM grafana/${grafana_image}:${grafana_version}
 
 COPY sample.sqlite /usr/share/grafana/public/sample.sqlite
 COPY sample.json /usr/share/grafana/public/sample.json
-COPY bratsk0.csv /usr/share/grafana/public/bratsk0.csv
+#COPY bratsk0.csv /usr/share/grafana/public/bratsk0.csv
 
 # Make it as simple as possible to access the grafana instance for development purposes
 # Do NOT enable these settings in a public facing / production grafana instance

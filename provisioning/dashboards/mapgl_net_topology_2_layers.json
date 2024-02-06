@@ -198,6 +198,37 @@
             "value": 3
           }
         ],
+        "svgIconsConfig": [
+          {
+            "iconName": "cisco/server-switch",
+            "iconSize": 20,
+            "iconVOffset": -20,
+            "overrides": [
+              {
+                "name": "aggrType",
+                "type": "string",
+                "value": "node"
+              }
+            ]
+          },
+          {
+            "iconName": "networking/atm-switch",
+            "iconSize": 20,
+            "iconVOffset": -20,
+            "overrides": [
+              {
+                "name": "aggrType",
+                "type": "string",
+                "value": "node"
+              },
+              {
+                "name": "target",
+                "type": "string",
+                "value": "U24, U27, U42, U16, U13"
+              }
+            ]
+          }
+        ],
         "view": {
           "id": "auto",
           "lat": 0,
@@ -414,7 +445,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Mapgl network topology 2 layers",
+  "title": "Mapgl network topology 2 layers",  
   "version": 1,
   "weekStart": ""
 }
