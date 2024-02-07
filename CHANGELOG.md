@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.1
+## 1.2.0
 
 * svg icons for nodes
 * text labels with collision filter.
