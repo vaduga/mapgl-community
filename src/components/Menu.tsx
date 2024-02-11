@@ -7,7 +7,6 @@ import {css} from "@emotion/css";
 import {InlineField, InlineFieldRow, Select, useStyles2} from "@grafana/ui";
 import {GrafanaTheme2} from "@grafana/data";
 import {flushSync} from "react-dom";
-import {libreMapInstance} from "./Mapgl";
 
 const getStyles = (theme: GrafanaTheme2) => ({
     inlineRow: css`
@@ -39,7 +38,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
 
 const Menu = ({setShowCenter}) => {
   const { getPoints, getPath, getPolygons, getGeoJson, switchMap, getSelectedIp, setSelectedIp } = useRootStore().pointStore;
-    const { setViewState, getClusterMaxZoom, setClusterMaxZoom } = useRootStore().viewStore;
+    const { getViewState, setViewState, getClusterMaxZoom, setClusterMaxZoom } = useRootStore().viewStore;
     const s = useStyles2(getStyles);
     const options: any = []
     for (let i = 18; i >= 2; i--) {
@@ -63,12 +62,12 @@ const Menu = ({setShowCenter}) => {
             if (coord || coordsFromValue) {
                 flushSync(() => {
                     setShowCenter(select)
-                    setViewState({
+                    setViewState({...getViewState,
                         longitude: coord ? coord[0] : coordsFromValue[0],
                         latitude: coord ? coord[1] : coordsFromValue[1],
-                        transitionDuration: 250,
-                        maxPitch: 45 * 0.95,
-                        zoom: libreMapInstance?.transform?.zoom ?? 18,
+                        // transitionDuration: 250,
+                        // maxPitch: 45 * 0.95,
+                        // zoom: libreMapInstance?.transform?.zoom ?? 18,
                     });
                 })
             }

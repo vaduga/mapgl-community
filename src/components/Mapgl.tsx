@@ -177,13 +177,12 @@ const Mapgl = () => {
 
                     const point = switchMap?.get(info.objects[0].properties.locName)?.geometry as Point
                     const [longitude, latitude] = point.coordinates;
+                    const expansionZoom = info.expZoom
 
-
-                    const OSM = libreMapInstance?.getZoom()
                         setViewState({
                             longitude,
                             latitude,
-                            zoom: OSM ? OSM+1 : 18,
+                            zoom: expansionZoom,
                             transitionDuration: 250,
                             maxPitch: 45 * 0.95,
                             bearing: 0,

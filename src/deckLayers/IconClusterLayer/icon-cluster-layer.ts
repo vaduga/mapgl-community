@@ -80,6 +80,8 @@ export class IconClusterLayer extends CompositeLayer<params> {
         info.objects = this.state.index
           .getLeaves(pickedObject.cluster_id, 'infinity')
           //.map((f) => f.properties);
+        info.expZoom = this.state.index
+            .getClusterExpansionZoom(pickedObject.cluster_id)
       }
       info.object = pickedObject;
     }
