@@ -33,7 +33,7 @@ const LayerSelect: FC = observer(() => {
         getMode,
         setMode,
         getisShowPoints,
-        getisOffset, toggleOffset, setSelectedIp, setTooltipObject, getBlankInfo
+        getisOffset, toggleOffset, setSelectedIp, setTooltipObject, getBlankInfo,
     } = pointStore;
     const {getDirection, setDirection}
         = lineStore
@@ -41,7 +41,7 @@ const LayerSelect: FC = observer(() => {
     const { isShowLines, toggleShowLines } = useRootStore().lineStore;
     const [isDisabled, toggleDisabled] = useState(false);
     const [isLoading, toggleLoading] = useState(false);
-
+    const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
   return (
     <>
       <div className={s.checkBoxes}
@@ -101,7 +101,12 @@ const LayerSelect: FC = observer(() => {
                   onChange={() => {
                       setSelectedIp('');
                       setTooltipObject({...getBlankInfo});
-                      locationService.partial({'var-locRole': getDirection === 'target' ? 'source' : 'target'}, true);
+
+                      setDirection(getDirection === 'target' ? 'source' : 'target')
+                       if (isDir) {
+
+                           locationService.partial({'var-locRole': getDirection === 'target' ? 'source' : 'target'}, true);
+                       }
                   }}
               >
                   &nbsp;swap tar-src

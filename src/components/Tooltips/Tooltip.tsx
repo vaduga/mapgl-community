@@ -28,8 +28,8 @@ function setVars({parent=undefined, props, getSelectedIp, getDirection}){
 
     const [target, source] = getDirection === 'target' ? [getSelectedIp, parent] : [parent, getSelectedIp];
     const lineId = parent && props?.sources[parent]?.lineId
-
-    locationService.partial({'var-lineIds': lineId ? ''+lineId : undefined, 'var-target': target ?? '', 'var-source': source ?? '', 'var-mode': 'view'}, true);
+//'var-lineIds': lineId ? ''+lineId : undefined,
+    locationService.partial({'var-target': target ?? '', 'var-source': source ?? '', 'var-mode': 'view'}, true);
 
 }
 

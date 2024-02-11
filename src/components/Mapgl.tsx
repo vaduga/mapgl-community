@@ -206,9 +206,8 @@ const Mapgl = () => {
 
     const loadPoints = async (data) => {
 
-const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
-        const direction = isDir ? replaceVariables('$locRole') : 'target';
-        setDirection(direction)
+        const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
+        const direction = isDir ? replaceVariables(`$locRole`) : getDirection
         const startIds = {};
         for (const key in colTypes) {
             if (Object.prototype.hasOwnProperty.call(colTypes, key)) {
@@ -406,7 +405,7 @@ let svgIcons
             loadPoints(data)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [refresh, _, data, width, height, options]);
+    }, [refresh, getDirection, data, width, height, options]);  // _
 
 
     const onMapLoad = useCallback(()=> {

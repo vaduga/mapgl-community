@@ -62,10 +62,11 @@ class LineStore {
   root: RootStore;
   isShowLines = true;
   vertices: Vertices = {};
-  direction: "target" | "source" | undefined //= "target"
+  direction: "target" | "source" | undefined = "target"
   constructor(root: RootStore) {
     this.root = root;
-    //this.direction = root.replaceVariables(`$locRole`) ?? "target"
+      const isDir = ['target', 'source'].includes(root.replaceVariables('$locRole'))
+      this.direction = isDir ? root.replaceVariables(`$locRole`) : "target"
     makeAutoObservable(this);
     //autorun(() => console.log('lines', toJS(this.lines)));
   }
