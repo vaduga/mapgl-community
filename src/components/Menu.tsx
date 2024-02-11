@@ -4,12 +4,17 @@ import {getFirstCoordinate, useRootStore} from '../utils';
 import {LayerSelect} from './Selects/LayerSelect';
 import ReactSelectSearch from './Selects/ReactSelectSearch';
 import {css} from "@emotion/css";
-import {useStyles2} from "@grafana/ui";
+import {InlineField, InlineFieldRow, Select, useStyles2} from "@grafana/ui";
 import {GrafanaTheme2} from "@grafana/data";
 import {flushSync} from "react-dom";
 import {libreMapInstance} from "./Mapgl";
 
 const getStyles = (theme: GrafanaTheme2) => ({
+    inlineRow: css`
+      display: flex;
+      align-items: center;
+      pointer-events: all;
+    `,
 
    myMenu: css`
     color: grey;    
@@ -34,8 +39,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
 
 const Menu = ({setShowCenter}) => {
   const { getPoints, getPath, getPolygons, getGeoJson, switchMap, getSelectedIp, setSelectedIp } = useRootStore().pointStore;
-    const { setViewState } = useRootStore().viewStore;
+    const { setViewState, getClusterMaxZoom, setClusterMaxZoom } = useRootStore().viewStore;
     const s = useStyles2(getStyles);
+    const options: any = []
+    for (let i = 18; i >= 2; i--) {
+        options.push({ label: i.toString(), value: i });
+    }
 
     const selectGotoHandler = async (value, coord, select = true, fly = true, lineId?: number | null ) => {
 
@@ -68,10 +77,28 @@ const Menu = ({setShowCenter}) => {
 
 const hasData = [getPoints, getPath, getPolygons, getGeoJson].some(el=> el?.length>0)
   return hasData ? (
-      <div className={s.myMenu}>
+       <div className={s.myMenu}>
+          <InlineFieldRow className={s.inlineRow}>
+              <InlineField>
           <ReactSelectSearch aggrTypesOnly={false} value={getSelectedIp} selectHandler={selectGotoHandler} />
+                  </InlineField>
+          <InlineField label={"cluster max zoom"}>
+              <Select
+                  onChange={(v) => {
+                      if (!v.value) {return}
+                      setClusterMaxZoom(v.value)
+                  }}
+                  value={getClusterMaxZoom}
+                  tooltip={'max cluster zoom'}
+                  options={options}
+                  // className={styles.nodeSelect}
+                  placeholder={'Max cluster zoom'}
+
+              ></Select>
+          </InlineField>
+          </InlineFieldRow>
           {getPoints?.length>0 && <LayerSelect/>}
-      </div>
+       </div>
   ) : null;
 };
 

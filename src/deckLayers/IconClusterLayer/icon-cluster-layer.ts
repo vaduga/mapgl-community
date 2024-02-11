@@ -1,20 +1,12 @@
 import { CompositeLayer } from '@deck.gl/core';
-import {GeoJsonLayer, IconLayer } from '@deck.gl/layers';
+import {IconLayer } from '@deck.gl/layers';
 import Supercluster from 'supercluster';
 import { svgToDataURL, createDonutChart } from './donutChart';
 import {Feature} from "geojson";
 import {toJS} from "mobx";
 import {colTypes} from "../../store/interfaces";
-import {parseSvgFileToString, toRGB4Array} from "../../utils";
-import { CollisionFilterExtension } from '@deck.gl/extensions/typed';
-//import iconAtlas from '/img/location-icon-atlas.png';
-
-import mySvg from '/img/icons/cisco/atm-switch.svg';
-
-
-const ICON_MAPPING = {
-  marker: { x: 0, y: 0, width: 49, height: 65, mask: false},
-};
+import {DataFilterExtension} from "@deck.gl/extensions";
+import {DEFAULT_CLUSTER_ICON_SIZE} from "../../components/defaults";
 
 type params =
 {
@@ -22,7 +14,6 @@ type params =
   zoom: number;
   uPoint: Feature | null;
   layerProps: any;
-
 }
 
 export class IconClusterLayer extends CompositeLayer<params> {
@@ -42,7 +33,6 @@ export class IconClusterLayer extends CompositeLayer<params> {
     this.getSelectedFeIndexes = props.getSelectedFeIndexes
     this.getSvgIcons = props.getSvgIcons
 
-
   }
   shouldUpdateState({ changeFlags }) {
     return changeFlags.somethingChanged;
@@ -50,11 +40,11 @@ export class IconClusterLayer extends CompositeLayer<params> {
 
   updateState({ props, oldProps, changeFlags }) {
     const rebuildIndex =
-      changeFlags.dataChanged || props.sizeScale !== oldProps.sizeScale;
+        changeFlags.dataChanged || props.sizeScale !== oldProps.sizeScale || props.maxZoom !== oldProps.maxZoom;
 
     if (rebuildIndex) {
       const index = new Supercluster({
-        maxZoom: 15,
+        maxZoom: props.maxZoom,
         radius: props.sizeScale * Math.sqrt(2),
       });
 
@@ -70,11 +60,16 @@ export class IconClusterLayer extends CompositeLayer<params> {
     }
 
     const z = Math.floor(this.context.viewport.zoom + 1);
-    if (rebuildIndex || z !== this.state.z) {
+    if ((rebuildIndex || z !== this.state.z) && z < props.maxZoom) {
       this.setState({
         data: this.state.index.getClusters([-180, -85, 180, 85], z),
         z,
       });
+    } else if (z >= props.maxZoom) {
+      this.setState({
+        data: [],
+        z,
+      })
     }
   }
 
@@ -93,60 +88,20 @@ export class IconClusterLayer extends CompositeLayer<params> {
 
   renderLayers() {
     const { data } = this.state;
-    const featureCollection = {
-      type: 'FeatureCollection',
-      features: data.map((a) => {
-        return a.properties?.cluster ? ({...a, geometry: {...a.geometry, coordinates: [...a.geometry.coordinates, 5            ]}}) : a
-      })
-    };
 
-    // const {
-    //   onHover,
-    //   highlightColor,
-    // } = this.props;
-
-
-    return new GeoJsonLayer(this.getSubLayerProps({
+    return new IconLayer(this.getSubLayerProps({
       visible: this.isVisible,
       // highlightColor,
       // onHover,
       id: colTypes.Points,
-      data: featureCollection,
+      data: data,
+      getFilterValue: f => f.properties.cluster ? 1 : 0,
+      filterRange: [1, 1],
       selectedFeatureIndexes:   this.getSelectedFeIndexes?.get(colTypes.Points) ?? [],
-      getText: (f: any) => f.properties.locName,
-      getTextAlignmentBaseline: 'center',
-      getTextPixelOffset: [0, 15],
-      // @ts-ignore
-      getTextColor: (d) => {
-        // @ts-ignore
-        const {threshold, cluster} = d.properties
-        if (cluster) {return [0,0,0]}
-        const {color} = threshold
-        return toRGB4Array(color)
-      },
-      getTextSize: 12,
-      getFillColor: (d: any) => {
-        if (d.properties.cluster) {return}
-        const {threshold} = d.properties
-        const {color} = threshold
-        return toRGB4Array(color)
-      },
-      getPointRadius: (d) => {
-        const isHead = this.selectedIp === d.properties?.locName
-        return isHead? 4 : 2
-      } ,
-      pointRadiusScale: 1,
-      filled: true,
-      stroked: false,
-      pointType: this.layerProps.getisShowSVG ? 'circle+icon+text' : 'circle+text',
-     // iconAtlas: mySvg,
-      //iconMapping: ICON_MAPPING,
-
-
+      getPosition: d => d.geometry.coordinates,
       getIcon: (d) => {
         const isSelected = this.selectedIp === d.properties?.locName;
         const colorCounts = {};
-
         let clPoints = d.properties.cluster
             ? this.state.index.getLeaves(d.properties.cluster_id, 'infinity')
             : '';
@@ -169,34 +124,11 @@ export class IconClusterLayer extends CompositeLayer<params> {
             width: isSelected ? 256 : 128,
             height: isSelected ? 256 : 128,
           };
-        } else {
-
-          const {threshold} = d.properties
-          const {color, label, iconName} = threshold
-
-          const svgIcon = this.getSvgIcons[iconName]
-if (svgIcon) {
-  const {svgText, width, height} = svgIcon
-
-  return {
-    url: svgToDataURL(svgText),
-    width,
-    height,
-    id: iconName
-  };
-}
-// single point no customIcon, not a cluster
-          const singleColor = color;
-          colorCounts[singleColor] =   {
-            count : 1,
-            label
-          }
         }
-
+//// blank svg icon if no cluster
 
 return        {
-          url: svgToDataURL(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-  <!-- Add any additional attributes or elements as needed -->
+          url: svgToDataURL(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">  
 </svg>`),
           width: 1,
           height: 1,
@@ -205,50 +137,24 @@ return        {
       },
 
       iconSizeScale: 1,
-      getIconPixelOffset: (d)=> {
-        const {threshold, cluster} = d.properties
-        if (cluster) {return [0,0]}
-        const {iconVOffset} = threshold
-        return  [0, iconVOffset ?? 0]
-      },
-      getIconSize: (d) => {
+      getSize: (d) => {
         const isSelected = this.selectedIp === d.properties?.locName;
         const {cluster, threshold} = d.properties
         if (cluster) {
-          return 40
+          return DEFAULT_CLUSTER_ICON_SIZE
         }
         else {
           const {iconSize} = threshold
           return iconSize ? isSelected ? iconSize*1.5 : iconSize : 30}
-
-
       },
       iconSizeUnits: 'pixels',
-      // @ts-ignore
-      getIconColor: (d) => {
-        // @ts-ignore
-        const {threshold, cluster} = d.properties
-        if (cluster) {return [0,0,0]}
-        const {color} = threshold
-        return toRGB4Array(color)
+      parameters: {
+        depthTest: false
       },
-
-      _subLayerProps: {
-        "points-text": {
-          extensions: [new CollisionFilterExtension()],
-          collisionTestProps:
-              {
-                sizeScale: 4,
-
-              }
-        },
-      },
-
-      // Interactive props
+      extensions: [new DataFilterExtension({filterSize: 1})],
       pickable: true,
       autoHighlight: true,
     }))
-
 
   }
 }

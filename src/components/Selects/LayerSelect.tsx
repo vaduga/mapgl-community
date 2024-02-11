@@ -4,9 +4,8 @@ import { observer } from 'mobx-react-lite';
 import { useRootStore } from '../../utils';
 import Checkbox from '../Checkboxes/Checkbox';
 import {css} from "@emotion/css";
-import {HorizontalGroup, Select, useStyles2} from "@grafana/ui";
+import {HorizontalGroup, InlineField, Select, useStyles2} from "@grafana/ui";
 import {GrafanaTheme2} from "@grafana/data";
-import {isParFieldArray} from "../../layers/data/markersLayer";
 import {locationService} from "@grafana/runtime";
 
 
@@ -48,6 +47,7 @@ const LayerSelect: FC = observer(() => {
       <div className={s.checkBoxes}
       >
           <HorizontalGroup >
+              <InlineField label={"nodes"}>
         <Checkbox
           disabled={isDisabled}
           checked={getisShowPoints}
@@ -61,6 +61,7 @@ const LayerSelect: FC = observer(() => {
         >
             &nbsp;nodes
         </Checkbox>
+              </InlineField>
         <Checkbox
             checked={isShowLines}
               title="edges"
@@ -94,7 +95,7 @@ const LayerSelect: FC = observer(() => {
               >
                   &nbsp;stat2
               </Checkbox>
-              {replaceVariables(`$locRole`) !== '$locRole' && <Checkbox
+              <Checkbox
                   checked={getDirection === 'source'}
                   title="path reverse"
                   onChange={() => {
@@ -104,7 +105,7 @@ const LayerSelect: FC = observer(() => {
                   }}
               >
                   &nbsp;swap tar-src
-              </Checkbox>}
+              </Checkbox>
               </HorizontalGroup >
       </div>
     </>

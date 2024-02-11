@@ -48,7 +48,7 @@ export const defaultMarkersConfig: ExtendMapLayerOptions<MarkersConfig> = {
     mode: ExtendFrameGeometrySourceMode.Auto,
   }
 };
-export let parFieldExp, isParFieldArray, searchProperties
+export let searchProperties
 
 /**
  * Map data layer configuration for icons overlay
@@ -78,7 +78,6 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
 
     const locField = options.locField
     const parField = options.parField
-    parFieldExp = parField
     const metricField = options.metricField
     const edgeLabelField = options.edgeLabelField
     const isShowBW = options.isShowBW
@@ -199,7 +198,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
                 );
               }
 
-              isParFieldArray = Array.isArray(parents)
+              const isParFieldArray = Array.isArray(parents)
               if (isParFieldArray && Array.isArray(parents[0])) {
                 for (let i = 0; i < parents.length; i++) {
                   const parPath = getParPath(parents, counterId, i, locName)

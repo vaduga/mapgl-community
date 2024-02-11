@@ -38,10 +38,17 @@ import {MyIconLayer} from "../deckLayers/IconLayer/icon-layer";
 import {PositionTracker} from "./Geocoder/PositionTracker";
 import {pushPath} from "../layers/data/markersLayer";
 import {flushSync} from "react-dom";
-import {CENTER_PLOT_FILL_COLOR, DEFAULT_COMMENT_COLOR, DEFAULT_ICON_NAME2, parDelimiter} from "./defaults";
+import {
+    CENTER_PLOT_FILL_COLOR,
+    DEFAULT_CLUSTER_SCALE,
+    DEFAULT_COMMENT_COLOR,
+    DEFAULT_ICON_NAME2,
+    parDelimiter
+} from "./defaults";
 import {RGBAColor} from "@deck.gl/core/utils/color";
 import {getThresholdForValue} from "../editor/Thresholds/data/threshold_processor";
 import {getIconRuleForFeature} from "../editor/IconsSVG/data/rules_processor";
+import {IconsGeoJsonLayer} from "../deckLayers/IconClusterLayer/icons-geo-json-layer";
 
 export let libreMapInstance, thresholds
 const Mapgl = () => {
@@ -82,6 +89,7 @@ const Mapgl = () => {
     const {
         getViewState,
         setViewState,
+        getClusterMaxZoom,
     } = viewStore;
 
     const {getisShowLines, getEditableLines, getLineSwitchMap , getDirection, setDirection, setVertices} = lineStore;
@@ -162,7 +170,7 @@ const Mapgl = () => {
                 setSelectedIp(ip, lineId ? [lineId] : null)
 
 
-            } else if (getisShowSVG) {
+            } else {
                 // zoom on cluster click
                 const featureGeometry = switchMap && switchMap.get(info.objects?.[0].properties.locName)?.geometry as Point;
                 if (featureGeometry && Array.isArray(featureGeometry.coordinates)) {
@@ -433,10 +441,11 @@ let svgIcons
     };
 
     const iconLayersProps = {
+        getSvgIcons,
     }
 
     const getLayers = () => {
-        let lines, pathLine, pathLineExt, list1, nums, clusterLayer, commentsLayer
+        let lines, pathLine, pathLineExt, list1, nums, icons, clusterLayer, commentsLayer
         const secLayers: any[] = []
         let newLayers: any = [];
         const iconLayers: any = []
@@ -514,8 +523,6 @@ let svgIcons
             }) : null
 
                 const lFeatures = getEditableLines
-                const iconFeatures= markers
-
 
             /// Edges render
             if (getisShowLines && lFeatures?.length > 0) {
@@ -534,6 +541,21 @@ let svgIcons
             }
 
             let clusterLayerData;
+            let iconLayerData = markers;
+            if (iconLayerData?.length) {
+                const featureCollection = {
+                    type: 'FeatureCollection',
+                    features: iconLayerData,
+                };
+
+                icons = IconsGeoJsonLayer({
+                    ...layerProps,
+                    ...iconLayersProps,
+                    featureCollection, isVisible: true, //getMode === 'modify',
+                })
+                iconLayers.push(icons)
+            }
+
 
                 clusterLayerData = markers
                     .map((el): DeckFeature | undefined => {
@@ -562,7 +584,8 @@ let svgIcons
                         getPosition: (d) => d.coordinates,
                         data: clusters.reduce((acc,curr)=> acc.concat(curr), []),
                         id: 'icon-cluster',
-                        sizeScale: 30,
+                    sizeScale: DEFAULT_CLUSTER_SCALE,
+                    maxZoom: getClusterMaxZoom,
                         //onClick: (info, event) => {
                         //setHoverInfo(getBlankInfo);
                         //},
@@ -570,7 +593,10 @@ let svgIcons
                     }
                 );
             }
-            newLayers = [...secLayers, ...lineLayers, list1]
+            newLayers = [...secLayers, ...lineLayers, ...iconLayers]
+            if (list1) {
+                newLayers.push(list1)
+            }
             if (pathLine) {
                 newLayers.unshift(pathLine)
                 newLayers.push(pathLineExt)
@@ -615,7 +641,7 @@ let svgIcons
 
         }
 
-        setLayers(newLayers) //.filter(el => el !== null && el !== undefined))
+        setLayers(newLayers) //?.filter(el => el !== null && el !== undefined))
     };
 
     useEffect(() => {
@@ -641,6 +667,7 @@ let svgIcons
         getLayers();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
+        getClusterMaxZoom,
         getSelIds,
         getViewState,
         cPlotCoords,
