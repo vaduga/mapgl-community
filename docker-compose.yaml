@@ -12,6 +12,7 @@ services:
     volumes:
       - $PWD/dist:/var/lib/grafana/plugins/mapgl-panel
       - $PWD/provisioning:/etc/grafana/provisioning
+      - $PWD/.seed:/usr/share/grafana/public/seed
       - $PWD/docker_data/grafana_data:/var/lib/grafana
       - $PWD/docker_data/certs:/certs
 

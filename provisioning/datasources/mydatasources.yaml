@@ -6,11 +6,11 @@ datasources:
     uid: "b6c1a5f4-6225-4788-8ed6-540fb078e8bc"
     type: frser-sqlite-datasource
     jsonData:
-      path: /usr/share/grafana/public/sample.sqlite
+      path: /usr/share/grafana/public/seed/sample.sqlite
     version: 1
     editable: true
 
   - name: static
     uid: "d02c7074-3fbc-4174-ad36-f549f4cd4174"
     type: marcusolsson-static-datasource
-     
+

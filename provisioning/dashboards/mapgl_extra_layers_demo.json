@@ -87,7 +87,7 @@
             },
             "geojsonColor": "#b7b840",
             "geojsonLocName": "name",
-            "geojsonurl": "/public/sample.json",
+            "geojsonurl": "/public/seed/sample.json",
             "location": {
               "mode": "auto"
             },
@@ -151,7 +151,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Extra layers demo",  
+  "title": "Extra layers demo",
   "version": 1,
   "weekStart": ""
 }
