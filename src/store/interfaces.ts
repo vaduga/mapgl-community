@@ -52,7 +52,7 @@ export interface Info {
     colorCounts?: { [color: string]: { count: number, label: string } }
     properties?: any
   }
-  objects: []
+  objects: Array<any>
 }
 
 export interface DeckFeature<G extends Geometry | null = Geometry, P = PointFeatureProperties> {

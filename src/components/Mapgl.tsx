@@ -1,5 +1,6 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {GrafanaTheme2} from '@grafana/data';
+import convex from '@turf/convex'
 import {useStyles2, useTheme2} from '@grafana/ui';
 import {config, locationService, RefreshEvent} from '@grafana/runtime';
 import {observer} from 'mobx-react-lite';
@@ -30,7 +31,7 @@ import {DEFAULT_BASEMAP_CONFIG, defaultBaseLayer, geomapLayerRegistry} from "../
 import {ExtendMapLayerOptions} from "../extension";
 import {centerPointRegistry, MapCenterID} from "../view";
 import {LineTextLayer} from "../deckLayers/TextLayer/text-layer";
-import { ScatterplotLayer } from '@deck.gl/layers';
+import {ScatterplotLayer, PolygonLayer} from '@deck.gl/layers';
 import {MyPolygonsLayer} from "../deckLayers/PolygonsLayer/polygons-layer";
 import {toJS} from "mobx";
 import {MyGeoJsonLayer} from "../deckLayers/GeoJsonLayer/geojson-layer";
@@ -49,6 +50,7 @@ import {RGBAColor} from "@deck.gl/core/utils/color";
 import {getThresholdForValue} from "../editor/Thresholds/data/threshold_processor";
 import {getIconRuleForFeature} from "../editor/IconsSVG/data/rules_processor";
 import {IconsGeoJsonLayer} from "../deckLayers/IconClusterLayer/icons-geo-json-layer";
+import {PathStyleExtension} from "@deck.gl/extensions";
 
 export let libreMapInstance, thresholds
 const Mapgl = () => {
@@ -105,7 +107,7 @@ const Mapgl = () => {
     const [localViewState, setLocalViewState] = useState<ViewState | undefined>(getViewState);
     const [cPlotCoords, setCPlotCoords] = useState<ViewState | undefined>()
     const [_, setLocation] = useState(locationService.getLocation())
-    const [layers, setLayers] = useState([])
+    const [layers, setLayers] = useState<any>([])
     const [refresh, setRefresh] = useState<any>({r:5})
 
     useEffect(() => {
@@ -398,6 +400,61 @@ let svgIcons
             geojson && setGeoJson(geojson)
     }
 
+
+    useEffect(() => {
+
+            if (hoverInfo.objects?.length) {
+
+                const featureCollection = {
+                    type: 'FeatureCollection',
+                    features: hoverInfo.objects,
+                };
+                // @ts-ignore
+                const data = convex(featureCollection)
+                if (!data) {return }
+                const convexLayer = new PolygonLayer({
+                id: 'convex-hull',
+                data: [
+                        {polygon: data.geometry.coordinates},
+                      ],
+                    getPolygon: (d: any) => d.polygon,
+                    filled: true,
+                    stroked: true,
+                    lineWidthMinPixels: 2,
+                    getLineWidth: 2,
+                    getLineColor: [42, 89, 191],
+                    getFillColor: [70, 115, 219,50],
+                    pickable: false,
+                    extruded: false,
+                });
+                flushSync(()=> {
+                setLayers((prev: any)=> {
+                    const newLayers: any = [...prev]
+                    const convexIdx = newLayers.findIndex((el: any)=> el?.id === 'convex-hull')
+                    if (convexIdx && convexIdx > -1) {
+                        newLayers[convexIdx] = convexLayer
+                    }
+                    else {
+                        newLayers.push(convexLayer)
+                    }
+                    return newLayers.filter(el => el !== null && el !== undefined)
+                })
+                })
+            } else {
+                flushSync(()=> {
+                    setLayers((prev: any)=> {
+                        const newLayers: any = [...prev]
+                        const convexIdx = newLayers.findIndex((el: any)=> el?.id === 'convex-hull')
+                        newLayers[convexIdx] = null
+                        return newLayers.filter(el => el !== null && el !== undefined)
+                    })
+
+                })
+
+            }
+
+
+    }, [hoverInfo]);
     useEffect(() => {
 
         if (data && data.series.length) {
@@ -417,7 +474,7 @@ let svgIcons
     const layerProps = {
         pickable: true,
         autoHighlight: true,
-        highlightColor: [170, 100, 50, 60],
+        highlightColor: [170, 100, 50, 90],
         onHover: setHoverInfo,
         zoom: zoomGlobal,
         setShowCenter,
