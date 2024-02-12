@@ -7,6 +7,7 @@ import {css} from "@emotion/css";
 import {InlineField, InlineFieldRow, Select, useStyles2} from "@grafana/ui";
 import {GrafanaTheme2} from "@grafana/data";
 import {flushSync} from "react-dom";
+import {libreMapInstance} from "./Mapgl";
 
 const getStyles = (theme: GrafanaTheme2) => ({
     inlineRow: css`
@@ -65,9 +66,9 @@ const Menu = ({setShowCenter}) => {
                     setViewState({...getViewState,
                         longitude: coord ? coord[0] : coordsFromValue[0],
                         latitude: coord ? coord[1] : coordsFromValue[1],
-                        // transitionDuration: 250,
-                        // maxPitch: 45 * 0.95,
-                        // zoom: libreMapInstance?.transform?.zoom ?? 18,
+                        transitionDuration: 250,
+                        maxPitch: 45 * 0.95,
+                        zoom: libreMapInstance?.transform?.zoom ?? 18,
                     });
                 })
             }

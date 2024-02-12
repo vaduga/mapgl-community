@@ -16,14 +16,10 @@ export const LinesGeoJsonLayer = (props) => {
         linesCollection,
         getSelectedFeIndexes,
         getEditableLines,
-        getMode,
         getisOffset,
-        switchMap,
-        getPoints,
-        getSelectedIp,
-        zoom,
         onHover,
-        isHeadMoving,
+        pickable,
+        autoHighlight,
         highlightColor,
     } = props;
 
@@ -72,7 +68,6 @@ export const LinesGeoJsonLayer = (props) => {
             return toRGB4Array(color)
         },
 
-
         // Styles
         //lineWidthUnits: "meters",
         lineWidthScale: 1,
@@ -80,8 +75,8 @@ export const LinesGeoJsonLayer = (props) => {
         //lineWidthMaxPixels: 15,
 
     // Interactive props
-        pickable: true,
-        autoHighlight: true,
+        pickable,
+        autoHighlight,
     });
 };
 

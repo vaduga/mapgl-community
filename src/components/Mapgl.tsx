@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {GrafanaTheme2} from '@grafana/data';
 import convex from '@turf/convex'
+import turfCenter from '@turf/center'
 import {useStyles2, useTheme2} from '@grafana/ui';
 import {config, locationService, RefreshEvent} from '@grafana/runtime';
 import {observer} from 'mobx-react-lite';
@@ -100,7 +101,6 @@ const Mapgl = () => {
     const mapRef: any = useRef(null);
     const [hoverInfo, setHoverInfo] = useState(getTooltipObject);
     const [closedHint, setClosedHint] = useState(false);
-    const [zoomGlobal, setZoom] = useState(15)
     const [source, setSource] = useState()
     const [isRenderNums, setIsRenderNums] = useState(true)
     const [isShowCenter, setShowCenter] = useState(getSelectedIp ? true : false)
@@ -172,28 +172,25 @@ const Mapgl = () => {
                 setSelectedIp(ip, lineId ? [lineId] : null)
 
 
-            } else {
+            } else if (info.objects?.length) {
                 // zoom on cluster click
-                const featureGeometry = switchMap && switchMap.get(info.objects?.[0].properties.locName)?.geometry as Point;
-                if (featureGeometry && Array.isArray(featureGeometry.coordinates)) {
-
-                    const point = switchMap?.get(info.objects[0].properties.locName)?.geometry as Point
-                    const [longitude, latitude] = point.coordinates;
+                const featureCollection = {
+                    type: 'FeatureCollection',
+                    features: info.objects,
+                };
+                // @ts-ignore
+                const center = turfCenter(featureCollection)
+                    const [longitude, latitude] = center.geometry.coordinates;
                     const expansionZoom = info.expZoom
-
-                        setViewState({
-                            longitude,
-                            latitude,
-                            zoom: expansionZoom,
-                            transitionDuration: 250,
-                            maxPitch: 45 * 0.95,
-                            bearing: 0,
-                            pitch: 0
-
-                        });
+                const newState = {
+                    longitude,
+                    latitude,
+                    zoom: expansionZoom,
+                    transitionDuration: 250,
+                    maxPitch: 45 * 0.95,
+                    rnd: Math.random()   /// to trigger zoom in/out on repeat click the same cluster
                 }
-
-
+                        setLocalViewState(newState as ViewState);
             }
         } else {
             // reset tooltip by clicking blank space
@@ -306,7 +303,7 @@ let svgIcons
             };
 
                 setViewState({...deckInitViewState})
-                setZoom(zoom)
+
 
             initBasemap(options.basemap, setSource, false, theme2)
 
@@ -474,9 +471,8 @@ let svgIcons
     const layerProps = {
         pickable: true,
         autoHighlight: true,
-        highlightColor: [170, 100, 50, 90],
+        highlightColor: theme2.isDark ? [255, 255, 0, 80] : [0, 0, 255, 80],
         onHover: setHoverInfo,
-        zoom: zoomGlobal,
         setShowCenter,
         getEditableLines,
         getSelectedFeIndexes,
@@ -497,6 +493,7 @@ let svgIcons
 
     const iconLayersProps = {
         getSvgIcons,
+        getisShowPoints
     }
 
     const getLayers = () => {
@@ -606,12 +603,12 @@ let svgIcons
                 icons = IconsGeoJsonLayer({
                     ...layerProps,
                     ...iconLayersProps,
-                    featureCollection, isVisible: true, //getMode === 'modify',
+                    featureCollection,
                 })
                 iconLayers.push(icons)
             }
 
-
+            if (getisShowPoints) {
                 clusterLayerData = markers
                     .map((el): DeckFeature | undefined => {
                         if (el) {
@@ -625,17 +622,16 @@ let svgIcons
                         return undefined;
                     })
                     .filter((val): val is DeckFeature => val !== undefined);
+            }
 
-            if (clusterLayerData.length) {
+            if (clusterLayerData?.length) {
                 clusters.push(clusterLayerData)
             }
 
             if (clusters.length) {
                 clusterLayer = new IconClusterLayer({
                         ...layerProps,
-                        layerProps,
-                        getSvgIcons,
-                        isVisible: getisShowPoints,
+                        ...iconLayersProps,
                         getPosition: (d) => d.coordinates,
                         data: clusters.reduce((acc,curr)=> acc.concat(curr), []),
                         id: 'icon-cluster',
@@ -658,14 +654,14 @@ let svgIcons
                 newLayers.push(nums)
             }
 
-            if (getisShowPoints &&  getComments && getComments?.length > 0 ) {  /// comments for all collections
+            if (getComments && getComments?.length > 0 ) {  /// comments for all collections
                 commentsLayer = MyIconLayer({
                     ...layerProps,
+                    ...iconLayersProps,
                     data: getComments,
                     getSelectedFeIndexes,
                     setClosedHint,
                     setSelectedIp,
-                    zoom: zoomGlobal,
                 })
                 newLayers.push(commentsLayer)
             }
@@ -696,17 +692,19 @@ let svgIcons
 
         }
 
-        setLayers(newLayers) //?.filter(el => el !== null && el !== undefined))
+        setLayers(newLayers.filter(el => el !== null && el !== undefined))
     };
 
-    useEffect(() => {
-        const history = locationService.getHistory()
-        const unlistenHistory = history.listen((location: any) => {
-            setLocation(location)
-        })
-        return unlistenHistory
+    // Unused for now: not changing dashboard variables from inside the plugin.
 
-    }  ,[])
+    // useEffect(() => {
+    //     const history = locationService.getHistory()
+    //     const unlistenHistory = history.listen((location: any) => {
+    //         setLocation(location)
+    //     })
+    //     return unlistenHistory
+    //
+    // }  ,[])
 
     useEffect(()=> {
         if (!getViewState) {return}

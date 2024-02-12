@@ -12,14 +12,14 @@ const MyIconLayer = (props) => {
   const {
     data,
     getSelectedFeIndexes,
-    getSelectedIp,
-    zoom,
+    getisShowPoints,
     onHover,
     highlightColor,
     iconMapping = ICON_MAPPING,
   } = props;
 
     return new IconLayer({
+    visible: getisShowPoints,
     highlightColor,
     onHover,
     id: colTypes.Icons,

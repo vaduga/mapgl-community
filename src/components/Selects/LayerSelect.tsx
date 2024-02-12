@@ -47,21 +47,19 @@ const LayerSelect: FC = observer(() => {
       <div className={s.checkBoxes}
       >
           <HorizontalGroup >
-              <InlineField label={"nodes"}>
+              <InlineField>
         <Checkbox
           disabled={isDisabled}
           checked={getisShowPoints}
           title="nodes"
           onChange={() => {
-              if (getisShowPoints) {
-                  toggleShowSVG(false)
-              }
               toggleShowPoints(!getisShowPoints);
           }}
         >
             &nbsp;nodes
         </Checkbox>
               </InlineField>
+              <InlineField>
         <Checkbox
             checked={isShowLines}
               title="edges"
@@ -71,6 +69,8 @@ const LayerSelect: FC = observer(() => {
           >
               &nbsp;edges
           </Checkbox>
+                  </InlineField>
+              <InlineField>
         <Checkbox
           //disabled={getMode === 'modify'}
           checked={getisShowSVG}
@@ -85,6 +85,8 @@ const LayerSelect: FC = observer(() => {
         >
             &nbsp;svg
         </Checkbox>
+                  </InlineField>
+              <InlineField>
               <Checkbox
                   checked={!getisOffset}
                   title="stat1/stat2 no offset"
@@ -95,6 +97,8 @@ const LayerSelect: FC = observer(() => {
               >
                   &nbsp;stat2
               </Checkbox>
+                  </InlineField>
+              <InlineField>
               <Checkbox
                   checked={getDirection === 'source'}
                   title="path reverse"
@@ -111,6 +115,7 @@ const LayerSelect: FC = observer(() => {
               >
                   &nbsp;swap tar-src
               </Checkbox>
+                  </InlineField>
               </HorizontalGroup >
       </div>
     </>

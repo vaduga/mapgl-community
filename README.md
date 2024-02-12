@@ -14,17 +14,17 @@
 extends basemap config options of Grafana Geomap with [Deck.gl](https://deck.gl/) rendering and other features
 ### Features
 * network topology with nodes and links (edges)
-* link path as an array of coordinates or refs to intermediate locations
+* path to source as an array of coordinates or refs to intermediate locations
 * multi-source support
-* swappable sources/targets to get targets for selected source, and vice-versa. Declare dashboard variable 'locRole' to save state.
-* donut-chart clusters with arc lengths by color threshold labels set by metric and other user-defined properties
-* svg icons, text labels with collision filter.
+* swap tar-src to show targets for selected source, and vice-versa. Declare dashboard variable 'locRole' to save state
+* donut chart clusters based on the number of different types of color labels set by metric thresholds and custom properties overrides
+* svg icons, text labels with collision filter
 * data-links: icon in tooltip to set values for 'target' and 'source' dashboard variables. Lets you show charts dynamically in other panels.
 * comment icons for intermediate locations from text and color inlined in coordinates (ex.: [37.560447,55.550818, 0, "comment", "green"])
 * aggregation nodes and offset for overlapping lines.
 * stat1/stat2 switch to disable offset and show secondary metric
 * optimized rendering of large datasets using WebGL
-* multi layers support of Polygons, Geojson, LineStrings (path)
+* multi layers support of Polygons, Geojson, LineStrings
 * tooltips with customizable fields
 * customizable nodes search
 

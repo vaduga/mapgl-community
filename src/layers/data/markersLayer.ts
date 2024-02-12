@@ -101,8 +101,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
       if ((!frame.refId || options.query && options.query.options === frame.refId || frame.meta?.transformations && frame.meta.transformations.length>0)) {
         const info = dataFrameToPoints(frame, matchers);
         if (info.warning) {
-          console.log('Could not find locations', info.warning);
-         // continue; // ???
+          //console.log('Could not find locations', info.warning);
         }
         const coords = info.points
         if (!coords) {
@@ -242,7 +241,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
         }
         return points
       }
-      //break; // Only the first frame for now!
+      //break; // Don't break . Process and concatenate all frames into points
             }
 
     return []

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.0
+* cluster max zoom menu select to control clusterization
+* convex hull polygon shows cluster boundaries, cluster expansion zoom on click
+* restore Grafana >=9.2.5 support
+* fix performance issues that occured on large datasets because of composite cluster+circles+icons+text layer with sublayers constantly recalculating. Now that IconGeoJsonLayer (circles+icons+text) is separated from IconClusterLayer, deck.gl has less to render 
 ## 1.2.0
 
 * svg icons for nodes

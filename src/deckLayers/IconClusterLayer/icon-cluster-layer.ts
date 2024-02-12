@@ -3,7 +3,6 @@ import {IconLayer } from '@deck.gl/layers';
 import Supercluster from 'supercluster';
 import { svgToDataURL, createDonutChart } from './donutChart';
 import {Feature} from "geojson";
-import {toJS} from "mobx";
 import {colTypes} from "../../store/interfaces";
 import {DataFilterExtension} from "@deck.gl/extensions";
 import {DEFAULT_CLUSTER_ICON_SIZE} from "../../components/defaults";
@@ -11,25 +10,20 @@ import {DEFAULT_CLUSTER_ICON_SIZE} from "../../components/defaults";
 type params =
 {
   selectedIp: string;
-  zoom: number;
   uPoint: Feature | null;
   layerProps: any;
 }
 
 export class IconClusterLayer extends CompositeLayer<params> {
   selectedIp;
-  zoom;
-  layerProps;
-  isVisible;
+  //isVisible;
   getSelectedFeIndexes;
   getSvgIcons
 
   constructor(props) {
     super(props);
-    this.layerProps = props.layerProps;
     this.selectedIp = props.getSelectedIp;
-    this.zoom = props.zoom
-    this.isVisible = props.isVisible;
+    //this.isVisible = props.isVisible;
     this.getSelectedFeIndexes = props.getSelectedFeIndexes
     this.getSvgIcons = props.getSvgIcons
 
@@ -92,7 +86,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
     const { data } = this.state;
 
     return new IconLayer(this.getSubLayerProps({
-      visible: this.isVisible,
+      //visible: this.isVisible,
       // highlightColor,
       // onHover,
       id: colTypes.Points,
@@ -155,7 +149,7 @@ return        {
       },
       extensions: [new DataFilterExtension({filterSize: 1})],
       pickable: true,
-      autoHighlight: true,
+      autoHighlight: false,
     }))
 
   }

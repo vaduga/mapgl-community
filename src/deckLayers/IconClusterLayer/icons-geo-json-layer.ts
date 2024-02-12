@@ -16,12 +16,14 @@ const IconsGeoJsonLayer = (props) => {
     getSelectedFeIndexes,
     getisShowSVG,
     getSvgIcons,
+    getisShowPoints,
     getSelectedIp,
     onHover,
     highlightColor,
   } = props;
 
   return new GeoJsonLayer({
+    visible: getisShowPoints,
     highlightColor,
     onHover,
     id: colTypes.Points,
@@ -31,7 +33,6 @@ const IconsGeoJsonLayer = (props) => {
       depthTest: false
     },
         pointType: getisShowSVG ? 'circle+icon+text' : 'circle+text',
-        //pointType: 'circle+text',
         getText: (f: any) => f.properties.locName,
         getTextAlignmentBaseline: 'center',
         getTextPixelOffset: [0, 15],
@@ -58,7 +59,6 @@ const IconsGeoJsonLayer = (props) => {
         },
         pointRadiusScale: 0.3, //1,
 
-
         getIcon: (d) => {
           const colorCounts = {};
           const {threshold} = d.properties
@@ -82,8 +82,6 @@ const IconsGeoJsonLayer = (props) => {
             count: 1,
             label
           }
-
-
           return {
             url: svgToDataURL(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
   <!-- Add any additional attributes or elements as needed -->
@@ -114,7 +112,6 @@ const IconsGeoJsonLayer = (props) => {
             const {iconSize} = threshold
             return iconSize ? isSelected ? iconSize * 1.5 : iconSize : 30
           }
-
 
         },
         iconSizeUnits: 'pixels',
@@ -152,7 +149,7 @@ const IconsGeoJsonLayer = (props) => {
                 {
                   sizeScale: 4,
                 }
-          },
+          }
         },
 
     // Styles
