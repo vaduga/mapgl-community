@@ -222,6 +222,7 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
                   ]}
                   className={styles.nodeSelect}
                   placeholder={'Select an icon'}
+                  allowCustomValue={true}
 
               ></Select>
         </InlineField>

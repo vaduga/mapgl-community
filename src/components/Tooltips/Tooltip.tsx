@@ -3,7 +3,7 @@ import {useRootStore} from '../../utils';
 import {toJS} from "mobx";
 import {css} from "@emotion/css";
 import {IconButton as IconGrafanaButton, useStyles2, useTheme2} from "@grafana/ui";
-import {Field, formattedValueToString, GrafanaTheme2, Vector} from "@grafana/data";
+import {Field, formattedValueToString, GrafanaTheme2} from "@grafana/data";
 import {Info} from '../../store/interfaces'
 import {locationService} from "@grafana/runtime";
 
@@ -131,7 +131,7 @@ const Tooltip = ({ info, isClosed = false , setClosedHint, position = 0}: {
       color: ${theme.colors.getContrastText(theme.colors.background.secondary)}; 
       min-width: 250px;
       max-width: 400px;
-      overflow-y: hidden;
+      //overflow-y: hidden;
       margin: 5px;
       padding: 8px;
       z-index: 1;

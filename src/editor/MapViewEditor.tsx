@@ -1,6 +1,6 @@
 import React, { FC, useMemo, useCallback } from 'react';
 import { StandardEditorProps, SelectableValue } from '@grafana/data';
-import { Button, InlineField, InlineFieldRow, Select, VerticalGroup } from '@grafana/ui';
+import {Button, InlineField, InlineFieldRow, Select, Stack, VerticalGroup} from '@grafana/ui';
 import { PanelOptions, MapViewConfig } from '../types';
 import { centerPointRegistry, MapCenterID } from '../view';
 import { NumberInput } from './NumberInput';

@@ -5,7 +5,6 @@ import {v4 as uuidv4} from 'uuid';
 import {css} from '@emotion/css';
 import {OverrideField} from "./OverrideField";
 import {LineWidthStates, OverField, OverrideTracker, Threshold} from './threshold-types';
-import {makeColorLighter} from "../../utils";
 
 
 interface ThresholdItemProps {
@@ -14,7 +13,6 @@ interface ThresholdItemProps {
   ID: string;
   valueSetter: any;
   colorSetter: any;
-  selColorSetter: any;
   lineWidthSetter: any;
   labelSetter: any;
   overrideSetter: any;
@@ -103,15 +101,8 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
     const keys = LineWidthStates.keys();
     // allow custom values
     return thresholdId
-
-    // for (const aKey of keys) {
-    //   if (LineWidthStates[aKey].value === thresholdId) {
-    //     return LineWidthStates[aKey];
-    //   }
-    // }
-    // // no match, return current by default
-    // return LineWidthStates[9];
   };
+
 
   const [lineWidth, setLineWidth] = useState<any>(getThreshold(options.threshold.lineWidth));
 
@@ -165,7 +156,7 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
             <>
               <AutoSizeInput
                   disabled={false}
-                  onInput={(v) => {
+                  onCommitChange={(v) => {
                     options.labelSetter(options.index, v.currentTarget.value);
                   }}
                   placeholder = {options.threshold.label ? options.threshold.label : 'label'}

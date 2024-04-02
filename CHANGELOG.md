@@ -1,4 +1,7 @@
 # Changelog
+## 1.4.0
+
+* see-through cluster in convex hull polygon area
 
 ## 1.3.0
 * cluster max zoom menu select to control clusterization

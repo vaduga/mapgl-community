@@ -20,7 +20,7 @@ extends basemap config options of Grafana Geomap with [Deck.gl](https://deck.gl/
 * donut chart clusters based on the number of different types of color labels set by metric thresholds and custom properties overrides
 * svg icons, text labels with collision filter
 * data-links: icon in tooltip to set values for 'target' and 'source' dashboard variables. Lets you show charts dynamically in other panels.
-* comment icons for intermediate locations from text and color inlined in coordinates (ex.: [37.560447,55.550818, 0, "comment", "green"])
+* comment icons for intermediate points from text and color inlined in coordinates (ex.: [37.560447,55.550818, 0, "comment", "green"])
 * aggregation nodes and offset for overlapping lines.
 * stat1/stat2 switch to disable offset and show secondary metric
 * optimized rendering of large datasets using WebGL

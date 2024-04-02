@@ -81,6 +81,20 @@
             "value": 0
           },
           {
+            "color": "rgb(146, 25, 64)",
+            "label": "node down",
+            "lineWidth": 2,
+            "overrides": [
+              {
+                "name": "aggrType",
+                "type": "string",
+                "value": "node"
+              }
+            ],
+            "selColor": "rgb(101, 0, 19)",
+            "value": 0
+          },
+          {
             "color": "rgb(50, 116, 217)",
             "label": "node",
             "lineWidth": 0.4,
@@ -150,6 +164,20 @@
             "value": 1
           },
           {
+            "color": "rgb(49, 157, 124)",
+            "label": "alerting_instances",
+            "lineWidth": 1,
+            "overrides": [
+              {
+                "name": "someProp",
+                "type": "string",
+                "value": "alerting_instance"
+              }
+            ],
+            "selColor": "rgba(41, 156, 70, 0.9)",
+            "value": 1
+          },
+          {
             "color": "rgba(92, 170, 204, 0.92)",
             "label": "info",
             "lineWidth": 0.4,
@@ -164,23 +192,9 @@
             "overrides": [],
             "selColor": "rgb(212, 185, 29)",
             "value": 3
-          },
-          {
-            "color": "rgb(146, 25, 64)",
-            "label": "node down",
-            "lineWidth": 2,
-            "overrides": [
-              {
-                "name": "aggrType",
-                "type": "string",
-                "value": "node"
-              }
-            ],
-            "selColor": "rgb(101, 0, 19)",
-            "value": 0
           }
         ],
-                "svgIconsConfig": [
+        "svgIconsConfig": [
           {
             "iconName": "cisco/server-switch",
             "iconSize": 20,
@@ -479,7 +493,13 @@
                     "multisource_node",
                     "multisource_host",
                     "multisource_host",
-                    "multisource_host"
+                    "multisource_host",
+                    "inst0",
+                    "inst1",
+                    "inst2",
+                    "inst3",
+                    "inst4",
+                    "inst5"
                   ],
                   [
                     "{\"coordinates\":[37.561986,55.550559],\"type\":\"Point\"}",
@@ -586,7 +606,13 @@
                     "{\"coordinates\":[37.561239,55.550991],\"type\":\"Point\"}",
                     "{\"coordinates\":[37.561262,55.550879],\"type\":\"Point\"}",
                     "{\"coordinates\":[37.561262,55.550879],\"type\":\"Point\"}",
-                    "{\"coordinates\":[37.561262,55.550879],\"type\":\"Point\"}"
+                    "{\"coordinates\":[37.561262,55.550879],\"type\":\"Point\"}",
+                    "{\"coordinates\":[37.56093,55.549985],\"type\":\"Point\"}",
+                    "{\"coordinates\":[37.56085,55.549706],\"type\":\"Point\"}",
+                    "{\"coordinates\":[37.562905,55.550808],\"type\":\"Point\"}",
+                    "{\"coordinates\":[37.56337,55.550821],\"type\":\"Point\"}",
+                    "{\"coordinates\":[37.559518,55.549727],\"type\":\"Point\"}",
+                    "{\"coordinates\":[37.558282,55.550425],\"type\":\"Point\"}"
                   ],
                   [
                     "node",
@@ -691,6 +717,12 @@
                     null,
                     null,
                     "node",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
                     null,
                     null,
                     null
@@ -800,7 +832,13 @@
                     null,
                     "[\"multisource_host\",\"multisource_node\",\"new6\"]",
                     "[\"multisource_host\",\"multisource_node\",\"new7\"]",
-                    "[\"multisource_host\",\"multisource_node\",[37.561537, 55.551166, 0, \"test comment\", \"#B0E0E6\"] \n,\"new8\"]"
+                    "[\"multisource_host\",\"multisource_node\",[37.561537, 55.551166, 0, \"test comment\", \"#B0E0E6\"] \n,\"new8\"]",
+                    "new1",
+                    "inst0",
+                    "[\"inst2\",[37.562637, 55.550084]  \n,\"inst1\"]",
+                    "inst2",
+                    "[\"inst4\", [37.562179, 55.549237], [37.56303,55.550019] , \"inst3\"]",
+                    "inst4"
                   ],
                   [
                     1,
@@ -907,7 +945,13 @@
                     1,
                     2,
                     1,
-                    3
+                    3,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1
                   ],
                   [
                     null,
@@ -1014,7 +1058,13 @@
                     535345,
                     123123,
                     900023,
-                    235436
+                    235436,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
                   ],
                   [
                     null,
@@ -1121,7 +1171,13 @@
                     "someprop",
                     "prop1",
                     "prop2",
-                    "prop3"
+                    "prop3",
+                    "alerting_instance",
+                    "alerting_instance",
+                    "alerting_instance",
+                    "alerting_instance",
+                    "alerting_instance",
+                    "alerting_instance"
                   ],
                   [
                     null,
@@ -1228,7 +1284,13 @@
                     "click anywhere on the map and copy GEOJSON button at the bottom left to use for the new records.",
                     "for multisources every new source record target coordinates (geojson, or lon/lat) field should not be blank",
                     "for multisources every subsequent source record target coordinates (geojson, or lon/lat) field should not be blank",
-                    "for multisources every subsequent source record target coordinates (geojson, or lon/lat) field should not be blank"
+                    "for multisources every subsequent source record target coordinates (geojson, or lon/lat) field should not be blank",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
                   ]
                 ]
               },
@@ -1266,7 +1328,7 @@
                   },
                   {
                     "config": {},
-                    "name": "tooltipExtraProp",
+                    "name": "someProp",
                     "type": "string"
                   },
                   {
@@ -1346,12 +1408,13 @@
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Mapgl network datagrid",
-  "version": 1,
+  "uid": "f41402f8-0daa-4856-be8e-840efd163899",
+  "version": 28,
   "weekStart": ""
 }

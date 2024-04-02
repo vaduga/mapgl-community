@@ -54,11 +54,16 @@ export const plugin = new PanelPlugin<PanelOptions>(Panel)
         name: 'Global thresholds',
         id: 'globalThresholdsConfig',
         path: 'globalThresholdsConfig',
-        description: 'Default thresholds to be applied to all metrics',
+        description: '\'Thresholds for stat1, lines width\'',
         editor: GlobalThresholdEditor,
         defaultValue: [] ,
         category: ['Thresholds'],
       })
 
 
-});
+}).setDataSupport({
+        annotations: true,
+        alertStates: true,
+    });;;
+
+    ;

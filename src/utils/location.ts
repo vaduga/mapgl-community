@@ -166,7 +166,7 @@ export function dataFrameToPoints(frame: DataFrame, location: LocationFieldMatch
       if (fields.geojson) {
         info.points = getGeometryFromGeoJSON(fields.geojson);
       } else {
-        info.warning = 'Missing latitude/longitude fields';
+        info.warning = 'Missing GeoJson fields';
       }
       break;
     case ExtendFrameGeometrySourceMode.Coords:
@@ -204,12 +204,13 @@ export function dataFrameToPoints(frame: DataFrame, location: LocationFieldMatch
   return info;
 }
 
-function getGeometryFromGeoJSON(geojson: Field<String>): Geometry[] {
+function getGeometryFromGeoJSON(geojson: Field<string>): Geometry[] {
   const count = geojson.values.length;
   const points = new Array(count);
   for (let i = 0; i < geojson.values.length; i++) {
-    const feature = JSON.parse(geojson.values.get(i) as string)
+    const feature = geojson.values[i] ? JSON.parse(geojson.values[i] as string) : JSON.parse(geojson.values.get(i))
     if (feature) {
+
       points[i] = {type: feature.type, coordinates: feature.coordinates}
     }
   }

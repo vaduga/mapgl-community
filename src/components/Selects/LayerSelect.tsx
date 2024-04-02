@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useRootStore } from '../../utils';
 import Checkbox from '../Checkboxes/Checkbox';
 import {css} from "@emotion/css";
-import {HorizontalGroup, InlineField, Select, useStyles2} from "@grafana/ui";
+import {HorizontalGroup, InlineField, Select, Stack, useStyles2} from "@grafana/ui";
 import {GrafanaTheme2} from "@grafana/data";
 import {locationService} from "@grafana/runtime";
 
@@ -46,7 +46,7 @@ const LayerSelect: FC = observer(() => {
     <>
       <div className={s.checkBoxes}
       >
-          <HorizontalGroup >
+          <HorizontalGroup>
               <InlineField>
         <Checkbox
           disabled={isDisabled}
@@ -78,10 +78,7 @@ const LayerSelect: FC = observer(() => {
           onChange={() => {
             toggleShowSVG(!getisShowSVG);
             toggleShowPoints(true)
-            if (!getisShowSVG && getMode === 'modify') {
-                setMode('view')
-                toggleShowSVG(true)
-          }}  }
+            }  }
         >
             &nbsp;svg
         </Checkbox>
@@ -89,7 +86,7 @@ const LayerSelect: FC = observer(() => {
               <InlineField>
               <Checkbox
                   checked={!getisOffset}
-                  title="stat1/stat2 no offset"
+                  title="stat2 no offset"
                   onChange={() => {
                       setMode('view')
                       toggleOffset(!getisOffset);
@@ -105,7 +102,6 @@ const LayerSelect: FC = observer(() => {
                   onChange={() => {
                       setSelectedIp('');
                       setTooltipObject({...getBlankInfo});
-
                       setDirection(getDirection === 'target' ? 'source' : 'target')
                        if (isDir) {
 

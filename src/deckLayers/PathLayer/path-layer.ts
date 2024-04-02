@@ -65,7 +65,7 @@ function MyPathLayer({onHover, highlightColor, getSelFeature, data, type }) {
                     return base
                     break
                 default:
-                    return base
+                    return d?.properties?.threshold?.lineWidth ?? 1
             }
         },
         onHover,

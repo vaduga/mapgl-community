@@ -14,3 +14,14 @@ datasources:
     uid: "d02c7074-3fbc-4174-ad36-f549f4cd4174"
     type: marcusolsson-static-datasource
 
+
+  - name: AlertingTestData
+    uid: "db087f3a-b1a7-4531-87d8-97d40f0e2007"
+    type: testdata
+
+
+
+    
+
+ 
+

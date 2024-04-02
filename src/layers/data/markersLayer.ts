@@ -98,7 +98,8 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
     const groupedByCoordinates = new Map();
 
     for (const frame of data.series) {
-      if ((!frame.refId || options.query && options.query.options === frame.refId || frame.meta?.transformations && frame.meta.transformations.length>0)) {
+      // @ts-ignore
+      if ((!frame.refId || options.query && options.query.options === frame.refId || frame.meta?.transformations && frame.meta.transformations?.length>0)) {
         const info = dataFrameToPoints(frame, matchers);
         if (info.warning) {
           //console.log('Could not find locations', info.warning);

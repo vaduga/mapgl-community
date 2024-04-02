@@ -141,7 +141,7 @@ export const ThresholdsEditor: React.FC<Props> = (options) => {
                       ID={tracker.ID}
                       threshold={tracker.threshold}
                       colorSetter={updateThresholdColor}
-                      selColorSetter={updateThresholdSelColor}
+                      //selColorSetter={updateThresholdSelColor}
                       lineWidthSetter={updateLineWidth}
                       valueSetter={updateThresholdValue}
                       labelSetter={updateThresholdLabel}

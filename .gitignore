@@ -42,4 +42,4 @@ docker_data/grafana_data
 runjs/
 
 /validator/
-/.config/bratsk0.csv
+/.seed/bratsk0.csv

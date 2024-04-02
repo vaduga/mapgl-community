@@ -1,4 +1,4 @@
-import {HorizontalGroup, Icon, useStyles2} from "@grafana/ui";
+import {HorizontalGroup, Icon, Stack, useStyles2} from "@grafana/ui";
 import React, {useEffect, useState} from "react";
 import {useRootStore} from "../../utils";
 import { CopyToClipboard } from "react-copy-to-clipboard";

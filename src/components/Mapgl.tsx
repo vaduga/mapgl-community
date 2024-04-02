@@ -106,13 +106,13 @@ const Mapgl = () => {
     const [isShowCenter, setShowCenter] = useState(getSelectedIp ? true : false)
     const [localViewState, setLocalViewState] = useState<ViewState | undefined>(getViewState);
     const [cPlotCoords, setCPlotCoords] = useState<ViewState | undefined>()
-    const [_, setLocation] = useState(locationService.getLocation())
+    // const [_, setLocation] = useState(locationService.getLocation())
     const [layers, setLayers] = useState<any>([])
     const [refresh, setRefresh] = useState<any>({r:5})
 
     useEffect(() => {
         const subscriber = eventBus.getStream(RefreshEvent).subscribe(event => {
-           // console.log(`Received event: ${event.type}`);
+            console.log(`Received event: ${event.type}`);
             setRefresh(prev=> ({...prev}))
         })
 
@@ -203,6 +203,7 @@ const Mapgl = () => {
     };
 
     const loadPoints = async (data) => {
+
 
         const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
         const direction = isDir ? replaceVariables(`$locRole`) : getDirection
@@ -509,10 +510,8 @@ let svgIcons
         const geojson: any = getGeoJson;
 
         const allFeatures = [markers, polygons,path, geojson].filter(el=> el)
-
         if (allFeatures?.length < 1) {
             setLayers(newLayers);
-
             return
         }
 
@@ -524,7 +523,6 @@ let svgIcons
                 secLayers.push(MyPathLayer({ ...layerProps, data: path, type: 'path' }));
 
         }
-
         if (geojson.length>0) {
 
             const featCollection = {
