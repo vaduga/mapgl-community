@@ -1,0 +1,187 @@
+apiVersion: 1
+groups:
+    - orgId: 1
+      name: evalGrpTest
+      folder: alertRules
+      interval: 10s
+      rules:
+        - uid: f82510bb-8fc4-4c4a-b408-62e41ccc268e
+          title: ruleAbove50
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: db087f3a-b1a7-4531-87d8-97d40f0e2007
+              model:
+                datasource:
+                    type: TestData
+                    uid: db087f3a-b1a7-4531-87d8-97d40f0e2007
+                intervalMs: 1000
+                labels: instance=inst$seriesIndex
+                max: 100
+                maxDataPoints: 43200
+                min: 30
+                refId: A
+                scenarioId: random_walk
+                seriesCount: 6
+                spread: 12
+            - refId: B
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 50
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: ede2cb79-2b89-4726-8c45-dd19014b16d1
+          panelId: 2
+          noDataState: NoData
+          execErrState: Error
+          for: 15s
+          annotations:
+            __dashboardUid__: ede2cb79-2b89-4726-8c45-dd19014b16d1
+            __panelId__: "2"
+            summary: |-
+                labels: {{.Labels}}
+                values: {{ $values }}
+          isPaused: false
+        - uid: b0e9dacd-db33-4d3f-99b5-c93164b7f566
+          title: otherRuleAbove50
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: db087f3a-b1a7-4531-87d8-97d40f0e2007
+              model:
+                datasource:
+                    type: TestData
+                    uid: db087f3a-b1a7-4531-87d8-97d40f0e2007
+                intervalMs: 1000
+                labels: instance=inst$seriesIndex
+                max: 100
+                maxDataPoints: 43200
+                min: 30
+                refId: A
+                scenarioId: random_walk
+                seriesCount: 6
+                spread: 12
+            - refId: B
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params: []
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - B
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                reducer: last
+                refId: B
+                type: reduce
+            - refId: C
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 50
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: B
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: ede2cb79-2b89-4726-8c45-dd19014b16d1
+          panelId: 2
+          noDataState: NoData
+          execErrState: Error
+          for: 15s
+          annotations:
+            __dashboardUid__: ede2cb79-2b89-4726-8c45-dd19014b16d1
+            __panelId__: "2"
+            summary: |-
+                labels: {{.Labels}}
+                values: {{ $values }}
+          isPaused: false
