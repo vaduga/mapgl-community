@@ -37,7 +37,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
 `,
 })
 
-const Menu = ({setShowCenter}) => {
+const Menu = ({setShowCenter, time,timeZone, data}) => {
   const { getPoints, getPath, getPolygons, getGeoJson, switchMap, getSelectedIp, setSelectedIp } = useRootStore().pointStore;
     const { getViewState, setViewState, getClusterMaxZoom, setClusterMaxZoom } = useRootStore().viewStore;
     const s = useStyles2(getStyles);
@@ -51,7 +51,7 @@ const Menu = ({setShowCenter}) => {
         if (value && select) {
             setSelectedIp(value, null)
         }
-        else if ((!value || fly) && lineId) {
+        else if ((!value || fly) && lineId !== null && lineId !== undefined) {
             setSelectedIp(null, [lineId])
         }
         const point = switchMap?.get(value)
@@ -80,7 +80,7 @@ const hasData = [getPoints, getPath, getPolygons, getGeoJson].some(el=> el?.leng
        <div className={s.myMenu}>
           <InlineFieldRow className={s.inlineRow}>
               <InlineField>
-          <ReactSelectSearch aggrTypesOnly={false} value={getSelectedIp} selectHandler={selectGotoHandler} />
+          <ReactSelectSearch aggrTypesOnly={false} value={getSelectedIp} isMainLocSearch={true} selectHandler={selectGotoHandler} />
                   </InlineField>
           <InlineField label={"cluster max zoom"}>
               <Select

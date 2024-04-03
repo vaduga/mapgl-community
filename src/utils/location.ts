@@ -210,7 +210,6 @@ function getGeometryFromGeoJSON(geojson: Field<string>): Geometry[] {
   for (let i = 0; i < geojson.values.length; i++) {
     const feature = geojson.values[i] ? JSON.parse(geojson.values[i] as string) : JSON.parse(geojson.values.get(i))
     if (feature) {
-
       points[i] = {type: feature.type, coordinates: feature.coordinates}
     }
   }

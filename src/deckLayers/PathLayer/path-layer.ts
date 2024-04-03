@@ -1,4 +1,4 @@
-import {makeColorLighter, toRGB4Array} from '../../utils';
+import {makeColorDarker, makeColorLighter, toRGB4Array} from '../../utils';
 import { PathLayer } from '@deck.gl/layers/typed';
 import {DeckLine, Feature, colTypes} from "../../store/interfaces";
 import {SEL_LINE_WIDTH_MULTIPLIER} from "../../components/defaults";
@@ -6,7 +6,7 @@ import {PathStyleExtension} from "@deck.gl/extensions";
 import {toJS} from "mobx";
 
 // @ts-ignore
-function MyPathLayer({onHover, highlightColor, getSelFeature, data, type }) {
+function MyPathLayer({onHover, highlightColor, getSelFeature, data, type, theme2 }) {
     // @ts-ignore
     return new PathLayer({
         id: colTypes.Path + '-'+ type,
@@ -16,7 +16,6 @@ function MyPathLayer({onHover, highlightColor, getSelFeature, data, type }) {
         pickable: !['par-path-extension', 'par-path-line'].includes(type),
         //widthScale: 20,
         widthMinPixels: 1,
-        widthMaxPixels: 5,
         capRounded: true,
         jointRounded: true,
         getPath: (d) => {
@@ -43,11 +42,11 @@ function MyPathLayer({onHover, highlightColor, getSelFeature, data, type }) {
             let color
             switch (type) {
                 case 'par-path-extension':
-                    color = makeColorLighter(d[1]) //selFeature?.properties?.iconColor
+                    color = theme2.isDark ? makeColorLighter(d[1]) : makeColorDarker(d[1])//selFeature?.properties?.iconColor
                     //color = 'rgba(237, 129, 40, 1)'
                     break
                 case 'par-path-line':
-                    color =  makeColorLighter(d[1]) //d[1] // color
+                    color =  theme2.isDark ? makeColorLighter(d[1]) : makeColorDarker(d[1])//d[1] // color
                     break
                 default:
                     color =  d.properties?.threshold?.color

@@ -22,8 +22,12 @@ export const xyzTiles: ExtendMapLayerRegistryItem<XYZConfig> = {
       const cfg = { ...options.config };
       if (!cfg.url) {
         cfg.url = defaultXYZConfig.url;
-        cfg.attribution = cfg.attribution ?? defaultXYZConfig.attribution;
+        cfg.attribution = cfg.attribution ?? defaultXYZConfig.attribution ?? '';
       }
+      if (!cfg.attribution) {
+        cfg.attribution = cfg.attribution ?? defaultXYZConfig.attribution ?? '';
+      }
+
         return (
             {
                 version: 8,

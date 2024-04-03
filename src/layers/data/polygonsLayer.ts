@@ -44,7 +44,7 @@ export const defaultPolygonsConfig: ExtendMapLayerOptions<PolygonsConfig> = {
 export const polygonsLayer: ExtendMapLayerRegistryItem<PolygonsConfig> = {
     id: POLYGONS_LAYER_ID,
     name: 'Polygons layer',
-    description: 'render from Geojson Polygons',
+    description: 'GeoJson Polygons from query',
     isBaseMap: false,
     showLocation: true,
 

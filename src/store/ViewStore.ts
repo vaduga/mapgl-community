@@ -11,6 +11,13 @@ class ViewStore {
 
   constructor(root: RootStore) {
     this.root = root;
+    const zoomVar = root.replaceVariables(`$cluster_max_zoom`)
+    const zoom = parseInt(zoomVar, 10)
+
+    if (zoom > 1 && zoom < 19) {
+      this.clusterMaxZoom = zoom
+    }
+
     makeAutoObservable(this);
     //autorun(() => console.log('viewState', toJS(this.viewState)));
   }

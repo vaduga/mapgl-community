@@ -43,16 +43,20 @@ export type PointFeatureProperties = GeoJsonProperties & {
 
 export interface Info {
   layer?: any;
-  x: number,
-  y: number,
-  cluster: boolean,
-  object: {
-    isShowTooltip: Boolean;
-    cluster: boolean,
+  x?: number,
+  y?: number,
+  cluster?: boolean,
+  object?: {
+    isShowTooltip?: Boolean;
+    cluster?: boolean,
     colorCounts?: { [color: string]: { count: number, label: string } }
+    annotStateCounts?: { [color: string]: { count: number, label: string }}
     properties?: any
-  }
-  objects: Array<any>
+    [key: string]: unknown
+  } ,
+  objects?: [],
+  prevHullData?: any,
+
 }
 
 export interface DeckFeature<G extends Geometry | null = Geometry, P = PointFeatureProperties> {

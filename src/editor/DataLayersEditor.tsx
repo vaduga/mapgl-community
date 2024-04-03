@@ -1,12 +1,13 @@
 import React from 'react';
-import { PluginState, StandardEditorProps } from '@grafana/data';
-import { ExtendMapLayerOptions, ExtendMapLayerRegistryItem } from 'extension';
-import { PanelOptions } from 'types';
+import {GrafanaTheme2, PluginState, StandardEditorProps} from '@grafana/data';
+import { ExtendMapLayerOptions, ExtendMapLayerRegistryItem } from '../extension';
+import { PanelOptions } from '../types';
 import { defaultMarkersConfig } from '../layers/data/markersLayer';
 import { hasAlphaPanels } from 'config';
 import { LayerEditor } from './LayerEditor';
-import {CollapsableSection, ToolbarButton} from "@grafana/ui";
+import {CollapsableSection, ToolbarButton, useStyles2} from "@grafana/ui";
 import _ from 'lodash';
+import {css} from "@emotion/css";
 
 function dataLayerFilter(layer: ExtendMapLayerRegistryItem): boolean {
   if (layer.isBaseMap) {
@@ -23,6 +24,16 @@ export const DataLayersEditor: React.FC<StandardEditorProps<ExtendMapLayerOption
   onChange,
   context,
 }) => {
+
+    const getStyles = (theme: GrafanaTheme2) => ({
+        collapsible: css`
+      margin-top: 5px;
+      padding-left: 5px;    
+      border-bottom: solid 0.001px;      
+    `
+    });
+    const s = useStyles2(getStyles);
+
     const onAddLayer = () => {
         let newData: ExtendMapLayerOptions[] = value ? _.cloneDeep(value) : [];
         newData.push(defaultMarkersConfig);
@@ -45,7 +56,7 @@ export const DataLayersEditor: React.FC<StandardEditorProps<ExtendMapLayerOption
 
                 return (
                     <>
-                        <CollapsableSection label={v.name ? v.name + ' layer' : 'unnamed layer'} isOpen={false}>
+                        <CollapsableSection className={s.collapsible} label={v.name ? v.name + ' layer' : 'unnamed layer'} isOpen={false}>
                             <LayerEditor
                                 options={v ? v : undefined}
                                 data={context.data}

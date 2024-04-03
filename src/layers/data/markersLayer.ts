@@ -56,7 +56,7 @@ export let searchProperties
 export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
   id: MARKERS_LAYER_ID,
   name: 'Markers and clusters',
-  description: 'render nodes and edges',
+  description: 'nodes and edges from query',
   isBaseMap: false,
   showLocation: true,
   /**
@@ -143,7 +143,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
               ///Object.keys(point)?.filter(el=> !excludes.includes(el))  - should i by default show more props?
               const includes = ['ack', 'msg']
 
-              const displayProps = (isShowTooltip && displayProperties && displayProperties?.length) ? [...displayProperties, 'ack', 'msg'] : includes
+              const displayProps = (isShowTooltip && displayProperties && displayProperties?.length) ? [...displayProperties, 'ack', 'msg',, 'all_annots'] : includes
 
               if (locName && (!vertices.hasOwnProperty(locName) || direction === 'source')) {
                 const ptId = startId + counterId /// removes duplicate pts from dataframe

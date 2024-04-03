@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {GrafanaTheme2} from '@grafana/data';
+import {DataFrameView, DataHoverEvent, GrafanaTheme2} from '@grafana/data';
 import convex from '@turf/convex'
 import turfCenter from '@turf/center'
 import {useStyles2, useTheme2} from '@grafana/ui';
@@ -21,16 +21,14 @@ import {
     genParentLine,
     genLinksText,
     genExtendedPLine,
-    mergeVertices, initBasemap, initMapView, toRGB4Array, findComments, hexToRgba, loadSvgIcons
+    mergeVertices, initBasemap, initMapView, toRGB4Array, findComments, hexToRgba, loadSvgIcons, parseObjFromString
 } from '../utils';
 
 import {Tooltip} from './Tooltips/Tooltip';
-import {PanelOptions, MapViewConfig} from "../types";
-import {Point, Position} from "geojson";
+import {Point} from "geojson";
 import {WebMercatorViewport} from "@deck.gl/core/typed";
-import {DEFAULT_BASEMAP_CONFIG, defaultBaseLayer, geomapLayerRegistry} from "../layers/registry";
-import {ExtendMapLayerOptions} from "../extension";
-import {centerPointRegistry, MapCenterID} from "../view";
+import {geomapLayerRegistry} from "../layers/registry";
+import {MapCenterID} from "../view";
 import {LineTextLayer} from "../deckLayers/TextLayer/text-layer";
 import {ScatterplotLayer, PolygonLayer} from '@deck.gl/layers';
 import {MyPolygonsLayer} from "../deckLayers/PolygonsLayer/polygons-layer";
@@ -38,13 +36,12 @@ import {toJS} from "mobx";
 import {MyGeoJsonLayer} from "../deckLayers/GeoJsonLayer/geojson-layer";
 import {MyIconLayer} from "../deckLayers/IconLayer/icon-layer";
 import {PositionTracker} from "./Geocoder/PositionTracker";
-import {pushPath} from "../layers/data/markersLayer";
 import {flushSync} from "react-dom";
 import {
-    CENTER_PLOT_FILL_COLOR,
+    DARK_AUTO_HIGHLIGHT, DARK_CENTER_PLOT, DARK_HULL_HIGHLIGHT,
     DEFAULT_CLUSTER_SCALE,
     DEFAULT_COMMENT_COLOR,
-    DEFAULT_ICON_NAME2,
+    DEFAULT_ICON_NAME2, LIGHT_AUTO_HIGHLIGHT, LIGHT_CENTER_PLOT, LIGHT_HULL_HIGHLIGHT,
     parDelimiter
 } from "./defaults";
 import {RGBAColor} from "@deck.gl/core/utils/color";
@@ -52,12 +49,15 @@ import {getThresholdForValue} from "../editor/Thresholds/data/threshold_processo
 import {getIconRuleForFeature} from "../editor/IconsSVG/data/rules_processor";
 import {IconsGeoJsonLayer} from "../deckLayers/IconClusterLayer/icons-geo-json-layer";
 import {PathStyleExtension} from "@deck.gl/extensions";
+import {throttleTime} from "rxjs";
+import {StateTime} from "./Geocoder/StateTime";
 
 export let libreMapInstance, thresholds
 const Mapgl = () => {
     const { pointStore, lineStore, viewStore, options, data, width, height, replaceVariables, eventBus  } = useRootStore();
     thresholds = options.globalThresholdsConfig
     const svgIconRules = options.svgIconsConfig
+    const locLabelName = options.common?.locLabelName
     const theme2 = useTheme2()
 
     const {
@@ -110,9 +110,22 @@ const Mapgl = () => {
     const [layers, setLayers] = useState<any>([])
     const [refresh, setRefresh] = useState<any>({r:5})
 
+    const [hoverCluster,setHoverCluster] = useState<any>()
+    const timeZone = replaceVariables('$__timezone')
+    const [time, setTime] = useState<any>(data.timeRange.to.unix()*1000);
+    const [hasAnnots, setHasAnnots] = useState(data?.annotations?.length)
+
+    useEffect(() => {
+        if (data.timeRange) {
+            setTime(data.timeRange.to.unix()*1000)
+            setHasAnnots(data.annotations?.length)
+        }
+    }, [data]);
+
+
     useEffect(() => {
         const subscriber = eventBus.getStream(RefreshEvent).subscribe(event => {
-            console.log(`Received event: ${event.type}`);
+            //console.log(`Received event: ${event.type}`);
             setRefresh(prev=> ({...prev}))
         })
 
@@ -135,7 +148,6 @@ const Mapgl = () => {
         }
 
         if (info.picked) {
-
             const properties = info.object?.properties || info.object // cluster/icon datasets
             const {id} = info.object
             const {locName: ip, parPath} = properties
@@ -194,10 +206,12 @@ const Mapgl = () => {
             }
         } else {
             // reset tooltip by clicking blank space
+            setHoverCluster(null)
+            setHoverInfo({})
             setShowCenter(true)
             setSelectedIp('');
             setClosedHint(true);
-            setTooltipObject({...getBlankInfo});
+            setTooltipObject({});
 
         }
     };
@@ -314,6 +328,39 @@ let svgIcons
         let polygons: Feature[] = []
         let path: Feature[] = []
         let geojson: Feature[] = []
+        const alerts = {}
+
+        if (data.annotations?.length && data.annotations[0].fields.length) {
+            data.annotations.forEach(a=> {
+                    const annotations = new DataFrameView(a).toArray()
+
+                    annotations.forEach(b=> {
+                        if (b?.text) {
+                            b.labels = parseObjFromString(b?.text)
+                        }
+                        const name = b.labels?.alertname
+                        const locName = b.labels?.[locLabelName]
+                        if (name) {
+                            const alertMap = alerts[name]
+                            if (alertMap) {
+                                const alertAnnots = alertMap.get(locName)
+                                if  (alertAnnots) {
+                                    alertAnnots.push(b)
+                                } else {
+                                    alertMap.set(locName, [b])
+                                }
+                            }
+                            else {
+                                const newAlertMap = new Map()
+                                newAlertMap.set(b.labels[locLabelName], [b])
+                                alerts[name] = newAlertMap
+                            }
+                        }
+                    })
+                }
+            )
+
+        }
 
         transformed.forEach((el: any)=> {
             switch (el.colType){
@@ -330,7 +377,20 @@ let svgIcons
                             const threshold = getThresholdForValue(f.properties, metric, thresholds)
                             const rulesThreshold = getIconRuleForFeature(f.properties, svgIconRules)
 
-                            const status = {threshold: {...threshold, ...rulesThreshold}}
+                            const status: any = {threshold: {...threshold, ...rulesThreshold}}
+                            let annotations: any = []
+
+                            Object.keys(alerts).forEach(name=> {
+
+                                const alertAnnots = alerts[name].get(locName)
+                                if (alertAnnots?.length) {
+                                    annotations.push(alertAnnots)
+                                }}
+                            )
+
+                            if (annotations.length) {
+                                status.all_annots = annotations
+                            }
 
                             const sources = vertices[locName]?.sources ? {...vertices[locName]?.sources} : undefined
                             return {...f,
@@ -355,9 +415,7 @@ let svgIcons
                         geojson = geojson.concat(el?.features)
                     }
                     break;
-
             }
-
         })
 
         setVertices(vertices)
@@ -398,61 +456,6 @@ let svgIcons
             geojson && setGeoJson(geojson)
     }
 
-
-    useEffect(() => {
-
-            if (hoverInfo.objects?.length) {
-
-                const featureCollection = {
-                    type: 'FeatureCollection',
-                    features: hoverInfo.objects,
-                };
-                // @ts-ignore
-                const data = convex(featureCollection)
-                if (!data) {return }
-                const convexLayer = new PolygonLayer({
-                id: 'convex-hull',
-                data: [
-                        {polygon: data.geometry.coordinates},
-                      ],
-                    getPolygon: (d: any) => d.polygon,
-                    filled: true,
-                    stroked: true,
-                    lineWidthMinPixels: 2,
-                    getLineWidth: 2,
-                    getLineColor: [42, 89, 191],
-                    getFillColor: [70, 115, 219,50],
-                    pickable: false,
-                    extruded: false,
-                });
-                flushSync(()=> {
-                setLayers((prev: any)=> {
-                    const newLayers: any = [...prev]
-                    const convexIdx = newLayers.findIndex((el: any)=> el?.id === 'convex-hull')
-                    if (convexIdx && convexIdx > -1) {
-                        newLayers[convexIdx] = convexLayer
-                    }
-                    else {
-                        newLayers.push(convexLayer)
-                    }
-                    return newLayers.filter(el => el !== null && el !== undefined)
-                })
-                })
-            } else {
-                flushSync(()=> {
-                    setLayers((prev: any)=> {
-                        const newLayers: any = [...prev]
-                        const convexIdx = newLayers.findIndex((el: any)=> el?.id === 'convex-hull')
-                        newLayers[convexIdx] = null
-                        return newLayers.filter(el => el !== null && el !== undefined)
-                    })
-
-                })
-
-            }
-
-
-    }, [hoverInfo]);
     useEffect(() => {
 
         if (data && data.series.length) {
@@ -472,7 +475,7 @@ let svgIcons
     const layerProps = {
         pickable: true,
         autoHighlight: true,
-        highlightColor: theme2.isDark ? [255, 255, 0, 80] : [0, 0, 255, 80],
+        highlightColor: toRGB4Array(theme2.isDark ? DARK_AUTO_HIGHLIGHT : LIGHT_AUTO_HIGHLIGHT ) ,
         onHover: setHoverInfo,
         setShowCenter,
         getEditableLines,
@@ -485,21 +488,29 @@ let svgIcons
         getSelectedIp,
         setClosedHint,
         setSelectedIp,
+        theme2,
+        time
     };
 
     const lineLayersProps = {
         getDirection,
-        getisOffset
+        getisOffset,
+        getComments,
+        setTooltipObject,
+        setCPlotCoords,
     };
 
     const iconLayersProps = {
         getSvgIcons,
-        getisShowPoints
+        getisShowPoints,
+        setHoverInfo,
+        hoverCluster,
+        setHoverCluster
     }
 
     const getLayers = () => {
-        let lines, pathLine, pathLineExt, list1, nums, icons, clusterLayer, commentsLayer
-        const secLayers: any[] = []
+        let lines, icons, pathLine, pathLineExt, list1, nums, commentsLayer, clusterLayer
+        const secLayers: any = []
         let newLayers: any = [];
         const iconLayers: any = []
         const lineLayers: any = []
@@ -536,21 +547,71 @@ let svgIcons
 
         if (markers.length>0 || secLayers.length>0) {
 
+            if (hoverCluster?.objects?.length > 2 || hoverInfo.prevHullData) {
+
+
+                const features = hoverCluster?.objects ?? hoverInfo.prevHullData
+                const featureCollection = {
+                    type: 'FeatureCollection',
+                    features,
+                };
+                // @ts-ignore
+                const data = convex(featureCollection)
+                if (!data) {return }
+
+                const convexLayer = new PolygonLayer({
+                    id: 'convex-hull',
+                    data: [
+                        {polygon: data.geometry.coordinates},
+                    ],
+                    onHover: (o: any)=> {
+                        if (getTooltipObject?.object && Object.keys(getTooltipObject?.object).length) {
+                            return}
+                        if (!o.object) {setHoverInfo({}); return}
+
+                        if (hoverCluster?.object) {
+                            const { cluster, colorCounts, annotStateCounts } = hoverCluster.object;
+                            o.object = { ...o.object, cluster, colorCounts, annotStateCounts };
+                        }
+
+                        flushSync(()=>{setHoverInfo({...o,
+                            prevHullData: features })
+                            closedHint && setClosedHint(false);})
+
+                    },
+                    onClick: ()=> {
+                        setHoverInfo({})
+                        setHoverCluster(null)
+                        setTooltipObject({});
+                    },
+                    getPolygon: (d: any) => d.polygon,
+                    filled: true,
+                    stroked: false,
+                    lineWidthMaxPixels: 1,
+                    getLineWidth: 1,
+                    getLineColor: [42, 89, 191],
+                    getFillColor: toRGB4Array(theme2.isDark ? DARK_HULL_HIGHLIGHT :LIGHT_HULL_HIGHLIGHT), //[70, 115, 219, 70],
+                    pickable: true,
+                    extruded: false,
+                });
+                iconLayers.push(convexLayer)
+            }
+
             const lineSwitchMap = getLineSwitchMap
             if (getSelFeature?.properties.colType === colTypes.Points) {
                 /// Path to tar/src
 
                 const selPathPts = getSelIds.map((id)=> getEditableLines[id]).filter(el=>el)
 
-                const pathLinesCoords = selPathPts.length > 0 && genParentLine(selPathPts, switchMap, lineSwitchMap, getisOffset)[1]
+                const pathLinesCoords = selPathPts.length > 0 && genParentLine({features:selPathPts, switchMap, lineSwitchMap, getisOffset, time})[1]
 
-                pathLine = pathLinesCoords && pathLinesCoords.length > 0 ? MyPathLayer({
+                pathLine = pathLinesCoords && pathLinesCoords?.length > 0 ? MyPathLayer({
                     ...layerProps,
                     data: pathLinesCoords,
-                    type: 'par-path-line'
+                    type: 'par-path-line',
                 }) : null
 
-                const pathExtCoords = pathLinesCoords && genExtendedPLine(selPathPts, switchMap, lineSwitchMap, getisOffset)
+                const pathExtCoords = pathLinesCoords && genExtendedPLine({features: selPathPts, switchMap, lineSwitchMap, getisOffset, time})
 
                 pathLineExt = pathExtCoords && pathExtCoords?.length > 0 ?
                     MyPathLayer({
@@ -591,20 +652,6 @@ let svgIcons
             }
 
             let clusterLayerData;
-            let iconLayerData = markers;
-            if (iconLayerData?.length) {
-                const featureCollection = {
-                    type: 'FeatureCollection',
-                    features: iconLayerData,
-                };
-
-                icons = IconsGeoJsonLayer({
-                    ...layerProps,
-                    ...iconLayersProps,
-                    featureCollection,
-                })
-                iconLayers.push(icons)
-            }
 
             if (getisShowPoints) {
                 clusterLayerData = markers
@@ -620,6 +667,21 @@ let svgIcons
                         return undefined;
                     })
                     .filter((val): val is DeckFeature => val !== undefined);
+            }
+            let iconLayerData = markers;
+
+            if (iconLayerData?.length) {
+                const featureCollection = {
+                    type: 'FeatureCollection',
+                    features: iconLayerData,
+                };
+
+                icons = IconsGeoJsonLayer({
+                    ...layerProps,
+                    ...iconLayersProps,
+                    featureCollection,
+                })
+                iconLayers.push(icons)
             }
 
             if (clusterLayerData?.length) {
@@ -680,8 +742,7 @@ let svgIcons
                     lineWidthMinPixels: 1,
                     getPosition: (d: any) => d.coordinates,
                     getRadius: (d: any )=> Math.sqrt(d.exits),
-                    getFillColor: (d: any) => toRGB4Array(CENTER_PLOT_FILL_COLOR) as RGBAColor,
-                    getLineColor: (d: any) => [0, 0, 0]
+                    getFillColor: (d: any) => toRGB4Array(theme2.isDark ? DARK_CENTER_PLOT : LIGHT_CENTER_PLOT),
                 });
                 newLayers.push(centerPlot)
             }
@@ -711,13 +772,19 @@ let svgIcons
     }, [getViewState])
 
     useEffect(() => {
-        if (!getPoints.length && !getPolygons.length && !getPath.length && !getGeoJson.length && data?.series?.length) {
+        /// get some proves that data was specified at least somewhere and needs some time to load.
+        if (!options.dataLayers?.some(el=> el?.query) && !data.request?.targets?.some(el=> el?.queryType === 'snapshot')
+        && !data.series?.some(el=>el?.meta?.transformations?.length)
+        ) {return}
+        if (!getPoints.length && !getPolygons.length && !getPath.length && !getGeoJson.length && data?.series?.length){
             setRefresh(prev=> ({...prev}))
             return}
         //setShowCenter(false)
         getLayers();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
+        getTooltipObject,
+        hoverCluster,
         getClusterMaxZoom,
         getSelIds,
         getViewState,
@@ -759,16 +826,20 @@ let svgIcons
                             ref={mapRef}
                             mapStyle={source}
                             attributionControl={false}>
-                                <AttributionControl style={{ position: 'absolute', bottom: 0, left: 0 }}
-                                    />
+                            <AttributionControl style={{ position: 'absolute', bottom: 0, left: 0 }} />
                         </MapLibre>
 
                     </DeckGL>
-                        <PositionTracker/>
-                        <Tooltip position={0} info={hoverInfo} isClosed={closedHint} setClosedHint={setClosedHint}
-            />
+                         <PositionTracker/>
+                        {hasAnnots && <StateTime time={time}/>}
+                        <Tooltip time={time} timeZone={timeZone} position={0} info={hoverInfo} isClosed={closedHint} setTooltipObject={setTooltipObject} setClosedHint={setClosedHint}
+                        />
 
-    {switchMap && <Menu setShowCenter={setShowCenter}
+    {switchMap && <Menu
+        time={time}
+        timeZone={timeZone}
+        data={data}
+        setShowCenter={setShowCenter}
     />}
 
                    </>

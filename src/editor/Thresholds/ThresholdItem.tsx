@@ -159,7 +159,8 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
                   onCommitChange={(v) => {
                     options.labelSetter(options.index, v.currentTarget.value);
                   }}
-                  placeholder = {options.threshold.label ? options.threshold.label : 'label'}
+                  defaultValue={options.threshold.label}
+                  placeholder = {'label'}
               />
               {oTracker &&
                   oTracker.map((tracker: OverrideTracker, index: number) => {

@@ -42,7 +42,7 @@ export const defaultPolygonsConfig: ExtendMapLayerOptions<GeoJsonConfig> = {
 export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
     id: GEOJSON_LAYER_ID,
     name: 'GeoJson layer',
-    description: 'render from Geojson file (url)',
+    description: 'GeoJson features from file (url)',
     isBaseMap: false,
     showLocation: true,
 

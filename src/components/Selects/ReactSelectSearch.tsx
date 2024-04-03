@@ -10,19 +10,20 @@ import {AggrTypes} from "../../store/interfaces";
 type MapRefProps = {
   wait?: number;
     selectHandler: (value: any, coord: any, select: boolean, fly: boolean, lineId?: number | null) => Promise<void> | undefined;
-    value: string;
+    value?: string;
     placeholder?: string;
     aggrTypesOnly?: boolean;
-    noAggrTypes?: boolean
+    noAggrTypes?: boolean;
+    isMainLocSearch?: boolean;
 };
 
-const ReactSelectSearch: FC<MapRefProps> = ({ selectHandler, value, wait = 300,
-    placeholder ='Search location', aggrTypesOnly = false, noAggrTypes = false,
+const ReactSelectSearch: FC<MapRefProps> = ({ selectHandler, wait = 300, value='',
+    placeholder ='Search', aggrTypesOnly = false, noAggrTypes = false, isMainLocSearch = false,
                                               ...props
                                             }) => {
   const s = useStyles2(getStyles);
   const { pointStore, viewStore } = useRootStore();
-  const { switchMap } =
+  const { switchMap, getSelectedIp} =
     pointStore;
 
   const {
@@ -51,14 +52,15 @@ const ReactSelectSearch: FC<MapRefProps> = ({ selectHandler, value, wait = 300,
       AggrTypes.includes(el?.aggrType as string)) : noAggrTypes ? selectOptions.filter(el=>
       !AggrTypes.includes(el?.aggrType as string)) : selectOptions
 
+const count = filteredOptions.length ? ` ${filteredOptions.length}` : null
 
   return (
       <Select
       options={filteredOptions}
       isSearchable={true}
           defaultOptions={filteredOptions}
-          value={value}
-      placeholder={"Search"}
+          value={isMainLocSearch ? getSelectedIp : value}
+      placeholder={`Search: ${count}`}
       onChange={(v)=> selectHandler(v.value, null, true, true)}
          // prefix={getPrefix(args.icon)}
         />

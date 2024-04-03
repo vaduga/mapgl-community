@@ -328,7 +328,7 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
       layer.registerOptionsUI(builder);
     }
     return builder;
-
+// eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options?.type, getGeoJsonProps]);
 
   // The react components

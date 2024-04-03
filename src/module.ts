@@ -7,6 +7,7 @@ import { DataLayersEditor } from './editor/DataLayersEditor';
 import { MapViewEditor } from './editor/MapViewEditor';
 import { DEFAULT_BASEMAP_CONFIG } from './layers/registry';
 import {GlobalSvgRulesEditor} from "./editor/IconsSVG/GlobalSvgRulesEditor";
+import {AlertsEditor} from "./editor/AlertsEditor";
 
 export const plugin = new PanelPlugin<PanelOptions>(Panel)
     .setNoPadding()
@@ -38,6 +39,13 @@ export const plugin = new PanelPlugin<PanelOptions>(Panel)
             path: 'dataLayers',
             name: 'Data layers',
             editor: DataLayersEditor,
+        })
+        builder.addCustomEditor({
+            category: ['Alerts & Annotations'],
+            id: 'common',
+            path: 'common',
+            name: 'Alerts & Annotations',
+            editor: AlertsEditor,
         })
 
         builder.addCustomEditor({

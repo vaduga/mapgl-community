@@ -1,6 +1,6 @@
 import {
-    toRGB4Array,
-    getColorByMetric,
+  toRGB4Array,
+  getColorByMetric, findClosestAnnotations,
 } from '../../utils';
 import { GeoJsonLayer } from '@deck.gl/layers/typed';
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
@@ -9,6 +9,7 @@ import {flushSync} from "react-dom";
 import {Feature, GeoJsonProperties, Geometry, Point} from "geojson";
 import {AggrTypes, colTypes, PointFeatureProperties} from "../../store/interfaces";
 import {RGBAColor} from "@deck.gl/core/utils/color";
+import {ALERTING_STATES} from "../../components/defaults";
 
 
 export const LinesGeoJsonLayer = (props) => {
@@ -21,6 +22,7 @@ export const LinesGeoJsonLayer = (props) => {
         pickable,
         autoHighlight,
         highlightColor,
+        time
     } = props;
 
     const selectedFeatureIndexes = getSelectedFeIndexes?.get(colTypes.Lines) ?? []
@@ -63,8 +65,12 @@ export const LinesGeoJsonLayer = (props) => {
                 return toRGB4Array(color)
             }
             /// in aggr mode
-            const {threshold} = d.properties
-            const {color} = threshold
+            const {threshold, all_annots} = d.properties
+            const annots: any = findClosestAnnotations(all_annots, time)
+            const annotState = annots?.[0]?.newState
+
+            const {color: thresholdColor} = threshold
+            const color = annotState ? annotState.startsWith('Normal') ? ALERTING_STATES.Normal : annotState === 'Alerting'? ALERTING_STATES.Alerting : ALERTING_STATES.Pending : thresholdColor
             return toRGB4Array(color)
         },
 

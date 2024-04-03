@@ -83,6 +83,7 @@ export const esriXYZTiles: ExtendMapLayerRegistryItem<ESRIXYZConfig> = {
         path: 'config.url',
         name: 'URL template',
         description: 'Must include {x}, {y} or {-y}, and {z} placeholders',
+        defaultValue: defaultXYZConfig.url,
         settings: {
           placeholder: defaultXYZConfig.url,
         },
@@ -91,6 +92,7 @@ export const esriXYZTiles: ExtendMapLayerRegistryItem<ESRIXYZConfig> = {
       .addTextInput({
         path: 'config.attribution',
         name: 'Attribution',
+        defaultValue: defaultXYZConfig.attribution,
         settings: {
           placeholder: defaultXYZConfig.attribution,
         },

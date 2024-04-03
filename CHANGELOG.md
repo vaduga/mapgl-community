@@ -1,7 +1,8 @@
 # Changelog
-## 1.4.0
 
-* see-through cluster in convex hull polygon area
+## 1.4.0
+* alerting states from built-in Grafana annotations query. State colors for nodes and clusters
+* see-through convex hull polygon for cluster area 
 
 ## 1.3.0
 * cluster max zoom menu select to control clusterization

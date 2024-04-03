@@ -50,6 +50,13 @@ class PointStore {
 
   constructor(root: RootStore) {
     this.root = root;
+
+    const statVar = root.replaceVariables(`$stat`)
+    const stat = parseInt(statVar, 10)
+
+    if (stat ===1 || stat === 2) {
+      this.isOffset = stat === 1
+    }
     makeAutoObservable(this);
     //autorun(() => console.log('pts ', toJS(this.points)));
   }

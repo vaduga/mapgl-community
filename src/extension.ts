@@ -94,5 +94,5 @@ export interface ExtendMapLayerRegistryItem<TConfig = ExtendMapLayerOptions> ext
   /**
    * Show custom elements in the panel edit UI
    */
-  registerOptionsUI?: (builder: PanelOptionsEditorBuilder<ExtendMapLayerOptions<TConfig>>) => void;
+  registerOptionsUI?: (builder: PanelOptionsEditorBuilder<ExtendMapLayerOptions<TConfig>>, options?: ExtendMapLayerOptions<TConfig>) => void;
 }

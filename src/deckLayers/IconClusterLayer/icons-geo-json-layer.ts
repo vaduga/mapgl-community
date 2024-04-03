@@ -1,9 +1,11 @@
 import {
-  toRGB4Array,
+  toRGB4Array,findClosestAnnotations
 } from '../../utils';
 import { GeoJsonLayer } from '@deck.gl/layers/typed';
 import { CollisionFilterExtension } from '@deck.gl/extensions/typed';
-import {FEATURE_EDIT_HANDLE_COLOR, DEFAULT_EDIT_HANDLE_COLOR} from '../../components/defaults';
+import {
+  ALERTING_STATES
+} from '../../components/defaults';
 import {toJS} from "mobx";
 import {colTypes, pEditActions} from "../../store/interfaces";
 
@@ -18,6 +20,7 @@ const IconsGeoJsonLayer = (props) => {
     getSvgIcons,
     getisShowPoints,
     getSelectedIp,
+    time,
     onHover,
     highlightColor,
   } = props;
@@ -39,26 +42,34 @@ const IconsGeoJsonLayer = (props) => {
         // @ts-ignore
         getTextColor: (d) => {
           // @ts-ignore
-          const {threshold, cluster} = d.properties
-          if (cluster) {
-            return [0, 0, 0]
-          }
-          const {color} = threshold
-          return toRGB4Array(color)
+            const {threshold, cluster, all_annots} = d.properties
+            if (cluster) {return [0,0,0]}
+            const annots: any = findClosestAnnotations(all_annots, time)
+            const annotState = annots?.[0]?.newState
+            const {color: thresholdColor} = threshold
+            const color = annotState ? annotState.startsWith('Normal') ? ALERTING_STATES.Normal : annotState === 'Alerting'? ALERTING_STATES.Alerting : ALERTING_STATES.Pending : thresholdColor
+
+            return toRGB4Array(color)
         },
         getTextSize: 12,
         //@ts-ignore
         getFillColor: (d: any) => {
-          const {threshold} = d.properties
-          const {color} = threshold
-          return toRGB4Array(color)
+            const {threshold, all_annots} = d.properties
+            const annots: any = findClosestAnnotations(all_annots, time)
+            const annotState = annots?.[0]?.newState
+            const {color: thresholdColor} = threshold
+            const color = annotState ? annotState.startsWith('Normal') ? ALERTING_STATES.Normal : annotState === 'Alerting'? ALERTING_STATES.Alerting : ALERTING_STATES.Pending : thresholdColor
+
+            return toRGB4Array(color)
         },
         getPointRadius: (d) => {
           const isHead = getSelectedIp === d.properties?.locName
           return isHead ? 10 : 8 //4 : 2
         },
         pointRadiusScale: 0.3, //1,
-
+      updateTriggers: {
+          getIcon: time,
+      },
         getIcon: (d) => {
           const colorCounts = {};
           const {threshold} = d.properties

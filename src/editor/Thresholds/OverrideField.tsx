@@ -52,7 +52,8 @@ export const OverrideField: React.FC<OverrideFieldProps> = (options: OverrideFie
                     onCommitChange={(v) => {
                         options.valueSetter(options.index, v.currentTarget.value);
                     }}
-                    placeholder={options.overrideField.value ? options.overrideField.value : 'v1,v2...'}
+                    defaultValue={options.overrideField.value}
+                    placeholder={'val1,val2...'}
                 />
                 <IconButton
                     disabled={options.disabled}

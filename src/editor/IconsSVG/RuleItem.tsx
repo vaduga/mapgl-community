@@ -222,7 +222,6 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
                   ]}
                   className={styles.nodeSelect}
                   placeholder={'Select an icon'}
-                  allowCustomValue={true}
 
               ></Select>
         </InlineField>
@@ -234,17 +233,17 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
                         className={styles.inlineField}
                         style={{ marginLeft: '24px' }}
                     >
-                      <Input
-                          value={options.rule.iconName}
+                      <AutoSizeInput
+                          defaultValue={options.rule.iconName}
                           placeholder={'https://example.com/icon.svg'}
                           type={'text'}
                           name={'iconImageURL'}
-                          onChange={(e) => {
+                          onCommitChange={(e) => {
                             const v = e.currentTarget?.value
                             if (!v) {return}
                             handleIconChange(v );
                           }}
-                      ></Input>
+                      ></AutoSizeInput>
                     </InlineField>
                   </>
               ) : (

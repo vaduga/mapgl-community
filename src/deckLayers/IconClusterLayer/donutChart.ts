@@ -1,4 +1,4 @@
-import {DEFAULT_CLUSTER_BK_COLOR} from '../../components/defaults';
+import {ALERTING_STATES, DEFAULT_CLUSTER_BK_COLOR} from '../../components/defaults';
 
 function svgToDataURL(svg) {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
@@ -6,20 +6,65 @@ function svgToDataURL(svg) {
 
 // SVG donut chart from feature properties
 
-function createDonutChart(colorCounts) {
-  const offsets: number[] = [];
-
+function createDonutChart({colorCounts, annotStateCounts, allTotal, allStTotal, isHoveredCluster}) {
   const bkColor = DEFAULT_CLUSTER_BK_COLOR
-
-  const counts: Array<{count: number, label: string}> = Object.values(colorCounts)
+  const stOffsets: number[] = []
+  const offsets: number[] = [];
+  let total = 0
+  let stTotal = 0
+  const hasAnnots = allStTotal //(allStTotal - allTotal) > 0
+  if (hasAnnots) {
+ // console.log('annotStateCounts', annotStateCounts, colorCounts)
+    }
+  const counts: any[] = Object.values(colorCounts)
   const colors: string[] = Object.keys(colorCounts)
-  let total = 0;
+
 
   if (counts.length) {
     counts.forEach((item, i)=> {
       offsets.push(total);
       total += item.count;
     })
+  }
+
+
+  if (hasAnnots) {
+    annotStateCounts[bkColor] =
+        {
+          count: allTotal,
+          label: 'Unknown'
+        }
+  }
+
+  const desiredOrder = [
+    bkColor,
+    ALERTING_STATES.Alerting,
+    ALERTING_STATES.Pending,
+    ALERTING_STATES.Normal,
+  ];
+
+  const stCounts: any[] = [];
+  const stColors: string[] = [];
+
+  desiredOrder.forEach(key => {
+    const count = annotStateCounts[key];
+    if (count !== undefined) {
+      stCounts.push(count);
+      stColors.push(key);
+    }
+  });
+  // const stCounts: any[] = Object.values(annotStateCounts)
+  // const stColors: string[] = Object.keys(annotStateCounts)
+
+
+  if (hasAnnots) {
+    stCounts.forEach((item, i)=> {
+      stOffsets.push(stTotal);
+      stTotal += item.count;
+    })
+
+    // stTotal += allTotal
+
   }
 
   const fontSize =
@@ -30,31 +75,57 @@ function createDonutChart(colorCounts) {
   w = total === 1 ? w * 3 : w; // single point
 
   let svg = `
-  <svg width="${w}" height="${w}" stroke-width="1" viewbox="0 0 ${w} ${w}" 
+  <svg width="${w}" height="${w}" stroke-width="1" viewBox="0 0 ${w} ${w}" 
   xmlns="http://www.w3.org/2000/svg"
   text-anchor="middle" style="font: ${fontSize}px arial; font-weight: lighter; display: block">`;
 
-  if (total > 1) {
+  // Mask definition
+  svg += `<defs>
+            <mask id="donutMask">
+              <circle cx="${r}" cy="${r}" r="${r0}" fill="white"/>
+            </mask>
+          </defs>`;
+
+  // Drawing outer segments
+  let startAngle = 0;
+  if (!isHoveredCluster) {
     for (let i = 0; i < counts.length; i++) {
+      const endAngle = startAngle + (counts[i].count / total) * 360;
       svg += donutSegment(
-        offsets[i] / total,
-        (offsets[i] + counts[i].count) / total,
-        r,
-        r0,
-          colors[i],
+          startAngle / 360,
+          endAngle / 360,
+          r,
+          r0,
+          colors[i]
       );
+      startAngle = endAngle;
     }
   }
 
-  let fillColor = total > 1 ? bkColor : colors[0] // singleColor
-  svg += `<circle cx="${total === 1 ? r * 3 : r}" cy="${
-    total === 1 ? r * 3 : r
-  }" r="${total === 1 ? r0 * 1.35 : r0}" fill="${fillColor}"  />
-  <text dominant-baseline="central" transform="translate(${r}, ${r})" >
-  ${total === 1 ? '' : total}
-  </text>
-  </svg>
-  `;
+  //Drawing central circle filled with default color when no annotations in cluster
+
+    let fillColor = isHoveredCluster ? "rgb(240,240,240,0.1)" : bkColor //total > 1 ? bkColor : colors[0]; // singleColor
+    svg += `<circle cx="${total === 1 ? r * 3 : r}" cy="${total === 1 ? r * 3 : r}" r="${total === 1 ? r0 * 1.35 : r0}" fill="${fillColor}"  />`
+
+  if (!isHoveredCluster) {
+    // Drawing horizontal stripes inside the donut chart
+    let revertOffset = r - r0;
+    let stripeOffset = revertOffset
+    for (let i = 0; i < stOffsets.length; i++) {
+      const stripeHeight = (stCounts[i].count / stTotal) * (w - revertOffset * 2);
+      svg += `<rect x="0" y="${stripeOffset}" width="${w}" height="${stripeHeight}" fill="${stColors[i]}" mask="url(#donutMask)"/>`;
+      stripeOffset += stripeHeight;
+    }
+  }
+
+  if (!isHoveredCluster) {
+    svg += `<text dominant-baseline="central" transform="translate(${r}, ${r})" >
+    ${allTotal + allStTotal === 1 ? '' : allTotal + allStTotal}
+    </text>`
+  }
+
+
+  svg += `</svg>`;
 
   return svg;
 }

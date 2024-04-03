@@ -2,12 +2,80 @@ import bearing from "@turf/bearing";
 import turfbbox from "@turf/bbox";
 import {Geometry, Point, Position} from "geojson";
 import {toJS} from "mobx";
-import {DEFAULT_ICON_NAME2, DEFAULT_NUMS_COLOR, parDelimiter} from "../components/defaults";
+import {ALERTING_STATES, DEFAULT_NUMS_COLOR, parDelimiter} from "../components/defaults";
 import {AggrTypes, DeckLine, Feature, ParentInfo, PointFeatureProperties, Sources, Vertices} from "../store/interfaces";
 import {MultiLineString} from "@turf/helpers";
-import {RGBAColor} from "@deck.gl/core/utils/color";
-import { v4 as uuidv4 } from 'uuid';
-import {GrafanaTheme2, SelectableValue} from "@grafana/data";
+import {SelectableValue} from "@grafana/data";
+import { RGBAColor } from "@deck.gl/core/utils/color";
+
+function parseObjFromString(str) {
+    // Regular expression to extract key-value pairs
+    const regex = /(\w+)\s*=\s*(\w+)/g;
+    const matches = str.match(regex);
+
+    if (!matches) {
+        return null; // Return null if no matches found
+    }
+
+    // Create an object to store key-value pairs
+    const obj = {};
+
+    // Iterate over matches and populate the object
+    matches.forEach(match => {
+        const [_, key, value] = match.match(/(\w+)\s*=\s*(\w+)/);
+        obj[key] = value;
+    });
+
+    return obj;
+}
+
+function findClosestAnnotations(annotations, selectedTime): [] {
+
+    if (!annotations?.length) {
+        return []
+    }
+    if (!selectedTime) {
+        return annotations.map(innerArray => innerArray.at(-1))
+    }
+
+    const closestAnnotations: any = [];
+
+    for (const innerArray of annotations) {
+        let left = 0;
+        let right = innerArray.length - 1;
+        let closestAnnotation: any = null;
+
+        while (left <= right) {
+            const mid = Math.floor((left + right) / 2);
+            const annotation = innerArray[mid];
+
+            if (annotation.timeEnd <= selectedTime) {
+                closestAnnotation = annotation;
+                left = mid + 1; // Look in the right half
+            } else {
+                right = mid - 1; // Look in the left half
+            }
+        }
+
+        if (closestAnnotation) {
+            closestAnnotations.push(closestAnnotation);
+        }
+    }
+
+    const sortedClosestAnnotations = closestAnnotations.sort((a, b) => {
+        const stateOrder = { 'Alerting': 1, 'Pending': 2, 'Normal': 3 };
+
+        const stateA = a.newState.startsWith('Alerting') ? 'Alerting' :
+            a.newState.startsWith('Pending') ? 'Pending' : 'Normal';
+
+        const stateB = b.newState.startsWith('Alerting') ? 'Alerting' :
+            b.newState.startsWith('Pending') ? 'Pending' : 'Normal';
+
+        return stateOrder[stateA] - stateOrder[stateB];
+    });
+    return sortedClosestAnnotations
+}
+
 
 function toHex(rgbaColor) {
     // Parse the rgbaColor string to extract the red, green, blue, and alpha values
@@ -57,13 +125,13 @@ function invertColor(color){
     return `rgb(${invertedColorArr.join(", ")})`; // convert the array back to a string and return it
 }
 
-const toRGB4Array = (rgbStr: string): RGBAColor => {
+const toRGB4Array = (rgbStr: string) => {
     const matches = rgbStr.match(/[\d.]+/g);
     if (matches === null || matches.length < 3) {
-        return [0,0,0]
+        return [0, 0, 0] as RGBAColor
     }
 
-    const rgba = matches.slice(0).map(Number) ;
+    const rgba = matches.slice(0).map(Number) as number[]//RGBAColor;
     rgba[3] = (rgba[3] || 1) * 255;
     return rgba as RGBAColor;
 };
@@ -168,7 +236,8 @@ const textCollection: any = []
 }
 
 type CoordsAndColor = [Position[], string]
-function genParentLine(lineFeatures: DeckLine<Geometry, PointFeatureProperties>[], switchMap, lineSwitchMap, getisoffset): [DeckLine<Geometry, PointFeatureProperties>[], CoordsAndColor[]] {
+function genParentLine({features:lineFeatures, switchMap, lineSwitchMap, getisOffset, time
+}): [DeckLine<Geometry, PointFeatureProperties>[], CoordsAndColor[]] {
 if (!lineFeatures || !Array.isArray(lineFeatures) || lineFeatures?.length < 1) { return [[],[]]}
     const lineStringCoords: CoordsAndColor[] = [];
     const pLinePoints = [...lineFeatures]
@@ -178,7 +247,7 @@ if (!lineFeatures || !Array.isArray(lineFeatures) || lineFeatures?.length < 1) {
     const {parPath} = lFeature?.properties
     if (!parPath || parPath?.length < 1) {return}
 
-    if (!getisoffset) {          // straight lines
+    if (!getisOffset) {          // straight lines
         const lastFeature = lineSwitchMap.get(parPath.at(-1))
         pLinePoints.push(lFeature)
         pLinePoints.push(lastFeature)
@@ -196,11 +265,11 @@ if (coords1 && coords2 && color)
     }
 
     for (let i = 1; i < parPath?.length; i++) {
-        let p = parPath[i];
-        let prevP = parPath[i - 1];
+        let p: any = parPath[i] ;
+        let prevP: any = parPath[i - 1];
 
-        const pPt = typeof p === 'string' && switchMap.get(p.split(parDelimiter)[0])
-        const prevPt =  typeof prevP === 'string' && switchMap.get(prevP.split(parDelimiter)[0])
+        const pPt = typeof p === 'string' && switchMap.get(p?.split(parDelimiter)[0])
+        const prevPt =  typeof prevP === 'string' && switchMap.get(prevP?.split(parDelimiter)[0])
         const pSources = (pPt?.properties?.sources && Object.values(pPt.properties.sources) as ParentInfo[]) ?? [] //.findIndex((el=> el.at(-1) === p)) : null
         const prevPSources = (prevPt?.properties?.sources && Object.values(prevPt.properties.sources) as ParentInfo[]) ?? []
         let fromPrevToCurr: (string|Position)[] | null = null
@@ -313,7 +382,7 @@ if (coords1 && coords2 && color)
 
 }
 
-function genExtendedPLine(features: DeckLine<Geometry, PointFeatureProperties>[], switchMap, lineSwitchMap, getisoffset) {
+function genExtendedPLine({features, switchMap, lineSwitchMap, getisOffset, time}) {
      let pathCoords: Position[] = [];
      let nextSegment
     const occurences: string[] = []
@@ -339,7 +408,7 @@ features.forEach((feature, pathIdx)=>{
             }
             occurences.push(locName)
 
-            nextSegment = genParentLine([nextParent], switchMap, lineSwitchMap, getisoffset)[1] || undefined;
+            nextSegment = genParentLine({features:[nextParent], switchMap, lineSwitchMap, getisOffset, time})[1] || undefined;
 
             if (nextSegment?.length > 0) {
                 pathCoords.push(nextSegment)
@@ -724,5 +793,5 @@ const generateValuesWithIncrement = (start: number, end: number, increment: numb
 export {
     toRGB4Array, colorToRGBA, getColorByMetric, getFirstCoordinate, toHex, hexToRgba, getBounds, getTurfAngle, makeColorLighter, makeColorDarker, genParPathText,
     genParentLine, genExtendedPLine, genLinksText, findChildLines, parseIfPossible, mergeVertices, findComments, parseSvgFileToString, generateValuesWithIncrement,
-    loadSvgIcons
+    loadSvgIcons, parseObjFromString, findClosestAnnotations
 }

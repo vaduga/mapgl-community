@@ -5,11 +5,13 @@ import { svgToDataURL, createDonutChart } from './donutChart';
 import {Feature} from "geojson";
 import {colTypes} from "../../store/interfaces";
 import {DataFilterExtension} from "@deck.gl/extensions";
-import {DEFAULT_CLUSTER_ICON_SIZE} from "../../components/defaults";
+import {ALERTING_STATES, DEFAULT_CLUSTER_ICON_SIZE} from "../../components/defaults";
+import {findClosestAnnotations} from "../../utils";
 
 type params =
 {
   selectedIp: string;
+  zoom: number;
   uPoint: Feature | null;
   layerProps: any;
 }
@@ -19,13 +21,28 @@ export class IconClusterLayer extends CompositeLayer<params> {
   //isVisible;
   getSelectedFeIndexes;
   getSvgIcons
+  time
+  cluster_id
 
   constructor(props) {
     super(props);
+    this.onHover = (o) => {
+        if (!o.object) {
+            props.setHoverInfo({})
+            return}
+        if (o.object?.cluster_id !== props.hoverCluster?.object?.cluster_id) {
+            props.setHoverCluster(o)
+        }
+        props.setClosedHint(false);
+        props.setHoverInfo(o)
+    }
+    this.cluster_id = props.hoverCluster?.object?.cluster_id
+    this.id = props.id
     this.selectedIp = props.getSelectedIp;
     //this.isVisible = props.isVisible;
     this.getSelectedFeIndexes = props.getSelectedFeIndexes
     this.getSvgIcons = props.getSvgIcons
+    this.time = props.time
 
   }
   shouldUpdateState({ changeFlags }) {
@@ -86,39 +103,73 @@ export class IconClusterLayer extends CompositeLayer<params> {
     const { data } = this.state;
 
     return new IconLayer(this.getSubLayerProps({
-      //visible: this.isVisible,
-      // highlightColor,
-      // onHover,
       id: colTypes.Points,
       data: data,
       getFilterValue: f => f.properties.cluster ? 1 : 0,
       filterRange: [1, 1],
       selectedFeatureIndexes:   this.getSelectedFeIndexes?.get(colTypes.Points) ?? [],
       getPosition: d => d.geometry.coordinates,
+        updateTriggers: {
+            getIcon: this.time,
+        },
       getIcon: (d) => {
         const isSelected = this.selectedIp === d.properties?.locName;
         const colorCounts = {};
+        const annotStateCounts = {};
         let clPoints = d.properties.cluster
             ? this.state.index.getLeaves(d.properties.cluster_id, 'infinity')
             : '';
         if (clPoints) {
+
+          let total = 0
+          let stTotal = 0
           clPoints.forEach((p) => {
             const { color, label } = p.properties?.threshold;
-            colorCounts[color] = colorCounts[color] ?
-                {
-                  count : colorCounts[color].count +1,
-                  label : colorCounts[color].label
-                } :
-                {
-                  count : 1,
-                  label
-                }
+            const {all_annots} = p.properties
+            if (all_annots) {
+                const annots: any = findClosestAnnotations(all_annots, this.time)
+                const annotState = annots?.[0]?.newState
+              const state = Object.keys(ALERTING_STATES).find(st=> annotState?.startsWith(st))
+            //    console.log('state', state, closestAnnot?.newState, toJS(closestAnnot), this.time, toJS(all_annots) )
+             if (state)
+              {
+
+                const color = ALERTING_STATES[state]
+                annotStateCounts[color] = annotStateCounts[color] ?
+                    {
+                      count: annotStateCounts[color].count + 1,
+                      label: state
+                    } :
+                    {
+                      count: 1,
+                      label: state
+                    }
+                stTotal += 1 /// annot + point itself
+              } else {total +=1}
+            }
+              else {
+                total += 1
+            }
+              colorCounts[color] = colorCounts[color] ?
+                  {
+                      count : colorCounts[color].count +1,
+                      label : colorCounts[color].label
+                  } :
+                  {
+                      count : 1,
+                      label
+                  }
+
+
+
           })
           d.properties.colorCounts = colorCounts
+          d.properties.annotStateCounts = annotStateCounts
+          const isHoveredCluster = d.properties.cluster_id === this.cluster_id && false
           return {
-            url: svgToDataURL(createDonutChart(colorCounts)),
-            width: isSelected ? 256 : 128,
-            height: isSelected ? 256 : 128,
+            url: svgToDataURL(createDonutChart({colorCounts, annotStateCounts, allTotal: total, allStTotal: stTotal, isHoveredCluster})),
+            width:  128,
+            height: 128,
           };
         }
 //// blank svg icon if no cluster
