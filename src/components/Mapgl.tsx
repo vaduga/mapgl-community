@@ -83,7 +83,6 @@ const Mapgl = () => {
         getSelectedFeIndexes,
         setSelectedIp,setTooltipObject,
         getTooltipObject,
-        getBlankInfo,
         getisShowPoints,
         setSvgIcons,
         getSvgIcons
@@ -457,6 +456,74 @@ let svgIcons
     }
 
     useEffect(() => {
+        if (hoverCluster?.objects?.length > 2 || hoverInfo.prevHullData) {
+
+            const features = hoverCluster?.objects ?? hoverInfo.prevHullData
+            const featureCollection = {
+                type: 'FeatureCollection',
+                features,
+            };
+            // @ts-ignore
+            const data = convex(featureCollection)
+            if (!data) {return }
+
+            const convexLayer = new PolygonLayer({
+                id: 'convex-hull',
+                data: [
+                    {polygon: data.geometry.coordinates},
+                ],
+                onHover: (o: any)=> {
+                    if (getTooltipObject?.object && Object.keys(getTooltipObject?.object).length) {
+                        return}
+                    if (!o.object) {setHoverInfo({});
+                        return}
+
+                    const features = hoverCluster?.objects ?? hoverInfo.prevHullData
+                    if (hoverCluster?.object) {
+                        const { cluster, colorCounts, annotStateCounts } = hoverCluster.object;
+                        o.object = { ...o.object, cluster, colorCounts, annotStateCounts };
+                    }
+
+                    flushSync(()=>{setHoverInfo({...o,
+                        prevHullData: features })
+                        closedHint && setClosedHint(false);})
+
+                },
+                onClick: ()=> {
+                    setHoverInfo({})
+                    setHoverCluster(null)
+                    setTooltipObject({});
+                },
+                getPolygon: (d: any) => d.polygon,
+                filled: true,
+                stroked: false,
+                lineWidthMaxPixels: 1,
+                getLineWidth: 1,
+                getLineColor: [42, 89, 191],
+                getFillColor: toRGB4Array(theme2.isDark ? DARK_HULL_HIGHLIGHT :LIGHT_HULL_HIGHLIGHT), //[70, 115, 219, 70],
+                pickable: true,
+                extruded: false,
+            });
+
+            flushSync(()=> {
+                setLayers((prev: any)=> {
+                    let newLayers = [...prev]
+                    if (prev?.[0]?.id === 'convex-hull') {
+                        newLayers[0] = convexLayer
+                    } else {
+                        newLayers = [convexLayer, ...prev]
+                    }
+                    return newLayers
+
+                })
+            })
+        }
+
+// eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [hoverCluster]);
+
+
+    useEffect(() => {
 
         if (data && data.series.length) {
             loadPoints(data)
@@ -546,56 +613,6 @@ let svgIcons
 
 
         if (markers.length>0 || secLayers.length>0) {
-
-            if (hoverCluster?.objects?.length > 2 || hoverInfo.prevHullData) {
-
-
-                const features = hoverCluster?.objects ?? hoverInfo.prevHullData
-                const featureCollection = {
-                    type: 'FeatureCollection',
-                    features,
-                };
-                // @ts-ignore
-                const data = convex(featureCollection)
-                if (!data) {return }
-
-                const convexLayer = new PolygonLayer({
-                    id: 'convex-hull',
-                    data: [
-                        {polygon: data.geometry.coordinates},
-                    ],
-                    onHover: (o: any)=> {
-                        if (getTooltipObject?.object && Object.keys(getTooltipObject?.object).length) {
-                            return}
-                        if (!o.object) {setHoverInfo({}); return}
-
-                        if (hoverCluster?.object) {
-                            const { cluster, colorCounts, annotStateCounts } = hoverCluster.object;
-                            o.object = { ...o.object, cluster, colorCounts, annotStateCounts };
-                        }
-
-                        flushSync(()=>{setHoverInfo({...o,
-                            prevHullData: features })
-                            closedHint && setClosedHint(false);})
-
-                    },
-                    onClick: ()=> {
-                        setHoverInfo({})
-                        setHoverCluster(null)
-                        setTooltipObject({});
-                    },
-                    getPolygon: (d: any) => d.polygon,
-                    filled: true,
-                    stroked: false,
-                    lineWidthMaxPixels: 1,
-                    getLineWidth: 1,
-                    getLineColor: [42, 89, 191],
-                    getFillColor: toRGB4Array(theme2.isDark ? DARK_HULL_HIGHLIGHT :LIGHT_HULL_HIGHLIGHT), //[70, 115, 219, 70],
-                    pickable: true,
-                    extruded: false,
-                });
-                iconLayers.push(convexLayer)
-            }
 
             const lineSwitchMap = getLineSwitchMap
             if (getSelFeature?.properties.colType === colTypes.Points) {
@@ -784,7 +801,6 @@ let svgIcons
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         getTooltipObject,
-        hoverCluster,
         getClusterMaxZoom,
         getSelIds,
         getViewState,

@@ -33,7 +33,7 @@ const LayerSelect: FC = observer(() => {
         getMode,
         setMode,
         getisShowPoints,
-        getisOffset, toggleOffset, setSelectedIp, setTooltipObject, getBlankInfo,
+        getisOffset, toggleOffset, setSelectedIp, setTooltipObject,
     } = pointStore;
     const {getDirection, setDirection}
         = lineStore
@@ -101,7 +101,7 @@ const LayerSelect: FC = observer(() => {
                   title="path reverse"
                   onChange={() => {
                       setSelectedIp('');
-                      setTooltipObject({...getBlankInfo});
+                      setTooltipObject({});
                       setDirection(getDirection === 'target' ? 'source' : 'target')
                        if (isDir) {
 

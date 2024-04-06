@@ -10,7 +10,7 @@ import {
   Sources
 } from './interfaces';
 import {Point, Position} from "geojson";
-import {parDelimiter} from "../components/defaults";
+import {blankHoverInfo, parDelimiter} from "../components/defaults";
 
 class PointStore {
   root: RootStore;
@@ -33,19 +33,9 @@ class PointStore {
     type: "Point"
   }
   svgIcons: {} = {}
-  blankHoverInfo: Info = {
-    x: -3000,
-    y: -3000,
-    cluster: false,
-    object: {
-      isShowTooltip: false,
-      cluster: false
-    },
-    objects: []
-  }
 
-  tooltipObject: Info = this.blankHoverInfo;
-  logTooltipObject: Info = this.blankHoverInfo;
+  tooltipObject: Info = blankHoverInfo;
+  logTooltipObject: Info = blankHoverInfo;
 
 
   constructor(root: RootStore) {
@@ -63,10 +53,6 @@ class PointStore {
 
   get getMode(): string {
     return this.mode;
-  }
-
-  get getBlankInfo(): Info{
-    return this.blankHoverInfo
   }
 
   get getSvgIcons() {
