@@ -4,11 +4,12 @@ import {getFirstCoordinate, useRootStore} from '../utils';
 import {LayerSelect} from './Selects/LayerSelect';
 import ReactSelectSearch from './Selects/ReactSelectSearch';
 import {css} from "@emotion/css";
-import {InlineField, InlineFieldRow, Select, useStyles2} from "@grafana/ui";
+import {InlineField, InlineFieldRow, Select, Switch, Tooltip, useStyles2} from "@grafana/ui";
 import {GrafanaTheme2} from "@grafana/data";
 import {flushSync} from "react-dom";
 import {libreMapInstance} from "./Mapgl";
 import {toJS} from "mobx";
+import {locationService} from "@grafana/runtime";
 
 const getStyles = (theme: GrafanaTheme2) => ({
     inlineRow: css`
@@ -32,15 +33,28 @@ const getStyles = (theme: GrafanaTheme2) => ({
     background: none;
     pointer-events: none;
 
-     > div,button, ul, input, p  {
-       margin-top: 3px;
+     > div,button, ul, input, p  {    
      }
 `,
+    field: css`
+      margin-top: ${theme.spacing(0.1)};
+      margin-right: ${theme.spacing(1.5)};
+    `
 })
 
 const Menu = ({setShowCenter, total}) => {
-  const { switchMap, getSelectedIp, setSelectedIp } = useRootStore().pointStore;
-    const { getViewState, setViewState, getClusterMaxZoom, setClusterMaxZoom } = useRootStore().viewStore;
+
+    const {pointStore, lineStore, viewStore, replaceVariables} = useRootStore()
+    const { getViewState, setViewState, getClusterMaxZoom, setClusterMaxZoom } = viewStore;
+    const {
+        switchMap,
+       setSelectedIp, setTooltipObject,getSelectedIp
+    } = pointStore;
+    const {getDirection, setDirection}
+        = lineStore
+    const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
+
+
     const s = useStyles2(getStyles);
     const options: any = []
     for (let i = 18; i >= 2; i--) {
@@ -80,22 +94,44 @@ const Menu = ({setShowCenter, total}) => {
   return (
        <div className={s.myMenu}>
           <InlineFieldRow className={s.inlineRow}>
-              <InlineField>
+              <InlineField className={s.field}>
           <ReactSelectSearch aggrTypesOnly={false} total={total} value={getSelectedIp} isMainLocSearch={true} selectHandler={selectGotoHandler} />
                   </InlineField>
-          <InlineField label={"cluster max zoom"}>
+          <InlineField className={s.field}>
+              <Tooltip content={'cluster max zoom'} >
+                  <div>
               <Select
                   onChange={(v) => {
                       if (!v.value) {return}
                       setClusterMaxZoom(v.value)
                   }}
                   value={getClusterMaxZoom}
-                  tooltip={'max cluster zoom'}
                   options={options}
-                  // className={styles.nodeSelect}
-                  placeholder={'Max cluster zoom'}
               ></Select>
+                  </div>
+              </Tooltip>
           </InlineField>
+              <InlineField className={s.field}>
+                  <Tooltip content={'swap tar-src'}>
+                      <div>
+                          <Switch value={getDirection === 'source'}
+                                  checked={getDirection === 'source'}
+                                  title="path reverse"
+                                  onChange={() => {
+                                      setSelectedIp('');
+                                      setTooltipObject({});
+                                      setDirection(getDirection === 'target' ? 'source' : 'target')
+                                      if (isDir) {
+
+                                          locationService.partial({'var-locRole': getDirection === 'target' ? 'source' : 'target'}, true);
+                                      }
+                                  }}
+                          ></Switch>
+                      </div>
+                  </Tooltip>
+
+              </InlineField>
+
           </InlineFieldRow>
           <LayerSelect/>
        </div>

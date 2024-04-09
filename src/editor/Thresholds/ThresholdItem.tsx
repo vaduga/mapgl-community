@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {FieldType, GrafanaTheme2, SelectableValue} from '@grafana/data';
-import {AutoSizeInput, ColorPicker, IconButton, Input, Select, useStyles2} from '@grafana/ui';
+import {AutoSizeInput, ColorPicker, IconButton, Input, Select, Tooltip, useStyles2} from '@grafana/ui';
 import {v4 as uuidv4} from 'uuid';
 import {css} from '@emotion/css';
 import {OverrideField} from "./OverrideField";
@@ -108,6 +108,7 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
 
   return (
 
+      <Tooltip content={'metric threshold value'} >
       <Input
           disabled={options.disabled}
           type="number"
@@ -117,7 +118,8 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
           value={options.threshold.value}
           prefix={
             <div className={styles.inputPrefix}>
-              <div className={styles.colorPicker} title="Primary">
+              <Tooltip content={'stat1 color'} >
+              <div className={styles.colorPicker}>
                 <ColorPicker
                     color={options.threshold.color}
                     onChange={(color) => {
@@ -127,6 +129,7 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
                     enableNamedColors={true}
                 />
               </div>
+              </Tooltip>
               {/*<div className={styles.colorPicker} title="Selected">*/}
               {/*  <ColorPicker*/}
               {/*      color={options.threshold.selColor}*/}
@@ -134,7 +137,8 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
               {/*      enableNamedColors={true}*/}
               {/*  />*/}
               {/*</div>*/}
-              <div title="Line width">
+              <Tooltip content={'line width'} >
+              <div>
                 <Select
                     disabled={options.disabled}
                     menuShouldPortal={true}
@@ -150,10 +154,12 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
                     width="auto"
                 />
               </div>
+              </Tooltip>
             </div>
           }
           suffix={
             <>
+              <Tooltip content={'color label'} >
               <AutoSizeInput
                   disabled={false}
                   onCommitChange={(v) => {
@@ -162,6 +168,7 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
                   defaultValue={options.threshold.label}
                   placeholder = {'label'}
               />
+              </Tooltip>
               {oTracker &&
                   oTracker.map((tracker: OverrideTracker, index: number) => {
                     return (
@@ -193,12 +200,13 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
                   key="deleteThreshold"
                   variant="destructive"
                   name="trash-alt"
-                  tooltip="Delete Threshold"
+                  tooltip="delete threshold"
                   onClick={() => options.remover(options.index)}
               />
             </>
           }
       />
+      </Tooltip>
   );
 };
 
@@ -209,7 +217,7 @@ const getThresholdStyles = (theme: GrafanaTheme2) => {
       align-items: center;
     `,
     colorPicker: css`
-      padding: 0 ${theme.spacing(1)};
+      padding: 0 ${theme.spacing(1)} 0 0;
     `,
   };
 };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { orderBy } from 'lodash';
-import { Button, useTheme, useTheme2} from '@grafana/ui';
+import {Button, useStyles2, useTheme, useTheme2} from '@grafana/ui';
 import { v4 as uuidv4 } from 'uuid';
 import {OverrideTracker, Threshold, ThresholdTracker} from './threshold-types';
 import { ThresholdItem } from './ThresholdItem';
@@ -9,6 +9,8 @@ import {
   DEFAULT_OK_COLOR_SELECTED_RGBA, DEFAULT_OK_COLOR_RGBA,
 } from '../../components/defaults';
 import {hexToRgba} from "../../utils/utils.plugin";
+import {GrafanaTheme2} from "@grafana/data";
+import {css} from "@emotion/css";
 interface Props {
   thresholds: Threshold[];
   setter: any;
@@ -17,7 +19,7 @@ interface Props {
 }
 export const ThresholdsEditor: React.FC<Props> = (options) => {
 
-
+  const s = useStyles2(thresholdFieldStyles);
   const [tracker, _setTracker] = useState((): ThresholdTracker[] => {
     if (!options.thresholds) {
       const empty: ThresholdTracker[] = [];
@@ -128,7 +130,7 @@ export const ThresholdsEditor: React.FC<Props> = (options) => {
 
   return (
       <>
-        <Button disabled={options.disabled} fill="solid" variant="primary" icon="plus" onClick={addItem}>
+        <Button className={s.addBtn} disabled={options.disabled} fill="solid" variant="primary" icon="plus" onClick={addItem}>
           Add Threshold
         </Button>
         {tracker &&
@@ -155,3 +157,14 @@ export const ThresholdsEditor: React.FC<Props> = (options) => {
       </>
   );
 };
+
+const thresholdFieldStyles = (theme: GrafanaTheme2) => {
+  return {
+    addBtn: css`
+      margin-bottom: ${theme.spacing(1)};;      
+    `,
+  };
+};
+
+
+

@@ -127,11 +127,13 @@ context.eventBus?.publish({type: 'mapView', payload: 'update'})
         </InlineField>
       </InlineFieldRow>
 
-      <VerticalGroup>
+    <InlineFieldRow>
+
         <Button variant="secondary" size="sm" fullWidth onClick={onSetCurrentView}>
           <span>Use current map settings</span>
         </Button>
-      </VerticalGroup>
+
+    </InlineFieldRow>
     </>
   );
 };

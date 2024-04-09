@@ -4,7 +4,17 @@ import { observer } from 'mobx-react-lite';
 import { useRootStore } from '../../utils';
 import Checkbox from '../Checkboxes/Checkbox';
 import {css} from "@emotion/css";
-import {HorizontalGroup, InlineField, Select, Stack, useStyles2} from "@grafana/ui";
+import {
+    HorizontalGroup,
+    IconButton,
+    InlineField,
+    InlineFieldRow,
+    Select,
+    Stack,
+    Switch,
+    Tooltip,
+    useStyles2
+} from "@grafana/ui";
 import {GrafanaTheme2} from "@grafana/data";
 import {locationService} from "@grafana/runtime";
 
@@ -46,7 +56,7 @@ const LayerSelect: FC = observer(() => {
     <>
       <div className={s.checkBoxes}
       >
-          <HorizontalGroup>
+          <InlineFieldRow>
               <InlineField>
         <Checkbox
           disabled={isDisabled}
@@ -95,24 +105,7 @@ const LayerSelect: FC = observer(() => {
                   &nbsp;stat2
               </Checkbox>
                   </InlineField>
-              <InlineField>
-              <Checkbox
-                  checked={getDirection === 'source'}
-                  title="path reverse"
-                  onChange={() => {
-                      setSelectedIp('');
-                      setTooltipObject({});
-                      setDirection(getDirection === 'target' ? 'source' : 'target')
-                       if (isDir) {
-
-                           locationService.partial({'var-locRole': getDirection === 'target' ? 'source' : 'target'}, true);
-                       }
-                  }}
-              >
-                  &nbsp;swap tar-src
-              </Checkbox>
-                  </InlineField>
-              </HorizontalGroup >
+              </InlineFieldRow>
       </div>
     </>
   );

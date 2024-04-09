@@ -253,7 +253,6 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
                 ({longitude, latitude, zoom} = view)
             }
 
-            console.log('view', view)
             const deckInitViewState = {
                 longitude,
                 latitude,
@@ -493,7 +492,7 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
         }
 
 // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [hoverCluster, getSelectedIp]);
+    }, [hoverCluster]);
 
     // useEffect(() => {
     //     console.log('gettooltipobject', toJS(getTooltipObject))

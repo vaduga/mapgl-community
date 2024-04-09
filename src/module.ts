@@ -62,7 +62,7 @@ export const plugin = new PanelPlugin<PanelOptions>(Panel)
         name: 'Global thresholds',
         id: 'globalThresholdsConfig',
         path: 'globalThresholdsConfig',
-        description: '\'Thresholds for stat1, lines width\'',
+        description: 'Thresholds for stat1, lines width',
         editor: GlobalThresholdEditor,
         defaultValue: [] ,
         category: ['Thresholds'],
