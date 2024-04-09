@@ -22,7 +22,7 @@ export const LIGHT_CENTER_PLOT = 'rgb(32, 82, 153, 0.8)'
 
 export const DARK_AUTO_HIGHLIGHT = 'rgb(255, 215, 0, 0.2)'
 export const LIGHT_AUTO_HIGHLIGHT = 'rgb(32, 82, 153, 0.2)'
-export const DARK_HULL_HIGHLIGHT = 'rgb(255, 215, 0, 0.15)'
+export const DARK_HULL_HIGHLIGHT = 'rgb(255, 215, 0, 0.2)'
 export const LIGHT_HULL_HIGHLIGHT = 'rgb(66, 164, 245, 0.2)'
 
 export const DEFAULT_CLUSTER_BK_COLOR = 'rgb(230,230,230)'

@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DataFrameView, DataHoverEvent, GrafanaTheme2} from '@grafana/data';
+import {DataFrameView, DataHoverEvent, BusEventWithPayload, GrafanaTheme2} from '@grafana/data';
 import convex from '@turf/convex'
 import turfCenter from '@turf/center'
 import {useStyles2, useTheme2} from '@grafana/ui';
@@ -54,8 +54,17 @@ import {StateTime} from "./Geocoder/StateTime";
 import {isEqual} from "lodash";
 import {expandTooltip} from "./Tooltips/dataClickUtils";
 
+export class BasemapChangeEvent extends BusEventWithPayload<number> {
+    static type = 'mapType';
+}
+export class MapViewChangeEvent extends BusEventWithPayload<number> {
+    static type = 'mapView';
+}
+
+
 export let libreMapInstance, thresholds
 const Mapgl = ({options, data,width, height, eventBus}) => {
+
     const { pointStore, lineStore, viewStore, replaceVariables } = useRootStore();
     thresholds = options.globalThresholdsConfig
     const svgIconRules = options.svgIconsConfig
@@ -121,13 +130,28 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
 
 
     useEffect(() => {
-        const subscriber = eventBus.getStream(RefreshEvent).subscribe(event => {
-            //console.log(`Received event: ${event.type}`);
-            setRefresh(prev=> ({...prev}))
+
+        // const sub0 = eventBus.getStream(RefreshEvent).subscribe(event => {
+        //     setRefresh(prev=> ({...prev}))
+        // })
+
+        const sub1 = eventBus.subscribe(MapViewChangeEvent, (evt) => {
+                setLocalViewState(undefined)
+                loadPoints(data)
+        })
+
+        const sub2 = eventBus.subscribe(BasemapChangeEvent, (evt) => {
+            if (options.basemap.type !== evt.payload.mapType) {
+                setLocalViewState(undefined)
+               loadPoints(data)
+            }
+
         })
 
         return () => {
-            subscriber.unsubscribe();
+            //sub0.unsubscribe();
+            sub1.unsubscribe()
+            sub2.unsubscribe()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [eventBus]);
@@ -188,7 +212,7 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
             }
         }
 
-        if (!localViewState || true) {
+        if (!localViewState) {
             const view = initMapView(options.view)
             let longitude, latitude, zoom
             if (view.id === MapCenterID.Auto) {
@@ -229,6 +253,7 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
                 ({longitude, latitude, zoom} = view)
             }
 
+            console.log('view', view)
             const deckInitViewState = {
                 longitude,
                 latitude,
@@ -236,7 +261,7 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
                 maxPitch: 45 * 0.95 // for non-wgs projection
             };
 
-            if (longitude && latitude) {
+            if (longitude !== undefined && latitude !== undefined) {
                 setViewState({...deckInitViewState})
             } else {
                 setLayers([])
@@ -542,6 +567,63 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
         const lineLayers: any = []
         const clusters: any = []
 
+        if (hoverCluster?.objects?.length > 2 || hoverInfo.prevHullData) {
+
+            const features = hoverCluster?.objects ?? hoverInfo.prevHullData
+            const featureCollection = {
+                type: 'FeatureCollection',
+                features,
+            };
+            // @ts-ignore
+            const data = convex(featureCollection)
+            if (data) {
+                const convexLayer = new PolygonLayer({
+                    id: 'convex-hull-static',
+                    data: [
+                        {polygon: data.geometry.coordinates},
+                    ],
+                    onHover: (o: any) => {
+                        if (getTooltipObject?.object && Object.keys(getTooltipObject?.object).length) {
+                            return
+                        }
+                        if (!o.object) {
+                            setHoverInfo({});
+                            return
+                        }
+
+                        const features = hoverCluster?.objects ?? hoverInfo.prevHullData
+                        if (hoverCluster?.object) {
+                            const {cluster, colorCounts, annotStateCounts} = hoverCluster.object;
+                            o.object = {...o.object, cluster, colorCounts, annotStateCounts};
+                        }
+
+                        flushSync(() => {
+                            setHoverInfo({
+                                ...o,
+                                prevHullData: features
+                            })
+                            closedHint && setClosedHint(false);
+                        })
+
+                    },
+                    onClick: () => {
+                        setHoverInfo({})
+                        setHoverCluster(null)
+                        setTooltipObject({});
+                    },
+                    getPolygon: (d: any) => d.polygon,
+                    filled: true,
+                    stroked: false,
+                    lineWidthMaxPixels: 1,
+                    getLineWidth: 1,
+                    getLineColor: [42, 89, 191],
+                    getFillColor: toRGB4Array(theme2.isDark ? DARK_HULL_HIGHLIGHT : LIGHT_HULL_HIGHLIGHT), //[70, 115, 219, 70],
+                    pickable: true,
+                    extruded: false,
+                });
+                secLayers.push(convexLayer)
+            }}
+
 
        let markers, polygons,path, geojson
         if (getAllFeatures) {
@@ -654,6 +736,8 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
                     featureCollection,
                 })
                 iconLayers.push(icons)
+
+
             }
 
             if (clusterLayerData?.length) {
@@ -743,12 +827,6 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
             setCPlotCoords(getViewState)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getViewState])
-
-
-    useEffect(() => {
-        console.log('localViewState', toJS(localViewState))
-    }, [localViewState]);
-
 
     useEffect(() => {
         /// get some proves that data was specified at least somewhere and needs some time to load.

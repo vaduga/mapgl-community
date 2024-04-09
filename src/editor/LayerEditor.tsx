@@ -5,7 +5,7 @@ import {
   PanelOptionsEditorBuilder,
   StandardEditorContext,
   FieldType,
-  Field,
+  Field, EventBus,
 } from '@grafana/data';
 import { DEFAULT_BASEMAP_CONFIG, geomapLayerRegistry } from '../layers/registry';
 import { OptionsPaneCategoryDescriptor } from './PanelEditor/OptionsPaneCategoryDescriptor';
@@ -22,9 +22,10 @@ export interface LayerEditorProps<TConfig = any> {
   data: DataFrame[]; // All results
   onChange: (options: ExtendMapLayerOptions<TConfig>) => void;
   filter: (item: ExtendMapLayerRegistryItem) => boolean;
+  eventBus?: EventBus
 }
 
-export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, filter }) => {
+export const LayerEditor: FC<LayerEditorProps> = ({ options, eventBus, onChange, data, filter }) => {
 
   // all basemaps
   const layerTypes = useMemo(() => {
@@ -386,6 +387,7 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, onChange, data, fil
         options={layerTypes.options}
         value={layerTypes.current}
         onChange={(v) => {
+          eventBus?.publish({type: 'mapType', payload: {type: v}})
           const layer = geomapLayerRegistry.getIfExists(v.value);
           if (!layer) {
             console.warn('layer does not exist', v);

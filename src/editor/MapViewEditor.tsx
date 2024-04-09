@@ -11,6 +11,11 @@ export const MapViewEditor: FC<StandardEditorProps<MapViewConfig, any, PanelOpti
   onChange,
   context,
 }) => {
+  const onChangeUpd = useCallback((c) => {
+context.eventBus?.publish({type: 'mapView', payload: 'update'})
+    onChange(c)
+  }, [onChange, context.eventBus]);
+
 
   const labelWidth = 10;
 
@@ -33,7 +38,7 @@ export const MapViewEditor: FC<StandardEditorProps<MapViewConfig, any, PanelOpti
       if (center && zoom) {
 
         const {lng: longitude, lat: latitude} = center
-        onChange({
+        onChangeUpd({
           ...value,
           id: MapCenterID.Coordinates,
           lon: +longitude.toFixed(6),
@@ -42,14 +47,14 @@ export const MapViewEditor: FC<StandardEditorProps<MapViewConfig, any, PanelOpti
         });
       }
     }
-  }, [value, onChange]);
+  }, [value, onChangeUpd]);
 
 
   const onSelectView = useCallback(
     (selection: SelectableValue<string>) => {
       const v = centerPointRegistry.getIfExists(selection.value);
       if (v && v.id !== MapCenterID.Auto) {
-        onChange({
+        onChangeUpd({
           ...value,
           id: v.id,
           lat: v.lat ?? value?.lat,
@@ -58,7 +63,7 @@ export const MapViewEditor: FC<StandardEditorProps<MapViewConfig, any, PanelOpti
         });
       } else if (v && v.id === MapCenterID.Auto) {
 
-              onChange({
+        onChangeUpd({
                 ...value,
                 id: v.id,
                 // lon: +longitude.toFixed(6),
@@ -67,7 +72,7 @@ export const MapViewEditor: FC<StandardEditorProps<MapViewConfig, any, PanelOpti
               });
       }
     },
-    [value, onChange]
+    [value, onChangeUpd]
   );
 
   return (
@@ -87,7 +92,7 @@ export const MapViewEditor: FC<StandardEditorProps<MapViewConfig, any, PanelOpti
                 max={90}
                 step={0.001}
                 onChange={(v) => {
-                  onChange({ ...value, lat: v });
+                  onChangeUpd({ ...value, lat: v });
                 }}
               />
             </InlineField>
@@ -100,7 +105,7 @@ export const MapViewEditor: FC<StandardEditorProps<MapViewConfig, any, PanelOpti
                 max={180}
                 step={0.001}
                 onChange={(v) => {
-                  onChange({ ...value, lon: v });
+                  onChangeUpd({ ...value, lon: v });
                 }}
               />
             </InlineField>
@@ -116,7 +121,7 @@ export const MapViewEditor: FC<StandardEditorProps<MapViewConfig, any, PanelOpti
             max={18}
             step={0.01}
             onChange={(v) => {
-              onChange({ ...value, zoom: v });
+              onChangeUpd({ ...value, zoom: v });
             }}
           />
         </InlineField>
