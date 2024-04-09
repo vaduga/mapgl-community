@@ -8,6 +8,7 @@ import {InlineField, InlineFieldRow, Select, useStyles2} from "@grafana/ui";
 import {GrafanaTheme2} from "@grafana/data";
 import {flushSync} from "react-dom";
 import {libreMapInstance} from "./Mapgl";
+import {toJS} from "mobx";
 
 const getStyles = (theme: GrafanaTheme2) => ({
     inlineRow: css`
@@ -37,8 +38,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
 `,
 })
 
-const Menu = ({setShowCenter, time,timeZone, data}) => {
-  const { getPoints, getPath, getPolygons, getGeoJson, switchMap, getSelectedIp, setSelectedIp } = useRootStore().pointStore;
+const Menu = ({setShowCenter, total}) => {
+  const { switchMap, getSelectedIp, setSelectedIp } = useRootStore().pointStore;
     const { getViewState, setViewState, getClusterMaxZoom, setClusterMaxZoom } = useRootStore().viewStore;
     const s = useStyles2(getStyles);
     const options: any = []
@@ -54,6 +55,8 @@ const Menu = ({setShowCenter, time,timeZone, data}) => {
         else if ((!value || fly) && lineId !== null && lineId !== undefined) {
             setSelectedIp(null, [lineId])
         }
+
+        console.log('switchMap', toJS(switchMap))
         const point = switchMap?.get(value)
         if (fly && (point || coord))
         {
@@ -75,12 +78,11 @@ const Menu = ({setShowCenter, time,timeZone, data}) => {
         }
     };
 
-const hasData = [getPoints, getPath, getPolygons, getGeoJson].some(el=> el?.length>0)
-  return hasData ? (
+  return (
        <div className={s.myMenu}>
           <InlineFieldRow className={s.inlineRow}>
               <InlineField>
-          <ReactSelectSearch aggrTypesOnly={false} value={getSelectedIp} isMainLocSearch={true} selectHandler={selectGotoHandler} />
+          <ReactSelectSearch aggrTypesOnly={false} total={total} value={getSelectedIp} isMainLocSearch={true} selectHandler={selectGotoHandler} />
                   </InlineField>
           <InlineField label={"cluster max zoom"}>
               <Select
@@ -97,9 +99,9 @@ const hasData = [getPoints, getPath, getPolygons, getGeoJson].some(el=> el?.leng
               ></Select>
           </InlineField>
           </InlineFieldRow>
-          {getPoints?.length>0 && <LayerSelect/>}
+          <LayerSelect/>
        </div>
-  ) : null;
+  )
 };
 
 export default observer(Menu);

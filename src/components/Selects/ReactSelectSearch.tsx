@@ -1,4 +1,4 @@
-import React, {FC} from 'react';
+import React, {FC, useMemo, useState} from 'react';
 import { observer } from 'mobx-react-lite';
 import {getFirstCoordinate, useRootStore} from '../../utils';
 import {searchProperties as markersSP} from "../../layers/data/markersLayer";
@@ -15,9 +15,10 @@ type MapRefProps = {
     aggrTypesOnly?: boolean;
     noAggrTypes?: boolean;
     isMainLocSearch?: boolean;
+    total: number;
 };
 
-const ReactSelectSearch: FC<MapRefProps> = ({ selectHandler, wait = 300, value='',
+const ReactSelectSearch: FC<MapRefProps> = ({ selectHandler, total, wait = 300, value='',
     placeholder ='Search', aggrTypesOnly = false, noAggrTypes = false, isMainLocSearch = false,
                                               ...props
                                             }) => {
@@ -30,7 +31,8 @@ const ReactSelectSearch: FC<MapRefProps> = ({ selectHandler, wait = 300, value='
     setViewState
   } = viewStore;
 
-  const selectOptions = switchMap
+  const selectOptions = useMemo(()=> {
+     return switchMap
       ? Array.from(switchMap, ([locName, point]) => {
           const SP = [markersSP].filter(el=>el?.length).reduce((acc,cur)=> acc.concat(cur), [])
           const paneProps = SP && SP.length ? SP : []
@@ -45,14 +47,15 @@ const ReactSelectSearch: FC<MapRefProps> = ({ selectHandler, wait = 300, value='
           aggrType: point.properties.aggrType
         };
       })
-      : [];
-
+         // eslint-disable-next-line react-hooks/exhaustive-deps
+      : []}, [total])
 
   const filteredOptions = aggrTypesOnly ? selectOptions.filter(el=>
-      AggrTypes.includes(el?.aggrType as string)) : noAggrTypes ? selectOptions.filter(el=>
-      !AggrTypes.includes(el?.aggrType as string)) : selectOptions
+          AggrTypes.includes(el?.aggrType as string)) : noAggrTypes ? selectOptions.filter(el=>
+          !AggrTypes.includes(el?.aggrType as string)) : selectOptions
 
-const count = filteredOptions.length ? ` ${filteredOptions.length}` : null
+    const placeholderText = `Search: ${total}`;
+
 
   return (
       <Select
@@ -60,7 +63,7 @@ const count = filteredOptions.length ? ` ${filteredOptions.length}` : null
       isSearchable={true}
           defaultOptions={filteredOptions}
           value={isMainLocSearch ? getSelectedIp : value}
-      placeholder={`Search: ${count}`}
+      placeholder={placeholderText}
       onChange={(v)=> selectHandler(v.value, null, true, true)}
          // prefix={getPrefix(args.icon)}
         />

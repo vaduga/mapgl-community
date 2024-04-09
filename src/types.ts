@@ -18,6 +18,8 @@ export const defaultView: MapViewConfig = {
 };
 
 export interface PanelOptions {
+  common: any;
+  svgIconsConfig: any;
   view: MapViewConfig;
   basemap: ExtendMapLayerOptions;
   dataLayers: ExtendMapLayerOptions[];

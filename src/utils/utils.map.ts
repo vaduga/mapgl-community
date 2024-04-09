@@ -34,16 +34,8 @@ const initBasemap = (cfg: ExtendMapLayerOptions, setSource, setHasLoaded, theme2
     }
     const item = geomapLayerRegistry.getIfExists(cfg.type) ?? defaultBaseLayer ?? {};
 
-    if (cfg.type === 'yamaps') {
-        cfg.config.setHasLoaded = setHasLoaded
-    }
-
     const handler = item && item.create ? item?.create(cfg, theme2) : {}
     const layer = handler?.init?.() ?? {};
-
-    if (cfg.type === 'yamaps') {
-        return
-    }
     setSource(layer)
 }
 
@@ -60,7 +52,7 @@ const initMapView = (config: MapViewConfig) => {
         let coord: Position | undefined = undefined;
         let zoom: number | undefined
 
-        if (v.lat == null || config.zoom !== 4) {
+        if (v.lat === undefined || config.zoom !== 4) {
             coord = [config.lon ?? 0, config.lat ?? 0];
             zoom = config.zoom;
         } else {
@@ -75,7 +67,6 @@ const initMapView = (config: MapViewConfig) => {
             view.zoom = zoom;
         }
     }
-
     return view;
 }
 

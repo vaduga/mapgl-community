@@ -1,6 +1,7 @@
 import {action, autorun, makeAutoObservable, toJS} from 'mobx';
 import RootStore from './RootStore';
 import {
+  AllFeatures,
   colTypes,
   ComFeature,
   CoordRef,
@@ -15,12 +16,7 @@ import {blankHoverInfo, parDelimiter} from "../components/defaults";
 class PointStore {
   root: RootStore;
   type: 'icons'|'polygons' = 'icons'
-  points: Feature[] = [];
-  polygons: any[] = [];
-  path: any[] = [];
-  geojson: any = [];
-  pLinePoints: any[] = [];
-  orgId: null | number = null
+  allFeatures: AllFeatures = {}
   comments: ComFeature[] | undefined
   isShowSVG = true;
   mode = 'view'
@@ -35,8 +31,6 @@ class PointStore {
   svgIcons: {} = {}
 
   tooltipObject: Info = blankHoverInfo;
-  logTooltipObject: Info = blankHoverInfo;
-
 
   constructor(root: RootStore) {
     this.root = root;
@@ -94,11 +88,6 @@ class PointStore {
     return this.tooltipObject;
   }
 
-  get getLogTooltipObject() {
-    return this.logTooltipObject;
-  }
-
-
   setAllComments = (comments)=>{
     this.comments = comments
   }
@@ -139,37 +128,27 @@ class PointStore {
   get getComments() {
     return this.comments
   }
+
+  get getAllFeatures() {
+    return this.allFeatures
+  }
+
   get getPoints() {
-    return this.points;
-  }
-
-  get getPolygons() {
-    return this.polygons;
-  }
-
-  get getGeoJson() {
-    return this.geojson;
-  }
-
-  get getPath() {
-    return this.path;
+    return this.allFeatures?.markers ?? [];
   }
 
   get getSelectedIp() {
     return this.selectedIp;
   }
-  get getpLinePoints() {
-    return this.pLinePoints;
-  }
 
   get switchMap(): Map<string, Feature> | undefined {
-    const { points } = this;
-    const features = points
+    const { allFeatures } = this;
+    const features = allFeatures.markers
 
     type f = [string, Feature]
     const relArr: f[] = [];
 
-    features.forEach((point) => {
+    features?.forEach((point) => {
       if (point && point.properties) {
         relArr.push([point.properties.locName, point]);
      }
@@ -215,19 +194,8 @@ const sources = this.getSelFeature?.properties.sources
 
   };
 
-  setPoints = (payload: Feature[]) => {
-    this.points = payload;
-  };
-  setPolygons = (payload: Feature[]) => {
-    this.polygons = payload;
-  };
-
-  setPath = (payload: Feature[]) => {
-    this.path = payload;
-  };
-
-  setGeoJson = (payload: Feature[]) => {
-    this.geojson = payload;
+  setAllFeatures = (payload: AllFeatures) => {
+    this.allFeatures = payload;
   };
 
   editCoords = action((editFeature: Feature, value: string | Position | CoordRef[] | number , action: pEditActions, parName?: string) => {

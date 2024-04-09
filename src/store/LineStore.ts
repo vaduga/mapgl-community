@@ -92,10 +92,10 @@ const {getPoints, switchMap, getisOffset, editCoords} = this.root.pointStore
 
     const features: DeckLine[] = []
     let counter = 0
-      Object.keys(this.vertices).forEach((lkey, i) => {
+      this.vertices && Object.keys(this.vertices).forEach((lkey, i) => {
           const {ptId } = this.vertices[lkey]
 
-          const fromPoint = getPoints[ptId as number]
+          const fromPoint = getPoints?.[ptId as number]
           if (!fromPoint?.properties) {return}
           const {sources} = fromPoint?.properties
 
@@ -195,7 +195,7 @@ if (!line) {
         if (!isAttached) {return}
 
         const relLines = findChildLines({
-            locName: ptId ? getPoints[ptId]?.properties.locName : null,
+            locName: ptId ? getPoints?.[ptId]?.properties.locName : null,
             lineFeatures: features, direction: this.direction
         })
 

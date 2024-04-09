@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {DataFrameView, DataHoverEvent, GrafanaTheme2} from '@grafana/data';
 import convex from '@turf/convex'
 import turfCenter from '@turf/center'
@@ -51,10 +51,12 @@ import {IconsGeoJsonLayer} from "../deckLayers/IconClusterLayer/icons-geo-json-l
 import {PathStyleExtension} from "@deck.gl/extensions";
 import {throttleTime} from "rxjs";
 import {StateTime} from "./Geocoder/StateTime";
+import {isEqual} from "lodash";
+import {expandTooltip} from "./Tooltips/dataClickUtils";
 
 export let libreMapInstance, thresholds
-const Mapgl = () => {
-    const { pointStore, lineStore, viewStore, options, data, width, height, replaceVariables, eventBus  } = useRootStore();
+const Mapgl = ({options, data,width, height, eventBus}) => {
+    const { pointStore, lineStore, viewStore, replaceVariables } = useRootStore();
     thresholds = options.globalThresholdsConfig
     const svgIconRules = options.svgIconsConfig
     const locLabelName = options.common?.locLabelName
@@ -65,16 +67,9 @@ const Mapgl = () => {
         getPoints,
         getisOffset,
         getMode,
-        setPoints,
         setSelCoord,
-        getPolygons,
-        setPolygons,
-        setPath,
-        getPath,
-        setGeoJson,
         getComments,
         setAllComments,
-        getGeoJson,
         getSelectedIp,
         getSelFeature,
         getSelIds,
@@ -85,7 +80,9 @@ const Mapgl = () => {
         getTooltipObject,
         getisShowPoints,
         setSvgIcons,
-        getSvgIcons
+        getSvgIcons,
+        getAllFeatures,
+        setAllFeatures,
         //</editor-fold>
     } = pointStore;
     const {
@@ -113,6 +110,7 @@ const Mapgl = () => {
     const timeZone = replaceVariables('$__timezone')
     const [time, setTime] = useState<any>(data.timeRange.to.unix()*1000);
     const [hasAnnots, setHasAnnots] = useState(data?.annotations?.length)
+    const [total,setTotal] = useState(0)
 
     useEffect(() => {
         if (data.timeRange) {
@@ -134,88 +132,10 @@ const Mapgl = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [eventBus]);
 
-    const expandTooltip = (info, event) => {
-        const position = info.coordinate
-        if (position) {
-            const [longitude, latitude,] = position.map(e => parseFloat(e.toFixed(6)))
 
-            setSelCoord(
-                {
-                    coordinates: [longitude, latitude],
-                    type: "Point"
-                })
-        }
+    const loadPoints = async(data)=> {
 
-        if (info.picked) {
-            const properties = info.object?.properties || info.object // cluster/icon datasets
-            const {id} = info.object
-            const {locName: ip, parPath} = properties
-
-            if (ip) {
-                const {aggrType, colType} = properties
-                setClosedHint(false);
-                const layerId = info.sourceLayer?.id
-                const lineId = layerId?.startsWith('edit-lines') ? id : null
-
-                const ipDelimited = ip?.split(parDelimiter)[0]
-                const geom = switchMap?.get(ipDelimited)?.geometry as Point
-
-                const OSM = libreMapInstance?.getZoom()
-                if (geom && getMode !== 'modify')
-                {
-                    const [longitude, latitude] = geom?.coordinates
-                    setShowCenter(true)
-                    setCPlotCoords(
-                        {
-                            longitude,
-                            latitude,
-                            zoom: OSM ? OSM : 18,
-                            maxPitch: 45 * 0.95,
-                            bearing: 0,
-                            pitch: 0
-                        }
-                    )
-                }
-
-                const isAggr = AggrTypes.includes(aggrType)
-                setIsRenderNums(!isAggr)
-                setTooltipObject(info); // this pins tooltip
-                setSelectedIp(ip, lineId ? [lineId] : null)
-
-
-            } else if (info.objects?.length) {
-                // zoom on cluster click
-                const featureCollection = {
-                    type: 'FeatureCollection',
-                    features: info.objects,
-                };
-                // @ts-ignore
-                const center = turfCenter(featureCollection)
-                    const [longitude, latitude] = center.geometry.coordinates;
-                    const expansionZoom = info.expZoom
-                const newState = {
-                    longitude,
-                    latitude,
-                    zoom: expansionZoom,
-                    transitionDuration: 250,
-                    maxPitch: 45 * 0.95,
-                    rnd: Math.random()   /// to trigger zoom in/out on repeat click the same cluster
-                }
-                        setLocalViewState(newState as ViewState);
-            }
-        } else {
-            // reset tooltip by clicking blank space
-            setHoverCluster(null)
-            setHoverInfo({})
-            setShowCenter(true)
-            setSelectedIp('');
-            setClosedHint(true);
-            setTooltipObject({});
-
-        }
-    };
-
-    const loadPoints = async (data) => {
+    {
 
 
         const isDir = ['target', 'source'].includes(replaceVariables('$locRole'))
@@ -228,7 +148,7 @@ const Mapgl = () => {
         }
 
         const transformed: any = [];
-let svgIcons
+        let svgIcons
         if (svgIconRules?.length) {
             svgIcons = await loadSvgIcons(svgIconRules)
         }
@@ -260,7 +180,7 @@ let svgIcons
                 const res = {
                     colType: dataLayer.type,
                     features,
-                    vertices:  Object.keys(vertices).length ? vertices : null
+                    vertices: Object.keys(vertices).length ? vertices : null
                 };
 
                 startIds[res.colType] = startIds[res.colType] + res.features.length;
@@ -268,15 +188,14 @@ let svgIcons
             }
         }
 
-        if (!localViewState) {
+        if (!localViewState || true) {
             const view = initMapView(options.view)
-
-            let longitude, latitude, zoom;
+            let longitude, latitude, zoom
             if (view.id === MapCenterID.Auto) {
                 if (transformed?.length > 0) {
                     const viewport = new WebMercatorViewport({width, height});
-                    const allCoordinates = transformed.reduce((acc,curr)=> acc.concat(curr.features), [])
-                    const boundsCoords = allCoordinates.map((el: any)=> {
+                    const allCoordinates = transformed.reduce((acc, curr) => acc.concat(curr.features), [])
+                    const boundsCoords = allCoordinates.map((el: any) => {
 
                         const firstCoord = getFirstCoordinate(el.geometry)
                         return (
@@ -287,7 +206,7 @@ let svgIcons
                                 }
                             }
                         )
-                    }).filter(el=>el)
+                    }).filter(el => el)
 
                     if (boundsCoords.length > 1) {
                         ({longitude, latitude, zoom} = view)
@@ -302,6 +221,7 @@ let svgIcons
                     // if no query points in auto mode
                     if (!longitude) {
                         ({longitude, latitude, zoom} = view)
+
                     }
                 }
             } else {
@@ -316,24 +236,28 @@ let svgIcons
                 maxPitch: 45 * 0.95 // for non-wgs projection
             };
 
+            if (longitude && latitude) {
                 setViewState({...deckInitViewState})
-
+            } else {
+                setLayers([])
+                setLocalViewState(undefined)
+            }
 
             initBasemap(options.basemap, setSource, false, theme2)
 
         }
         let markers: Feature[] = []
-        let vertices:  Vertices = {}
+        let vertices: Vertices = {}
         let polygons: Feature[] = []
         let path: Feature[] = []
         let geojson: Feature[] = []
         const alerts = {}
 
         if (data.annotations?.length && data.annotations[0].fields.length) {
-            data.annotations.forEach(a=> {
+            data.annotations.forEach(a => {
                     const annotations = new DataFrameView(a).toArray()
 
-                    annotations.forEach(b=> {
+                    annotations.forEach(b => {
                         if (b?.text) {
                             b.labels = parseObjFromString(b?.text)
                         }
@@ -343,13 +267,12 @@ let svgIcons
                             const alertMap = alerts[name]
                             if (alertMap) {
                                 const alertAnnots = alertMap.get(locName)
-                                if  (alertAnnots) {
+                                if (alertAnnots) {
                                     alertAnnots.push(b)
                                 } else {
                                     alertMap.set(locName, [b])
                                 }
-                            }
-                            else {
+                            } else {
                                 const newAlertMap = new Map()
                                 newAlertMap.set(b.labels[locLabelName], [b])
                                 alerts[name] = newAlertMap
@@ -361,14 +284,14 @@ let svgIcons
 
         }
 
-        transformed.forEach((el: any)=> {
-            switch (el.colType){
+        transformed.forEach((el: any) => {
+            switch (el.colType) {
                 case colTypes.Points:
                     if (el?.features.length) {
                         vertices = mergeVertices(vertices, el?.vertices)
                         markers = markers.concat(el?.features)
 
-                        markers = markers.map(f=> {
+                        markers = markers.map(f => {
                             const {locName} = f.properties
                             const geom = f.geometry as Point;
 
@@ -379,12 +302,13 @@ let svgIcons
                             const status: any = {threshold: {...threshold, ...rulesThreshold}}
                             let annotations: any = []
 
-                            Object.keys(alerts).forEach(name=> {
+                            Object.keys(alerts).forEach(name => {
 
-                                const alertAnnots = alerts[name].get(locName)
-                                if (alertAnnots?.length) {
-                                    annotations.push(alertAnnots)
-                                }}
+                                    const alertAnnots = alerts[name].get(locName)
+                                    if (alertAnnots?.length) {
+                                        annotations.push(alertAnnots)
+                                    }
+                                }
                             )
 
                             if (annotations.length) {
@@ -392,9 +316,17 @@ let svgIcons
                             }
 
                             const sources = vertices[locName]?.sources ? {...vertices[locName]?.sources} : undefined
-                            return {...f,
+                            return {
+                                ...f,
                                 geometry: {type: "Point", coordinates: geom.coordinates},
-                                properties: {...f.properties, ...(status && Object.entries(status).reduce((acc, [key, value]) => (value !== undefined ? { ...acc, [key]: value } : acc), {})), sources: sources && Object.keys(sources).length >0 ? sources : undefined}}
+                                properties: {
+                                    ...f.properties, ...(status && Object.entries(status).reduce((acc, [key, value]) => (value !== undefined ? {
+                                        ...acc,
+                                        [key]: value
+                                    } : acc), {})),
+                                    sources: sources && Object.keys(sources).length > 0 ? sources : undefined
+                                }
+                            }
                         })
 
                     }
@@ -424,7 +356,7 @@ let svgIcons
 
         let counter = 0
         comments?.forEach((comment) => {
-            const { text, iconColor, orderId, coords,tar, src} = comment;
+            const {text, iconColor, orderId, coords, tar, src} = comment;
             if (tar && text && orderId && coords) {
 
                 const hexColor = iconColor && theme2.visualization.getColorByName(iconColor)
@@ -437,7 +369,7 @@ let svgIcons
                     },
                     properties: {
                         note: text,
-                        tIdx: orderId+1,
+                        tIdx: orderId + 1,
                         tar,
                         iconColor: iconColor?.indexOf('rgb') > -1 ? iconColor : (iconColor && hexToRgba(hexColor)) ?? DEFAULT_COMMENT_COLOR,
                         isShowTooltip: true,
@@ -449,11 +381,27 @@ let svgIcons
 
         })
         commentsData && setAllComments(commentsData)
-            markers && setPoints(markers)
-            polygons && setPolygons(polygons)
-            path && setPath(path)
-            geojson && setGeoJson(geojson)
+
+        const collections = [markers, polygons, path, geojson];
+        const allFeatures = {}
+
+        collections.forEach((collection, index) => {
+            const propertyName = ['markers', 'polygons', 'path', 'geojson'][index];
+            if (collection !== undefined && collection !== null) {
+                allFeatures[propertyName] = collection;
+            }
+        });
+        collections.forEach(collection => {
+            if (collection !== undefined && collection !== null) {
+                Object.assign(allFeatures, collection);
+            }
+        });
+        markers && setTotal(markers.length)
+        setAllFeatures(allFeatures)
     }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+}
 
     useEffect(() => {
         if (hoverCluster?.objects?.length > 2 || hoverInfo.prevHullData) {
@@ -520,16 +468,11 @@ let svgIcons
         }
 
 // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [hoverCluster]);
+    }, [hoverCluster, getSelectedIp]);
 
-
-    useEffect(() => {
-
-        if (data && data.series.length) {
-            loadPoints(data)
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [refresh, getDirection, data, width, height, options]);  // _
+    // useEffect(() => {
+    //     console.log('gettooltipobject', toJS(getTooltipObject))
+    // }, [getTooltipObject]);
 
 
     const onMapLoad = useCallback(()=> {
@@ -539,6 +482,22 @@ let svgIcons
         } = mapRef
         libreMapInstance = myRef.current?.getMap ? myRef.current.getMap() : null;
     } , [])
+
+    const dataClickProps = {
+        setSelCoord,
+        setClosedHint,
+        switchMap,
+        getMode,
+        setShowCenter,
+        setCPlotCoords,
+        setIsRenderNums,
+        setTooltipObject,
+        setSelectedIp,
+        setLocalViewState,
+        setHoverCluster,
+        setHoverInfo
+    }
+
     const layerProps = {
         pickable: true,
         autoHighlight: true,
@@ -582,26 +541,22 @@ let svgIcons
         const iconLayers: any = []
         const lineLayers: any = []
         const clusters: any = []
-        const markers: any = getPoints;
-        const polygons: any = getPolygons;
-        const path: any = getPath;
-        const geojson: any = getGeoJson;
 
-        const allFeatures = [markers, polygons,path, geojson].filter(el=> el)
-        if (allFeatures?.length < 1) {
-            setLayers(newLayers);
-            return
+
+       let markers, polygons,path, geojson
+        if (getAllFeatures) {
+            ({ markers, polygons, path, geojson } = getAllFeatures);
         }
 
-        if (polygons.length>0) {
+        if (polygons?.length>0) {
             secLayers.push(MyPolygonsLayer({ ...layerProps,data: polygons }));
         }
 
-        if (path.length>0) {
+        if (path?.length>0) {
                 secLayers.push(MyPathLayer({ ...layerProps, data: path, type: 'path' }));
 
         }
-        if (geojson.length>0) {
+        if (geojson?.length>0) {
 
             const featCollection = {
                 type: 'FeatureCollection',
@@ -612,7 +567,7 @@ let svgIcons
         }
 
 
-        if (markers.length>0 || secLayers.length>0) {
+        if (markers?.length>0 || secLayers?.length>0) {
 
             const lineSwitchMap = getLineSwitchMap
             if (getSelFeature?.properties.colType === colTypes.Points) {
@@ -786,14 +741,23 @@ let svgIcons
         if (!getViewState) {return}
             setLocalViewState(getViewState)
             setCPlotCoords(getViewState)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getViewState])
+
+
+    useEffect(() => {
+        console.log('localViewState', toJS(localViewState))
+    }, [localViewState]);
+
 
     useEffect(() => {
         /// get some proves that data was specified at least somewhere and needs some time to load.
         if (!options.dataLayers?.some(el=> el?.query) && !data.request?.targets?.some(el=> el?.queryType === 'snapshot')
         && !data.series?.some(el=>el?.meta?.transformations?.length)
         ) {return}
-        if (!getPoints.length && !getPolygons.length && !getPath.length && !getGeoJson.length && data?.series?.length){
+        if (!data?.series?.length) {return}
+
+        if (!(getAllFeatures && Object.keys(getAllFeatures).length)){
             setRefresh(prev=> ({...prev}))
             return}
         //setShowCenter(false)
@@ -806,10 +770,7 @@ let svgIcons
         getViewState,
         cPlotCoords,
         getMode,
-        getPolygons,
-        getPoints,
-        getPath,
-        getGeoJson,
+        getAllFeatures,
         getSelectedIp,
         getisOffset,
         getisShowSVG,
@@ -817,9 +778,32 @@ let svgIcons
         getisShowPoints,
     ]);
 
+    useEffect(() => {
+
+        if (data && data.series.length) {
+            loadPoints(data)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [refresh, getDirection, data, width, height, options]);  // _
+
+
+const memoMenu = useMemo(()=> {
+    return (
+           <Menu
+            total={total}
+            setShowCenter={setShowCenter}
+        />
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [total])
+
+
+    if (!source || !localViewState) {
+        return null
+    }
     return (
             <>
-                    {source && localViewState && <> <DeckGL
+                <DeckGL
                         ref={deckRef}
                         style={{
                             pointerEvents: 'all',
@@ -835,7 +819,7 @@ let svgIcons
                             inertia: true
                         }
                         }
-                        onClick={(info, event) => expandTooltip(info, event)}
+                        onClick={(info, event) => expandTooltip(info, event, dataClickProps)}
                     >
                         <MapLibre
                             onLoad={onMapLoad}
@@ -844,22 +828,12 @@ let svgIcons
                             attributionControl={false}>
                             <AttributionControl style={{ position: 'absolute', bottom: 0, left: 0 }} />
                         </MapLibre>
-
                     </DeckGL>
                          <PositionTracker/>
-                        {hasAnnots && <StateTime time={time}/>}
+                        {!!hasAnnots && <StateTime time={time}/>}
                         <Tooltip time={time} timeZone={timeZone} position={0} info={hoverInfo} isClosed={closedHint} setTooltipObject={setTooltipObject} setClosedHint={setClosedHint}
                         />
-
-    {switchMap && <Menu
-        time={time}
-        timeZone={timeZone}
-        data={data}
-        setShowCenter={setShowCenter}
-    />}
-
-                   </>
-                    }
+                {memoMenu}
 
           </>
     );

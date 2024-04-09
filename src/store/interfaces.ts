@@ -76,6 +76,13 @@ export enum colTypes {
   Text = "text"
 }
 
+export type AllFeatures= {
+  markers?: Feature[],
+  polygons?: any,
+  path?: any,
+  geojson?: any,
+}
+
 export enum pEditActions {
   MoveNode= 'dragNode',
   DragLine=  'dragLine',
@@ -123,7 +130,7 @@ export type ViewState = {
   longitude: number,
   latitude: number,
   zoom: number,
-  maxPitch: number,      // (45 * 0.95)
+  maxPitch?: number,      // (45 * 0.95)
   pitch?: number,
   bearing?: number,
   padding?: any

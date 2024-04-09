@@ -19,11 +19,11 @@ export const Panel: React.FC<Props> = ({ options, data, width, height, replaceVa
 
 
   return (
-      <RootStoreProvider props={{replaceVariables, options, data,width, height, eventBus}}>
+      <RootStoreProvider props={{replaceVariables}}>
 
 
 
-      <Mapgl/>
+      <Mapgl {...{options, data,width, height, eventBus}}/>
 
 
 </RootStoreProvider>
