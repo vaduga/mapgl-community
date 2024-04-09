@@ -55,16 +55,19 @@ const ReactSelectSearch: FC<MapRefProps> = ({ selectHandler, total, wait = 300, 
           !AggrTypes.includes(el?.aggrType as string)) : selectOptions
 
     const placeholderText = `Search: ${total}`;
-
+   const newValue = isMainLocSearch ? getSelectedIp : value
 
   return (
       <Select
+      virtualized
       options={filteredOptions}
       isSearchable={true}
-          defaultOptions={filteredOptions}
-          value={isMainLocSearch ? getSelectedIp : value}
+      //defaultOptions={filteredOptions}
+      value={newValue !== '' ? newValue : null}
       placeholder={placeholderText}
-      onChange={(v)=> selectHandler(v.value, null, true, true)}
+      onChange={(v)=> {
+          selectHandler(v.value, null, true, true)
+      }}
          // prefix={getPrefix(args.icon)}
         />
   );

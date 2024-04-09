@@ -56,7 +56,6 @@ const Menu = ({setShowCenter, total}) => {
             setSelectedIp(null, [lineId])
         }
 
-        console.log('switchMap', toJS(switchMap))
         const point = switchMap?.get(value)
         if (fly && (point || coord))
         {
@@ -95,7 +94,6 @@ const Menu = ({setShowCenter, total}) => {
                   options={options}
                   // className={styles.nodeSelect}
                   placeholder={'Max cluster zoom'}
-
               ></Select>
           </InlineField>
           </InlineFieldRow>
