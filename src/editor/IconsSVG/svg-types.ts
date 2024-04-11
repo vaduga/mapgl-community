@@ -4,6 +4,8 @@ import {generateValuesWithIncrement} from "../../utils";
 export interface Rule {
   overrides: OverrideTracker | [];
   svgColor?: string;
+  iconRuleCollapsed: boolean;
+  iconRuleLabel: string;
   iconSize: number;
   iconVOffset: number;
   iconName: string;

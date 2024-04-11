@@ -38,6 +38,9 @@
           "config": {},
           "type": "default"
         },
+        "common": {
+          "locLabelName": "instance"
+        },
         "dataLayers": [
           {
             "aggrTypeField": "aggrType",
@@ -49,6 +52,26 @@
               "searchProperties": [],
               "show": true,
               "startId": 0,
+              "style": {
+                "color": {
+                  "field": "metric",
+                  "fixed": "dark-green"
+                },
+                "size": {
+                  "field": "bps",
+                  "fixed": 5,
+                  "max": 20,
+                  "min": 5
+                },
+                "text": {
+                  "field": "target",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "textConfig": {
+                  "fontSize": 13
+                }
+              },
               "vertices": {}
             },
             "displayProperties": [
@@ -88,6 +111,17 @@
               "searchProperties": [],
               "show": true,
               "startId": 0,
+              "style": {
+                "color": {
+                  "field": "metric",
+                  "fixed": "dark-green"
+                },
+                "text": {
+                  "field": "target",
+                  "fixed": "",
+                  "mode": "field"
+                }
+              },
               "vertices": {}
             },
             "displayProperties": [
@@ -201,8 +235,9 @@
         "svgIconsConfig": [
           {
             "iconName": "cisco/server-switch",
+            "iconRuleCollapsed": true,
             "iconSize": 20,
-            "iconVOffset": -20,
+            "iconVOffset": -5,
             "overrides": [
               {
                 "name": "aggrType",
@@ -213,8 +248,9 @@
           },
           {
             "iconName": "networking/atm-switch",
+            "iconRuleCollapsed": true,
             "iconSize": 20,
-            "iconVOffset": -20,
+            "iconVOffset": -5,
             "overrides": [
               {
                 "name": "aggrType",
@@ -445,8 +481,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Mapgl network topology 2 layers",  
+  "title": "Mapgl network topology 2 layers",
   "uid": "b12e0773-5ddb-48b0-b376-d0d3c7454331",
-  "version": 1,
+  "version": 3,
   "weekStart": ""
 }

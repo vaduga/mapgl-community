@@ -6,14 +6,15 @@
   "info": {
     "keywords": [
       "map",
+      "alerts",
       "zabbix",
-      "cluster map",
+      "clusters",
       "geomap",
       "geojson",
       "network",
       "topology",
-      "deck.gl","deck.gl"],
-    "description": "Network topology geomap with deck.gl",
+      "deck.gl"],
+    "description": "Network geomap with metrics & alert states",
     "author": {
       "name": "Vadim Pyatakov"
     },

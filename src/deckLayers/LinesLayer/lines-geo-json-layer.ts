@@ -1,9 +1,8 @@
 import {
-  toRGB4Array,
-  getColorByMetric, findClosestAnnotations,
+    toRGB4Array,
+    getColorByMetric, findClosestAnnotations, hexToRgba,
 } from '../../utils';
 import { GeoJsonLayer } from '@deck.gl/layers/typed';
-import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
 import {toJS} from "mobx";
 import {flushSync} from "react-dom";
 import {Feature, GeoJsonProperties, Geometry, Point} from "geojson";
@@ -22,7 +21,9 @@ export const LinesGeoJsonLayer = (props) => {
         pickable,
         autoHighlight,
         highlightColor,
-        time
+        time,
+        options,
+        theme2
     } = props;
 
     const selectedFeatureIndexes = getSelectedFeIndexes?.get(colTypes.Lines) ?? []
@@ -45,6 +46,7 @@ export const LinesGeoJsonLayer = (props) => {
 
         // @ts-ignore
         getLineColor: (d: Feature<Geometry, PointFeatureProperties>): RGBAColor=> {
+
             if (!getisOffset && d.properties?.throughput ) {
                 let color
                 const {bandNumber, bandWidth, throughput} = d.properties
@@ -64,6 +66,7 @@ export const LinesGeoJsonLayer = (props) => {
                 }
                 return toRGB4Array(color)
             }
+
             /// in aggr mode
             const {threshold, all_annots} = d.properties
             const annots: any = findClosestAnnotations(all_annots, time)

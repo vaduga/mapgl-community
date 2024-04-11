@@ -43,6 +43,8 @@ class PointStore {
     }
     makeAutoObservable(this);
     //autorun(() => console.log('pts ', toJS(this.points)));
+    //autorun(() => console.log('svg ', toJS(this.svgIcons)));
+    //autorun(() => console.log('svg ', toJS(this.isShowSVG)));
   }
 
   get getMode(): string {

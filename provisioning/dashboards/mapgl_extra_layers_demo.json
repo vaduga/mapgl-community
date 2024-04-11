@@ -18,7 +18,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 8,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -38,6 +37,9 @@
         "basemap": {
           "config": {},
           "type": "default"
+        },
+        "common": {
+          "locLabelName": "instance"
         },
         "dataLayers": [
           {
@@ -88,6 +90,7 @@
             "geojsonColor": "#b7b840",
             "geojsonLocName": "name",
             "geojsonurl": "/public/seed/sample.json",
+            "isShowTooltip": true,
             "location": {
               "mode": "auto"
             },
@@ -151,7 +154,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Mapgl Extra layers",
-  "version": 1,
+  "title": "Mapgl extra layers: LineString, Polygon, GeoJson",
+  "uid": "cc774c67-a0ea-4d2d-8c1d-adc2dcd6f869",
+  "version": 4,
   "weekStart": ""
 }

@@ -3,7 +3,7 @@ import { PanelProps } from '@grafana/data';
 import { PanelOptions } from 'types';
 import { RootStoreProvider } from './utils';
 import { css, cx } from '@emotion/css';
-import { useStyles2 } from '@grafana/ui';
+import {useStyles2, useTheme2} from '@grafana/ui';
 import Mapgl from './components/Mapgl'
 interface Props extends PanelProps<PanelOptions> {}
 
@@ -17,9 +17,10 @@ export const Panel: React.FC<Props> = ({ options, data, width, height, replaceVa
     options.dataLayer = null
   }
 
+  const theme2 = useTheme2()
 
   return (
-      <RootStoreProvider props={{replaceVariables}}>
+      <RootStoreProvider props={{replaceVariables, theme2}}>
 
 
 

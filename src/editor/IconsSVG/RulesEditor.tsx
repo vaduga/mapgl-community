@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { orderBy } from 'lodash';
-import { Button, useTheme, useTheme2} from '@grafana/ui';
+import {Button, CollapsableSection, IconButton, useTheme, useTheme2} from '@grafana/ui';
 import { v4 as uuidv4 } from 'uuid';
 import {OverrideTracker, Rule, RuleTracker} from './svg-types';
 import { RuleItem } from './RuleItem';
 import {
-  DEFAULT_ICON_NAME,
+  DEFAULT_ICON_NAME, DEFAULT_ICON_RULE_IS_COLLAPSED, DEFAULT_ICON_RULE_LABEL,
   DEFAULT_ICON_SIZE, DEFAULT_SVG_ICON_V_OFFSET,
 } from '../../components/defaults';
 import {hexToRgba} from "../../utils/utils.plugin";
@@ -64,9 +64,18 @@ export const RulesEditor: React.FC<Props> = (options) => {
     setTracker([...tracker]);
   };
 
+  const updateRuleLabel = (index: number, label: string) => {
+    tracker[index].rule.iconRuleLabel = label;
+    setTracker([...tracker]);
+  };
 
   const updateIconSize = (index: number, size: number) => {
     tracker[index].rule.iconSize = size;
+    setTracker([...tracker]);
+  };
+
+  const updateIconCollapsed = (index: number) => {
+    tracker[index].rule.iconRuleCollapsed = !tracker[index].rule.iconRuleCollapsed
     setTracker([...tracker]);
   };
 
@@ -104,6 +113,8 @@ export const RulesEditor: React.FC<Props> = (options) => {
     const aRule: Rule = {
       overrides: [],
       // svgColor: '',
+      iconRuleLabel: DEFAULT_ICON_RULE_LABEL,
+      iconRuleCollapsed: DEFAULT_ICON_RULE_IS_COLLAPSED,
       iconSize: DEFAULT_ICON_SIZE,
       iconVOffset: DEFAULT_SVG_ICON_V_OFFSET,
       iconName: DEFAULT_ICON_NAME,
@@ -121,26 +132,50 @@ export const RulesEditor: React.FC<Props> = (options) => {
         <Button disabled={options.disabled} fill="solid" variant="primary" icon="plus" onClick={addItem}>
           Add icon rule
         </Button>
-        {tracker &&
-            tracker.map((tracker: RuleTracker, index: number) => {
+        {tracker &&  tracker.map((tracker: RuleTracker, index: number) => {
 
-              return (
-                  <RuleItem
-                      disabled={options.disabled || false}
-                      key={`rule-item-index-${tracker.ID}`}
-                      ID={tracker.ID}
-                      rule={tracker.rule}
-                      colorSetter={updateRuleColor}
-                      iconSizeSetter={updateIconSize}
-                      iconVOffsetSetter={updateIconVOffset}
-                      iconNameSetter={updateIconName}
-                      overrideSetter={updateRuleOverrides}
-                      remover={removeRule}
-                      index={index}
-                      context={options.context}
-                  />
-              );
-            })}
+                return (
+                    <CollapsableSection key={index} isOpen={tracker.rule.iconRuleCollapsed} label={
+                        (<span>
+                      {index + 1} {tracker.rule.iconRuleLabel ?? 'rule'}<>&nbsp;</>
+                        <IconButton
+                      disabled={options.disabled}
+                      key="deleteRule"
+                      variant="secondary"
+                      name="trash-alt"
+                      tooltip="delete icon rule"
+                      onClick={(e) => {
+                        removeRule(index)
+                        e.stopPropagation()
+                      }}
+                      />
+                            </span>
+                      )
+
+
+                    } onToggle={()=> updateIconCollapsed(index)}>
+                    <RuleItem
+                        disabled={options.disabled || false}
+                        key={`rule-item-index-${tracker.ID}`}
+                        ID={tracker.ID}
+                        rule={tracker.rule}
+                        colorSetter={updateRuleColor}
+                        iconLabelSetter={updateRuleLabel}
+                        iconSizeSetter={updateIconSize}
+                        iconVOffsetSetter={updateIconVOffset}
+                        iconNameSetter={updateIconName}
+                        overrideSetter={updateRuleOverrides}
+                        remover={removeRule}
+                        index={index}
+                        context={options.context}
+                    />
+                    </CollapsableSection>
+                );
+              })}
+
+
+
+
       </>
   );
 };

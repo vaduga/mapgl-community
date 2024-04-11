@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import { StandardEditorProps } from '@grafana/data';
-import { Field } from '@grafana/ui';
+import {Field, InlineFieldRow} from '@grafana/ui';
 import { Threshold } from './threshold-types';
 import { ThresholdsEditor } from './ThresholdsEditor';
 export interface GlobalThresholdEditorSettings {}
@@ -15,10 +15,9 @@ export const GlobalThresholdEditor: React.FC<Props> = ({ context, onChange }) =>
   };
 
   return (
-    <>
-      <Field>
+
         <ThresholdsEditor context={context} thresholds={globalThresholds} setter={setThresholds} />
-      </Field>
-    </>
+
+
   );
 };

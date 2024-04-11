@@ -9,6 +9,7 @@ export type CoordRef = string | Position
 export type LineExtraProps = {
   isShowTooltip?: boolean | undefined,
   displayProps?: string[] | [],
+  metric?: number,
   [key: string]: unknown
 }
 
@@ -66,6 +67,7 @@ export interface DeckFeature<G extends Geometry | null = Geometry, P = PointFeat
   properties: P;
 }
 
+export type RGBAColor = [number, number, number] | [number,number,number,number]
 export enum colTypes {
   Icons = "icons",
   Points = "markers",
@@ -73,7 +75,8 @@ export enum colTypes {
   Polygons = "polygons",
   Path = "path",
   GeoJson = "geojson",
-  Text = "text"
+  Text = "text",
+  Hull = "convex-hull"
 }
 
 export type AllFeatures= {

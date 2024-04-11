@@ -89,7 +89,7 @@ export interface ExtendMapLayerRegistryItem<TConfig = ExtendMapLayerOptions> ext
    * Function that configures transformation and returns points for Deck.gl render
    * @param options
    */
-  pointsUp?: (data: PanelData, options: ExtendMapLayerOptions<TConfig>) =>  Promise<any[] | Feature[] | string>;
+  pointsUp?: (data: PanelData, options: ExtendMapLayerOptions<TConfig>, theme: GrafanaTheme2) =>  Promise<any[] | Feature[] | string>;
   create?: (options: ExtendMapLayerOptions<TConfig>, theme: GrafanaTheme2) => {init?: any} | undefined;
   /**
    * Show custom elements in the panel edit UI

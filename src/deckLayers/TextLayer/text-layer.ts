@@ -57,17 +57,15 @@ const LineTextLayer = ({ data, type = 'nums', dir ='to'}: {data: any, type: 'num
     //collisionGroup: 'visualization',
     //collisionTestProps: {sizeScale: 40
     //},
-    getSize: ()=> {
+    getSize: (d)=> {
       switch (type) {
         case 'unames':
           return 5
-          break;
         case 'nums':
           return 3
-          break;
         default:  // list1 or list2
-          return 13
-          break;
+            const size = d.fontSize
+            return size ?? 13
       }
     },
     // @ts-ignore

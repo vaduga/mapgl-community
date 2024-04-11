@@ -11,6 +11,7 @@ services:
       - 3000:3000/tcp
     volumes:
       - $PWD/dist:/var/lib/grafana/plugins/mapgl-panel
+      - $PWD/dist/img/icons/databases:/usr/share/grafana/public/img/icons/mapgl
       - $PWD/provisioning:/etc/grafana/provisioning
       - $PWD/.seed:/usr/share/grafana/public/seed
       - $PWD/docker_data/grafana_data:/var/lib/grafana

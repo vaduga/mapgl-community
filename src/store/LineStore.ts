@@ -5,7 +5,7 @@ import {
     ParentInfo, pEditActions,
 } from "./interfaces";
 import {Point} from "geojson";
-import {findChildLines} from "../utils";
+import {findChildLines, hexToRgba} from "../utils";
 import lineOffset from "@turf/line-offset";
 import lineString from "turf-linestring";
 import {parDelimiter} from "../components/defaults";
@@ -14,6 +14,7 @@ import {CoordsConvert, get2MiddleCoords, getMiddleCoords} from "../utils/utils.t
 import {getThresholdForValue} from "../editor/Thresholds/data/threshold_processor";
 import {thresholds} from "../components/Mapgl";
 import {isNumber} from "lodash";
+import {useTheme2} from "@grafana/ui";
 
 
 function isNode(item, switchMap){
@@ -90,6 +91,8 @@ class LineStore {
   get getEditableLines() {
 const {getPoints, switchMap, getisOffset, editCoords} = this.root.pointStore
 
+    const {theme2} = this.root
+
     const features: DeckLine[] = []
     let counter = 0
       this.vertices && Object.keys(this.vertices).forEach((lkey, i) => {
@@ -104,17 +107,23 @@ const {getPoints, switchMap, getisOffset, editCoords} = this.root.pointStore
               // optional
                //const {parPath, properties: extraProps} = s
 
-              const {locName, sources} = fromPoint.properties
+              const {locName, metric: ptMetric} = fromPoint.properties
               const extraProps = info?.lineExtraProps
-              const metric = extraProps?.metric
-              const threshold = isNumber(metric) && getThresholdForValue({...fromPoint.properties, ...extraProps}, metric, thresholds)
+              let threshold
+              const ownMetric = extraProps?.metric 
+              if (ownMetric) {
+                  const fixedColor = fromPoint.properties?.style?.configExt?.color?.fixed
+                  const hexColor = fixedColor && theme2.visualization.getColorByName(fixedColor)
+                  const defaultColor = hexColor ? hexToRgba(hexColor) : undefined
+                  getThresholdForValue({...fromPoint.properties, ...extraProps}, ownMetric, thresholds, defaultColor)
+              }
 
               const parName = info.parPath?.at(-1) as string //.at(-1) as string
               // optional
                   // const parInfo = sources && sources[parName]
               const parPath = info?.parPath
 
-              const toPoint = typeof parName === 'string' ? switchMap?.get(parName) : null;
+              const toPoint = parName ? switchMap?.get(parName) : null;
               const fromPointGeometry = fromPoint.geometry as Point;
               let toPointGeometry
 

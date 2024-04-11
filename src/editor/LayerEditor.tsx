@@ -184,7 +184,7 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, eventBus, onChange,
           .addFieldNamePicker({
             path: 'parField',
             name: 'Source name / path to source field',
-            description: 'String or Array<String | [lon,lat]>',
+            description: 'String or Array<String | [lon, lat]>',
             settings: {
               filter: (f: Field) => {
                 return f.type === FieldType.string
@@ -194,18 +194,9 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, eventBus, onChange,
             showIf: (opts) => opts.type === colTypes.Points,
           })
           .addFieldNamePicker({
-            path: 'metricField',
-            name: 'Main stat field',
-            settings: {
-              filter: (f: Field) => f.type === FieldType.number,
-              noFieldsMessage: 'No number fields found',
-            },
-            showIf: (opts) => opts.type !== colTypes.GeoJson,
-          })
-          .addFieldNamePicker({
             path: 'edgeLabelField',
             name: 'Edge label field',
-            description: 'Visible in stat2',
+            description: 'text is visible in stat2 mode',
             settings: {
               // filter: (f: Field) => f.type === FieldType.number,
               noFieldsMessage: 'No fields found',
@@ -214,21 +205,21 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, eventBus, onChange,
           })
           .addBooleanSwitch({
             path: 'isShowBW',
-            name: 'Secondary stat',
-            description: 'Show tput/band with hardcoded color thresholds',
+            name: 'Show secondary metric',
+            description: 'experimental: display tput/band ratio with hardcoded color thresholds',
             defaultValue: false,
             showIf: (opts) => opts.type === colTypes.Points,
           })
           .addNumberInput({
             path: 'bandNumber',
             name: 'Bandwidth #',
-            description: 'Default bandwidth in bits/sec (SI) (bps).',
+            description: 'default bandwidth in bits/sec (SI) (bps).',
             showIf: (opts) => opts.isShowBW,
           })
           .addFieldNamePicker({
             path: 'bandField',
             name: 'Bandwidth field',
-            description: 'Number-field with bandwidth in bits/sec (SI) (bps).',
+            description: 'bandwidth in bits/sec (SI) (bps).',
             settings: {
               filter: (f: Field) => f.type === FieldType.number,
               noFieldsMessage: 'No fields found',
@@ -238,7 +229,7 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, eventBus, onChange,
           .addFieldNamePicker({
             path: 'throughputField',
             name: 'Throughput field',
-            description: 'Number-field with throughput in bits/sec (SI) (bps).',
+            description: 'throughput in bits/sec (SI) (bps).',
             settings: {
               filter: (f: Field) => f.type === FieldType.number,
               noFieldsMessage: 'No fields found',
@@ -248,7 +239,7 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, eventBus, onChange,
           .addColorPicker({
                 path: 'geojsonColor',
                 name: 'Default GeoJson Color',
-                description: 'Use \'CUSTOM\' tab only to set correct color',
+                description: 'use \'CUSTOM\' tab only to set correct color',
                 //defaultValue :  [255, 0, 0, 1], //DEFAULT_OK_COLOR_RGBA,
                 showIf: (opts) => opts.type === colTypes.GeoJson,
               }
@@ -256,7 +247,7 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, eventBus, onChange,
           .addSelect({
             path: 'geojsonMetricName',
             name: 'Metric name GeoJson property',
-            description: 'Select Metric GeoJson property with numeric values',
+            description: 'select Metric GeoJson property with numeric values',
             settings: {
               allowCustomValue: true,
               options: [],
@@ -269,7 +260,7 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, eventBus, onChange,
           .addFieldNamePicker({
             path: 'aggrTypeField',
             name: 'Aggr type field',
-            description: 'Mark aggregation points as \'node\' or \'connector\' to offset overlapping links',
+            description: 'flag some extra locations as \'node\' or \'connector\' to aggregate and offset links at endpoints',
             settings: {
               filter: (f: Field) => f.type === FieldType.string,
               noFieldsMessage: 'No string fields found',
@@ -279,13 +270,13 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, eventBus, onChange,
           .addBooleanSwitch({
             path: 'isShowTooltip',
             name: 'Show tooltip',
-            description: 'Applies to current layer',
+            description: 'applies to current layer',
             defaultValue: true,
           })
         .addMultiSelect({
           path: 'displayProperties',
           name: 'Tooltip properties',
-          description: 'Applies to current layer',
+          description: 'applies to current layer',
           settings: {
             allowCustomValue: false,
             options: [],
@@ -299,7 +290,7 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, eventBus, onChange,
           .addMultiSelect({
             path: 'geojsonDisplayProperties',
             name: 'Tooltip properties',
-            description: 'Properties to be displayed from GeoJson file',
+            description: 'properties to be displayed from GeoJson file',
             settings: {
               allowCustomValue: true,
               options: [],
@@ -313,7 +304,7 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, eventBus, onChange,
           .addMultiSelect({
             path: 'searchProperties',
             name: 'Search by',
-            description: 'Extra fields for search options',
+            description: 'extra fields to search by (save & reload)',
             settings: {
               allowCustomValue: false,
               options: [],

@@ -3,7 +3,7 @@ import {
   DEFAULT_LINE_WIDTH,
   DEFAULT_NO_DATA_COLOR_RGBA,
 } from '../../../components/defaults';
-import {OverField} from '../threshold-types';
+import {OverField, Threshold} from '../threshold-types';
 import {FieldType} from "@grafana/data";
 
 
@@ -44,7 +44,7 @@ const getThresholdsWithOverridesCounts = (properties, thresholds) => thresholds.
 function getThresholdForValue(
     properties: any,
     value: number | null | undefined,
-    thresh: [] = [],
+    thresh: Threshold[] = [],
     defaultColor: string = DEFAULT_NO_DATA_COLOR_RGBA,
     defaultLineWidth: number = DEFAULT_LINE_WIDTH,
     defaultColorLabel: string = DEFAULT_COLOR_LABEL
@@ -61,7 +61,7 @@ function getThresholdForValue(
   //console.log(thresholds)
   let currentColor = defaultColor;
   let currentLineWidth = defaultLineWidth;
-  let currentColorLabel = 'ok'//defaultColorLabel;
+  let currentColorLabel = 'unknown'//defaultColorLabel;
   let currentLevel = -1;
 
   if (value === null || value === undefined) {

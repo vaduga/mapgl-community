@@ -59,10 +59,10 @@ export const plugin = new PanelPlugin<PanelOptions>(Panel)
 
 
         builder.addCustomEditor({
-        name: 'Global thresholds',
+        name: 'Color and line-width thresholds',
         id: 'globalThresholdsConfig',
         path: 'globalThresholdsConfig',
-        description: 'Thresholds for stat1, lines width',
+        description: 'for primary metric (stat1)',
         editor: GlobalThresholdEditor,
         defaultValue: [] ,
         category: ['Thresholds'],

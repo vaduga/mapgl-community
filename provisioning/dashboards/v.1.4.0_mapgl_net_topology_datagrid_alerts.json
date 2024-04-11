@@ -57,6 +57,26 @@
               "searchProperties": [],
               "show": true,
               "startId": 0,
+              "style": {
+                "color": {
+                  "field": "stat1",
+                  "fixed": "dark-green"
+                },
+                "size": {
+                  "field": "stat1",
+                  "fixed": 5,
+                  "max": 20,
+                  "min": 5
+                },
+                "text": {
+                  "field": "target",
+                  "fixed": "",
+                  "mode": "field"
+                },
+                "textConfig": {
+                  "fontSize": 13
+                }
+              },
               "vertices": {}
             },
             "displayProperties": [
@@ -206,8 +226,9 @@
         "svgIconsConfig": [
           {
             "iconName": "cisco/server-switch",
+            "iconRuleCollapsed": true,
             "iconSize": 20,
-            "iconVOffset": -20,
+            "iconVOffset": -5,
             "overrides": [
               {
                 "name": "aggrType",
@@ -218,8 +239,9 @@
           },
           {
             "iconName": "networking/atm-switch",
+            "iconRuleCollapsed": true,
             "iconSize": 20,
-            "iconVOffset": -20,
+            "iconVOffset": -5,
             "overrides": [
               {
                 "name": "aggrType",
@@ -235,8 +257,9 @@
           },
           {
             "iconName": "databases/rxdb",
+            "iconRuleCollapsed": true,
             "iconSize": 20,
-            "iconVOffset": -20,
+            "iconVOffset": -5,
             "overrides": [
               {
                 "name": "target",
@@ -252,8 +275,9 @@
           },
           {
             "iconName": "databases/google-firebase",
+            "iconRuleCollapsed": true,
             "iconSize": 20,
-            "iconVOffset": -20,
+            "iconVOffset": -5,
             "overrides": [
               {
                 "name": "target",
@@ -1592,6 +1616,6 @@
   "timezone": "",
   "title": "A_v.1.4.0. new: alert state annotations (refresh 10sec)",
   "uid": "ede2cb79-2b89-4726-8c45-dd19014b16d1",
-  "version": 8,
+  "version": 6,
   "weekStart": ""
 }

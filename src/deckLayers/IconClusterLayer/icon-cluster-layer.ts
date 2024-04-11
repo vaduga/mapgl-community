@@ -20,7 +20,6 @@ export class IconClusterLayer extends CompositeLayer<params> {
   selectedIp;
   //isVisible;
   getSelectedFeIndexes;
-  getSvgIcons
   time
   cluster_id
 
@@ -41,7 +40,6 @@ export class IconClusterLayer extends CompositeLayer<params> {
     this.selectedIp = props.getSelectedIp;
     //this.isVisible = props.isVisible;
     this.getSelectedFeIndexes = props.getSelectedFeIndexes
-    this.getSvgIcons = props.getSvgIcons
     this.time = props.time
 
   }

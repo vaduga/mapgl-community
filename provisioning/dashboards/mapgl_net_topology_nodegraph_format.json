@@ -38,6 +38,9 @@
           "config": {},
           "type": "default"
         },
+        "common": {
+          "locLabelName": "instance"
+        },
         "dataLayers": [
           {
             "aggrTypeField": "aggrType",
@@ -49,6 +52,23 @@
               "searchProperties": [],
               "show": true,
               "startId": 0,
+              "style": {
+                "color": {
+                  "field": "metricReduced",
+                  "fixed": "dark-green"
+                },
+                "size": {
+                  "field": "bps",
+                  "fixed": 5,
+                  "max": 20,
+                  "min": 5
+                },
+                "text": {
+                  "field": "target",
+                  "fixed": "",
+                  "mode": "field"
+                }
+              },
               "vertices": {}
             },
             "displayProperties": [
@@ -165,11 +185,12 @@
             "value": 3
           }
         ],
-                "svgIconsConfig": [
+        "svgIconsConfig": [
           {
             "iconName": "cisco/server-switch",
+            "iconRuleCollapsed": true,
             "iconSize": 20,
-            "iconVOffset": -20,
+            "iconVOffset": -5,
             "overrides": [
               {
                 "name": "aggrType",
@@ -180,8 +201,9 @@
           },
           {
             "iconName": "networking/atm-switch",
+            "iconRuleCollapsed": true,
             "iconSize": 20,
-            "iconVOffset": -20,
+            "iconVOffset": -5,
             "overrides": [
               {
                 "name": "aggrType",
@@ -436,6 +458,6 @@
   "timezone": "",
   "title": "Mapgl topology nodeGraph format",
   "uid": "d3492b26-a612-4130-9a83-b63205950e34",
-  "version": 1,
+  "version": 3,
   "weekStart": ""
 }

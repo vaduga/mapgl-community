@@ -59,8 +59,8 @@ export const OverrideField: React.FC<OverrideFieldProps> = (options: OverrideFie
                     disabled={options.disabled}
                     key="deleteThresholdField"
                     variant="destructive"
-                    name="trash-alt"
-                    tooltip="delete threshold Field"
+                    name="x"
+                    tooltip="remove threshold Field"
                     onClick={() => options.remover(options.index)}
                 />
             </>

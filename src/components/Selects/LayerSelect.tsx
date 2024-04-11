@@ -40,7 +40,6 @@ const LayerSelect: FC = observer(() => {
         toggleShowSVG,
         toggleShowPoints,
         getisShowSVG,
-        getMode,
         setMode,
         getisShowPoints,
         getisOffset, toggleOffset, setSelectedIp, setTooltipObject,
@@ -82,12 +81,11 @@ const LayerSelect: FC = observer(() => {
                   </InlineField>
               <InlineField>
         <Checkbox
-          //disabled={getMode === 'modify'}
           checked={getisShowSVG}
           title="svg"
           onChange={() => {
             toggleShowSVG(!getisShowSVG);
-            toggleShowPoints(true)
+            //toggleShowPoints(true)
             }  }
         >
             &nbsp;svg

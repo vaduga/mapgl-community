@@ -74,14 +74,7 @@ export const ThresholdsEditor: React.FC<Props> = (options) => {
     setTracker([...tracker]);
   };
 
-  const updateThresholdSelColor = (index: number, color: string) => {
-    let useColor = color;
-    if (typeof theme2.visualization !== 'undefined') {
-      useColor = theme2.visualization.getColorByName(color);
-    }
-    tracker[index].threshold.selColor = hexToRgba(useColor);
-    setTracker([...tracker]);
-  };
+
 
   const updateLineWidth = (index: number, width: number) => {
     tracker[index].threshold.lineWidth = width;
@@ -115,7 +108,6 @@ export const ThresholdsEditor: React.FC<Props> = (options) => {
     const aThreshold: Threshold = {
       overrides: [],
       color: DEFAULT_OK_COLOR_RGBA,
-      selColor: DEFAULT_OK_COLOR_SELECTED_RGBA,
       lineWidth: DEFAULT_LINE_WIDTH,
       label: '',
       value: 0,

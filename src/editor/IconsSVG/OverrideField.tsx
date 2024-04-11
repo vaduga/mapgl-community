@@ -1,4 +1,4 @@
-import {AutoSizeInput, IconButton, InlineField, InlineFieldRow, Select, useStyles2} from "@grafana/ui";
+import {AutoSizeInput, Field, IconButton, InlineField, InlineFieldRow, Select, useStyles2} from "@grafana/ui";
 import {OverField} from "./svg-types";
 import React, {useState} from "react";
 import {GrafanaTheme2, SelectableValue} from "@grafana/data";
@@ -33,7 +33,8 @@ export const OverrideField: React.FC<OverrideFieldProps> = (options: OverrideFie
 
         return (
             <>
-            <InlineField>
+            <InlineField shrink label={"override " + (options.index + 1)}>
+
                 <FieldSelectEditor
                     context={options.context}
                     options={fields}
@@ -46,8 +47,8 @@ export const OverrideField: React.FC<OverrideFieldProps> = (options: OverrideFie
                         }
                     }}
                 />
-            </InlineField>
-            <InlineField>
+                    </InlineField>
+                <InlineField label="values">
                 <AutoSizeInput
                     minWidth={10}
                     // disabled={!options.overrideField.name}
@@ -57,17 +58,18 @@ export const OverrideField: React.FC<OverrideFieldProps> = (options: OverrideFie
                     defaultValue={options.overrideField.value}
                     placeholder={'val1,val2...'}
                 />
-            </InlineField>
-            <InlineField>
+                </InlineField>
+                    <InlineField className={styles.rmButton} >
                 <IconButton
                     disabled={options.disabled}
                     key="deleteThresholdField"
                     variant="destructive"
-                    name="trash-alt"
-                    tooltip="Delete Rule Field"
+                    name="x"
+                    tooltip="rm override field"
                     onClick={() => options.remover(options.index)}
                 />
-            </InlineField>
+                    </InlineField>
+
             </>
         )
     }
@@ -82,5 +84,8 @@ const getThresholdFieldStyles = (theme: GrafanaTheme2) => {
         colorPicker: css`
       padding: 0 ${theme.spacing(1)};
     `,
+        rmButton: css`
+          align-items: center;
+        `
     };
 };

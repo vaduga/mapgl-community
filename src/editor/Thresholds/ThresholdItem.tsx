@@ -192,7 +192,7 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
                   key="addThresholdField"
                   variant="primary"
                   name="plus"
-                  tooltip="Add override"
+                  tooltip="add override"
                   onClick={addField}
               />
               <IconButton

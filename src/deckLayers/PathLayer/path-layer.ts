@@ -6,7 +6,9 @@ import {PathStyleExtension} from "@deck.gl/extensions";
 import {toJS} from "mobx";
 
 // @ts-ignore
-function MyPathLayer({onHover, highlightColor, getSelFeature, data, type, theme2 }) {
+function MyPathLayer(props)   {
+    const {onHover, highlightColor, getSelFeature, data, type, theme2 } = props
+
     // @ts-ignore
     return new PathLayer({
         id: colTypes.Path + '-'+ type,
@@ -36,7 +38,6 @@ function MyPathLayer({onHover, highlightColor, getSelFeature, data, type, theme2
         //@ts-ignore
         extensions: [new PathStyleExtension({dash: true})],
 
-        //@ts-ignore
         getColor: d => {
 
             let color
@@ -51,7 +52,8 @@ function MyPathLayer({onHover, highlightColor, getSelFeature, data, type, theme2
                 default:
                     color =  d.properties?.threshold?.color
             }
-            return Array.from(toRGB4Array(color))
+            return Array.from(toRGB4Array(color)) as | [number, number, number]
+                | [number, number, number, number]
         },
         widthScale: 1.1,
         getWidth: (d) => {

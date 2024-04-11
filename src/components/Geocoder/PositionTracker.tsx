@@ -32,7 +32,7 @@ export const PositionTracker = () => {
         {isShowCoord && (
 
                 <div>
-                    {getSelCoord && isShowCoord && <span onDoubleClick={()=>handleTextClick('coordinates')}>lon,lat: <span id="coordinates">[<span onClick={()=>handleTextClick('lon')}><span id="lon">{getSelCoord?.coordinates?.[0]}</span></span>,<span onClick={()=>handleTextClick('lat')}><span id="lat">{getSelCoord?.coordinates?.[1]}</span></span>]</span>&nbsp;
+                    {getSelCoord && isShowCoord && <span onDoubleClick={()=>handleTextClick('coordinates')}>lon, lat: <span id="coordinates">[<span onClick={()=>handleTextClick('lon')}><span id="lon">{getSelCoord?.coordinates?.[0]}</span></span>,<span onClick={()=>handleTextClick('lat')}><span id="lat">{getSelCoord?.coordinates?.[1]}</span></span>]</span>&nbsp;
                     <CopyToClipboard
                         text={JSON.stringify(getSelCoord)}
                         onCopy={() => setIsShowCoord(false)}

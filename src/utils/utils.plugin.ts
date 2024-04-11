@@ -3,10 +3,20 @@ import turfbbox from "@turf/bbox";
 import {Geometry, Point, Position} from "geojson";
 import {toJS} from "mobx";
 import {ALERTING_STATES, DEFAULT_NUMS_COLOR, parDelimiter} from "../components/defaults";
-import {AggrTypes, DeckLine, Feature, ParentInfo, PointFeatureProperties, Sources, Vertices} from "../store/interfaces";
+import {
+    AggrTypes,
+    DeckLine,
+    Feature,
+    ParentInfo,
+    PointFeatureProperties,
+    RGBAColor,
+    Sources,
+    Vertices
+} from "../store/interfaces";
 import {MultiLineString} from "@turf/helpers";
 import {SelectableValue} from "@grafana/data";
-import { RGBAColor } from "@deck.gl/core/utils/color";
+import {lastIndexOf} from "lodash";
+
 
 function parseObjFromString(str) {
     // Regular expression to extract key-value pairs
@@ -425,7 +435,7 @@ features.forEach((feature, pathIdx)=>{
 
   };
 
-function genLinksText(selLine, switchMap?) {
+function genLinksText(selLine, switchMap, options, theme2) {
 
     if (!selLine) {
         return []
@@ -483,9 +493,11 @@ const {locName, edgeField} = selLine.properties
     //     fromText[fromText.length - 1] = fromText.at(-1) + '\n'+'>\n'
     // }
 
+    const fontSize = properties?.style?.textConfig?.fontSize
+
     const nodeConnectionsText = selLine && toText ?
 
-        {to: [{text: toText+'\n', coordinates: [locCoords, parCoords ], color, angle
+        {to: [{text: toText+'\n', coordinates: [locCoords, parCoords ], color, angle, fontSize
             }],
             // from: [{text: fromText.join('\n'), coordinates: [locCoords, parCoords ], color, angle
             // }]
@@ -714,10 +726,62 @@ function findComments(vertices) {
     return comments;
 }
 
+export function addSVGattributes(svgText: string, replaceUse = false) {
+
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(svgText, 'image/svg+xml');
+
+    if (replaceUse) { // Find the first symbol element
+        const symbol = xmlDoc.querySelector('symbol');
+
+        const useElements = xmlDoc.querySelectorAll('use');
+        // Iterate over each use element
+        useElements.forEach((useElement) => {
+            const href = useElement.getAttribute('xlink:href');
+            // Check if the use element references a symbol
+            if (href && href.startsWith('#')) {
+                // Find the corresponding symbol
+                const symbolId = href.substring(1);
+                const symbol = xmlDoc.getElementById(symbolId);
+                if (symbol) {
+                    // Replace the use element with the content of the symbol
+                    const symbolContent = symbol.innerHTML;
+                    useElement.parentNode?.replaceChild(parser.parseFromString(symbolContent, 'image/svg+xml').documentElement, useElement);
+                }
+            }
+        });
+    }
+
+    //// add width and height
+
+    let svgElement = xmlDoc.getElementsByTagName('svg')[0];
+
+    let width = svgElement.getAttribute('width');
+    let height = svgElement.getAttribute('height');
+    const viewBox = svgElement.getAttribute('viewBox');
+    // If non, get width and height from the viewBox attribute
+    if ((!width || !height) && viewBox) {
+        const viewBoxValues = viewBox.split(' ').map(parseFloat);
+        width = viewBoxValues[2]?.toString();
+        height = viewBoxValues[3]?.toString();
+
+        svgElement.setAttribute('width', width);
+        svgElement.setAttribute('height', height);
+    }
+
+    const svgTextMod = new XMLSerializer().serializeToString(xmlDoc);
+  return {svgText: svgTextMod, width, height}
+
+}
+
 async function parseSvgFileToString(options) {
     const {iconName: svgIconName, svgColor: svgIconColor} = options
     if (!svgIconName) {return null}
-    const svgFilePath = svgIconName.startsWith('http') ? svgIconName : 'public/plugins/vaduga-mapgl-panel/img/icons/'+svgIconName+'.svg'
+    const isPublic = svgIconName.startsWith('public/')
+    let localName = isPublic ? svgIconName : 'public/plugins/vaduga-mapgl-panel/img/icons/'+svgIconName+'.svg'
+
+    const svgFilePath = svgIconName.startsWith('http') ? svgIconName : localName
+
     try {
         const response = await fetch(svgFilePath);
 
@@ -725,34 +789,10 @@ async function parseSvgFileToString(options) {
             throw new Error(`Failed to fetch SVG file. Status: ${response.status}`);
         }
 
+        let svgString = await response.text();
+const {svgText,width,height} = addSVGattributes(svgString)
 
-        let svgText = await response.text();
-
-        // Modify the SVG text to include width and height properties from viewBox
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(svgText, 'image/svg+xml');
-        const svgElement = xmlDoc.getElementsByTagName('svg')[0];
-
-        let viewBoxHeight, viewBoxWidth
-
-        if (svgElement) {
-            // Get width and height from the viewBox attribute
-            const viewBox = svgElement.getAttribute('viewBox');
-            if (viewBox) {
-                const viewBoxValues = viewBox.split(' ').map(parseFloat);
-                viewBoxWidth = viewBoxValues[2];
-                viewBoxHeight = viewBoxValues[3];
-
-                // Set width and height attributes
-                svgElement.setAttribute('width', viewBoxWidth.toString());
-                svgElement.setAttribute('height', viewBoxHeight.toString());
-            }
-
-            // Convert the modified XML back to a string
-            svgText = new XMLSerializer().serializeToString(xmlDoc);
-        }
-
-        return [svgIconName, {svgText, width: viewBoxWidth, height: viewBoxHeight}];
+        return [svgIconName, {svgText, width, height}];
     } catch (error) {
         console.error('Error fetching SVG file:', error);
         return null;
@@ -765,7 +805,6 @@ async function loadSvgIcons(svgIconRules) {
         const res = await Promise.all(promises)
         const pairs = res.filter(el=>el)
         return pairs.length ? Object.fromEntries(pairs) : {}
-return {res}
     } else {
         return {}
     }

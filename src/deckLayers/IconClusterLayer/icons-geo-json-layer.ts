@@ -1,5 +1,5 @@
 import {
-  toRGB4Array,findClosestAnnotations
+    toRGB4Array, findClosestAnnotations, hexToRgba
 } from '../../utils';
 import { GeoJsonLayer } from '@deck.gl/layers/typed';
 import { CollisionFilterExtension } from '@deck.gl/extensions/typed';
@@ -23,10 +23,11 @@ const IconsGeoJsonLayer = (props) => {
     time,
     onHover,
     highlightColor,
+    options,
+      theme2
   } = props;
 
   return new GeoJsonLayer({
-    visible: getisShowPoints,
     highlightColor,
     onHover,
     id: colTypes.Points,
@@ -35,10 +36,29 @@ const IconsGeoJsonLayer = (props) => {
     parameters: {
       depthTest: false
     },
-        pointType: getisShowSVG ? 'circle+icon+text' : 'circle+text',
-        getText: (f: any) => f.properties.locName,
-        getTextAlignmentBaseline: 'center',
-        getTextPixelOffset: [0, 15],
+        pointType: 'circle+icon+text',
+        getText: (d: any) => d.properties?.style?.text,
+
+      // conflicts with collision filter
+
+        // getTextAlignmentBaseline: (d)=> {
+        //    return d.properties?.style?.textConfig?.textBaseline ?? 'center'
+        // },
+        // getTextAnchor: (d)=> {
+        //     return d.properties?.style?.textConfig?.textAlign ?? 'middle'
+        // },
+
+        getTextPixelOffset: (d)=> {
+
+            let offsetX = 0
+            let offsetY = 15
+            // if (d.properties?.style?.textConfig) {
+            //     ({offsetX, offsetY} = d.properties?.style?.textConfig)
+            // }
+
+            return [offsetX,offsetY]
+
+        },
         // @ts-ignore
         getTextColor: (d) => {
           // @ts-ignore
@@ -51,25 +71,46 @@ const IconsGeoJsonLayer = (props) => {
 
             return toRGB4Array(color)
         },
-        getTextSize: 12,
+        getTextSize: (d)=> {
+            const size = d.properties?.style?.textConfig?.fontSize
+        return size ?? 12
+        },
         //@ts-ignore
         getFillColor: (d: any) => {
+
             const {threshold, all_annots} = d.properties
             const annots: any = findClosestAnnotations(all_annots, time)
             const annotState = annots?.[0]?.newState
             const {color: thresholdColor} = threshold
             const color = annotState ? annotState.startsWith('Normal') ? ALERTING_STATES.Normal : annotState === 'Alerting'? ALERTING_STATES.Alerting : ALERTING_STATES.Pending : thresholdColor
 
-            return toRGB4Array(color)
+            const opacity = d.properties?.style?.opacity
+            const rgb4 = toRGB4Array(color)
+            if (opacity) {
+            rgb4[3] = Math.round(opacity * 255);
+            }
+
+            return rgb4
         },
+      stroke: true,
+      getLineWidth: 0.5,
+      // @ts-ignore
+      getLineColor: (d: any) => {
+        const {threshold, all_annots} = d.properties
+        const annots: any = findClosestAnnotations(all_annots, time)
+        const annotState = annots?.[0]?.newState
+        const {color: thresholdColor} = threshold
+        const color = annotState ? annotState.startsWith('Normal') ? ALERTING_STATES.Normal : annotState === 'Alerting'? ALERTING_STATES.Alerting : ALERTING_STATES.Pending : thresholdColor
+        return toRGB4Array(color).slice(0,3)
+    },
         getPointRadius: (d) => {
           const isHead = getSelectedIp === d.properties?.locName
-          return isHead ? 10 : 8 //4 : 2
+
+          const size =  d.properties?.style?.size
+
+          return isHead ? size/2 * 1.3 : size/2
         },
-        pointRadiusScale: 0.3, //1,
-      updateTriggers: {
-          getIcon: time,
-      },
+        //pointRadiusScale: 0.3, //1,
         getIcon: (d) => {
           const colorCounts = {};
           const {threshold} = d.properties
@@ -94,8 +135,7 @@ const IconsGeoJsonLayer = (props) => {
             label
           }
           return {
-            url: svgToDataURL(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-  <!-- Add any additional attributes or elements as needed -->
+            url: svgToDataURL(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">  
 </svg>`),
             width: 1,
             height: 1,
@@ -103,13 +143,13 @@ const IconsGeoJsonLayer = (props) => {
           };
         },
 
-        iconSizeScale: 1,
         getIconPixelOffset: (d) => {
           // @ts-ignore
           const {threshold, cluster} = d.properties
           if (cluster) {
             return [0, 0]
           }
+
           const {iconVOffset} = threshold
           return [0, iconVOffset ?? 0]
         },
@@ -136,36 +176,35 @@ const IconsGeoJsonLayer = (props) => {
           const {color} = threshold
           return toRGB4Array(color)
         },
+       //alphaCutoff: -1,
         _subLayerProps: {
           "points-text": {
             extensions: [new CollisionFilterExtension()],
-            //           background: true,
-            //           _subLayerProps: {
-            //             "background":
-            // {
-            //   getFillColor: () => toRGB4Array(GLOBAL_FILL_COLOR_HEX),
-            // }
-            //},
-            collisionGroup: 'text',
-            collisionTestProps:
-                {
-                  sizeScale: 4,
-
-                }
+              collisionGroup: 'text',
+              collisionTestProps:
+                  {
+                      sizeScale: 2.5,
+                  },
+             // unexpected effect with this on - some text invisible
+             // fontSettings: {sdf: true},
           },
           "points-icon": {
+            visible: getisShowSVG,
             extensions: [new CollisionFilterExtension()],
-            collisionGroup: 'icons',
-            collisionTestProps:
-                {
-                  sizeScale: 4,
-                }
-          }
+              collisionGroup: 'icons',
+              // looks like props are shared across the group
+              collisionTestProps:
+                  {
+                      sizeScale: 1.5,
+                  }
+          },
+            "points-circle": {
+                visible: getisShowPoints,
+            },
         },
 
     // Styles
     filled: true,
-    stroked: false,
 
     // Interactive props
     pickable: true,

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0 
+* point circle and text label dimensions
+* svg icon rules collapsible + resource picker 
+* bugfix: cluster hull polygon onHover doesn't lag on large datasets
+
 ## 1.4.0
 * alerting states from built-in Grafana annotations query. State colors for nodes and clusters
 * see-through convex hull polygon for cluster area 

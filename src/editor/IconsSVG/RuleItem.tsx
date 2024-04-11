@@ -1,14 +1,15 @@
-import React, {useState} from 'react';
-import {FieldType, GrafanaTheme2, SelectableValue} from '@grafana/data';
+import React, {useEffect, useState} from 'react';
+import {FieldType, GrafanaTheme2, SelectableValue, StandardEditorsRegistryItem} from '@grafana/data';
 import {
   AutoSizeInput,
-  ColorPicker,
+  ColorPicker, Field,
   IconButton,
   InlineField,
   InlineFieldRow,
   Input,
   Select,
-  useStyles2
+  useStyles2,
+    Text
 } from '@grafana/ui';
 import {v4 as uuidv4} from 'uuid';
 import {css} from '@emotion/css';
@@ -16,6 +17,10 @@ import {OverrideField} from "./OverrideField";
 import {IconSvgSizes, IconVOffsetValues, OverField, OverrideTracker, Rule} from './svg-types';
 import {CiscoIcons, DatabaseIcons, NetworkingIcons} from "./data/iconOptions";
 import {DEFAULT_COLOR_PICKER_RGBA} from "../../components/defaults";
+import {ResourceDimensionEditor} from "../from_gr_core/features/dimensions/editors";
+import {defaultStyleConfig} from "../style/types";
+import {MediaType, ResourceFolderName} from "../from_gr_core/features/dimensions";
+import {ResourceDimensionMode} from "@grafana/schema";
 
 
 interface RuleItemProps {
@@ -23,6 +28,7 @@ interface RuleItemProps {
   key: string;
   ID: string;
   colorSetter: any;
+  iconLabelSetter(index: number, value: string): void;
   iconSizeSetter: any;
   iconNameSetter: any;
   iconVOffsetSetter: any;
@@ -31,9 +37,11 @@ interface RuleItemProps {
   index: number;
   disabled: boolean;
   context: any
+
+
 }
 
-export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
+export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps, context) => {
   const styles = useStyles2(getRuleStyles);
   const [oTracker, _setoTracker] = useState((): OverrideTracker[] => {
     if (!options.rule.overrides) {
@@ -119,6 +127,7 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
     setTracker([...allRules]);
   };
 
+  const [ruleLabel, setRuleLabel] = useState<any>(options.rule.iconRuleLabel);
   const [iconSize, setIconSize] = useState<any>(options.rule.iconSize);
   const [iconVOffset, setIconVOffset] = useState<any>(options.rule.iconVOffset);
   const [iconName, setIconName] = useState<string>(options.rule.iconName)
@@ -128,6 +137,7 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
       options.iconNameSetter(options.index, icon)
     setIconName(icon)
   }
+  const maxFiles = 2000;
 
   return (
       <InlineFieldRow className={styles.inlineRow}>
@@ -156,7 +166,21 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
         {/*  }*/}
         {/*</div>*/}
 
-          <InlineField grow label="size">
+        <InlineField shrink label="label">
+          <AutoSizeInput
+              key={options.index}
+              defaultValue={ruleLabel}
+              placeholder={'rule label'}
+              onCommitChange={(e) => {
+                const {value} = e.currentTarget
+                setRuleLabel(value);
+                options.iconLabelSetter(options.index, value)
+              }}
+              //options={typeof iconVOffset === 'number' ? IconVOffsetValues.concat([{value: iconVOffset,label: iconVOffset.toString()}]) : IconVOffsetValues}
+              //allowCustomValue={true}
+          />
+        </InlineField>
+          <InlineField label="size">
               <Select
                   disabled={options.disabled}
                   menuShouldPortal={true}
@@ -171,19 +195,23 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
                   allowCustomValue={true}
               />
           </InlineField>
-      <InlineField grow label="v.offset">
-        <Select
+      <InlineField shrink label="offset" className={styles.voffset}>
+        <Input
             disabled={options.disabled}
-            menuShouldPortal={true}
-            value={iconVOffset}
-            onChange={(v) => {
-              const intValue = typeof v.value === 'string' ? parseFloat(v.value) : v.value
+            type="number"
+            step="1.0"
+            key={options.index}
+            //menuShouldPortal={true}
+            defaultValue={iconVOffset}
+            onChange={(e) => {
+              const {value} = e.currentTarget
+              const intValue = typeof value === 'string' ? parseFloat(value) : value
               if (typeof intValue !== 'number') {return}
-              setIconVOffset(v);
-              options.iconVOffsetSetter(options.index, intValue)
+              setIconVOffset(intValue);
+             options.iconVOffsetSetter(options.index, intValue)
             }}
-            options={typeof iconVOffset === 'number' ? IconVOffsetValues.concat([{value: iconVOffset,label: iconVOffset.toString()}]) : IconVOffsetValues}
-            allowCustomValue={true}
+            //options={typeof iconVOffset === 'number' ? IconVOffsetValues.concat([{value: iconVOffset,label: iconVOffset.toString()}]) : IconVOffsetValues}
+            //allowCustomValue={true}
         />
       </InlineField>
 
@@ -204,69 +232,40 @@ export const RuleItem: React.FC<RuleItemProps> = (options: RuleItemProps) => {
                         />
                     );
                   })}
-        <InlineField grow>
-  <Select
-                  onChange={(v) => {
-                    if (!v.value) {return}
-                    if (v.value === 'custom_icon') {
-                      setIconName(v.value)
-                    } else {
-                    handleIconChange(v.value); }
-                  }}
-                  value={options.rule.iconName}
-                  options={[
-                    { label: 'Cisco Icons', value: 'cisco', options: ciscoIconsFormatted },
-                    { label: 'Networking Icons', value: 'networking', options: networkingIconsFormatted },
-                    { label: 'Database Icons', value: 'databases', options: databaseIconsFormatted },
-                    { label: 'Custom Icon', value: 'custom_icon' },
-                  ]}
-                  className={styles.nodeSelect}
-                  placeholder={'Select an icon'}
-
-              ></Select>
-        </InlineField>
-              {iconName && iconName === 'custom_icon' ? (
-                  <>
-                    <InlineField
-                        grow
-                        label="Custom Icon Source"
-                        className={styles.inlineField}
-                        style={{ marginLeft: '24px' }}
-                    >
-                      <AutoSizeInput
-                          defaultValue={options.rule.iconName}
-                          placeholder={'https://example.com/icon.svg'}
-                          type={'text'}
-                          name={'iconImageURL'}
-                          onCommitChange={(e) => {
-                            const v = e.currentTarget?.value
-                            if (!v) {return}
-                            handleIconChange(v );
-                          }}
-                      ></AutoSizeInput>
-                    </InlineField>
-                  </>
-              ) : (
-                  ''
-              )}
-
-
+<InlineField shrink label={'icon name'}>
+            <ResourceDimensionEditor
+                value={{fixed: options.rule.iconName, mode: ResourceDimensionMode.Fixed}}
+                context={context}
+                onChange={(v) => {
+                  if (!v) {return}
+                  if (v.fixed === 'custom_icon') {
+                    setIconName(v.fixed)
+                  } else {
+                    handleIconChange(v.fixed); }
+                }}
+                item={
+                  {
+                    settings: {
+                      resourceType: MediaType.Icon,
+                      folderName: ResourceFolderName.Networking,
+                      placeholderText: 'Select an icon',
+                      showSourceRadio: false,
+                      maxFiles,
+                    },
+                  } as StandardEditorsRegistryItem
+                }
+            />
+</InlineField>
+      <InlineField className={styles.addButton}>
               <IconButton
                   disabled={options.disabled}
                   key="addRuleField"
                   variant="primary"
                   name="plus"
-                  tooltip="Add override"
+                  tooltip="add override"
                   onClick={addField}
               />
-              <IconButton
-                  disabled={options.disabled}
-                  key="deleteRule"
-                  variant="destructive"
-                  name="trash-alt"
-                  tooltip="Delete Rule"
-                  onClick={() => options.remover(options.index)}
-              />
+      </InlineField>
 
 
 </InlineFieldRow>
@@ -291,8 +290,17 @@ const getRuleStyles = (theme: GrafanaTheme2) => {
       flex: 1 0 auto;
     `,
     inlineRow: css`
-      display: flex;
-      align-items: center;      
+      //display: flex;
+      //align-items: center;
+     margin-top: 10px;      
     `,
+    voffset: css`
+      //display: inline-block; /* Ensures the field takes only the space it needs */
+      width: 30%;
+      flex-shrink: 1;
+    `,
+    addButton: css `
+      align-items: center;
+    `
   };
 };

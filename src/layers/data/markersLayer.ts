@@ -1,6 +1,6 @@
 import {
   PanelData,
-  DataFrameView,
+  DataFrameView, GrafanaTheme2,
 } from '@grafana/data';
 
 import { dataFrameToPoints, getLocationMatchers } from '../../utils/location';
@@ -11,26 +11,38 @@ import {
 } from '../../extension';
 import {colTypes, LineExtraProps, Feature, Vertices} from '../../store/interfaces';
 import { Point} from "geojson";
-import {parseIfPossible} from "../../utils";
+import {hexToRgba, parseIfPossible, parseObjFromString} from "../../utils";
 import {toJS} from "mobx";
+import {StyleEditor} from "../../editor/StyleEditor";
+import {defaultStyleConfig, StyleConfig} from "../../editor/style/types";
+import {getStyleConfigState} from "../../editor/style/utils";
+import {getStyleDimension} from "../../editor/style/geomap_utils";
+import {isNumber} from "lodash";
+import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
+import {getIconRuleForFeature} from "../../editor/IconsSVG/data/rules_processor";
+import {Threshold} from "../../editor/Thresholds/threshold-types";
 
 export interface MarkersConfig {
   globalThresholdsConfig?: [],
-  colIdx?: number,
+  svgIconRules?: [],
+  thresholds?: Threshold[],
+  locLabelName?: string,
   startId: number,
   direction: "target" | "source" | undefined,
   vertices:  Vertices,
   searchProperties?: string[],
   show: boolean,
+  style: StyleConfig,
   jitterPoints?: boolean;
 }
 
 const defaultOptions: MarkersConfig = {
   startId: 0,
-  direction: "source",
+  direction: "target",
   vertices: {},
   searchProperties: [],
   show: true,
+  style: defaultStyleConfig,
   jitterPoints: false,
 };
 
@@ -63,7 +75,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
    * Function that configures transformation and returns transformed points for mobX
    * @param options
    */
-  pointsUp: async (data: PanelData, options: ExtendMapLayerOptions<MarkersConfig>) => {
+  pointsUp: async (data: PanelData, options: ExtendMapLayerOptions<MarkersConfig>, theme: GrafanaTheme2) => {
     // Assert default values
     const config = {
       ...defaultOptions,
@@ -78,7 +90,6 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
 
     const locField = options.locField
     const parField = options.parField
-    const metricField = options.metricField
     const edgeLabelField = options.edgeLabelField
     const isShowBW = options.isShowBW
     const bandField = options.bandField
@@ -92,12 +103,52 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
     const startId = config.startId
     const direction = config.direction
     const vertices = config.vertices
+    const locLabelName = config.locLabelName
+    const svgIconRules = config.svgIconRules
+    const thresholds = config.thresholds
+
     const colType = MARKERS_LAYER_ID
+    const style = await getStyleConfigState(config.style);
+
+    const alerts = {}
+
+    if (locLabelName && data.annotations?.length && data.annotations[0].fields.length ) {
+      data.annotations.forEach(a => {
+            const annotations = new DataFrameView(a).toArray()
+
+            annotations.forEach(b => {
+              if (b?.text) {
+                b.labels = parseObjFromString(b?.text)
+              }
+              const name = b.labels?.alertname
+              const locName = b.labels?.[locLabelName]
+              if (name) {
+                const alertMap = alerts[name]
+                if (alertMap) {
+                  const alertAnnots = alertMap.get(locName)
+                  if (alertAnnots) {
+                    alertAnnots.push(b)
+                  } else {
+                    alertMap.set(locName, [b])
+                  }
+                } else {
+                  const newAlertMap = new Map()
+                  newAlertMap.set(b.labels[locLabelName], [b])
+                  alerts[name] = newAlertMap
+                }
+              }
+            })
+          }
+      )
+    }
+
 
     // Create a Map to "jitter" geopoints with same coordinates
     const groupedByCoordinates = new Map();
 
     for (const frame of data.series) {
+      style.dims = getStyleDimension(frame, style, theme);
+
       // @ts-ignore
       if ((!frame.refId || options.query && options.query.options === frame.refId || frame.meta?.transformations && frame.meta.transformations?.length>0)) {
         const info = dataFrameToPoints(frame, matchers);
@@ -127,8 +178,6 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
               const bandWidth = bandField && point[bandField]
               const throughput = throughputField && point[throughputField]
 
-              const metric = metricField && point[metricField]
-
               const geometry: Point = {
                 type: 'Point',
                 coordinates: coordinates.slice(),
@@ -144,6 +193,30 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
               const includes = ['ack', 'msg']
 
               const displayProps = (isShowTooltip && displayProperties && displayProperties?.length) ? [...displayProperties, 'ack', 'msg',, 'all_annots'] : includes
+
+              const stValues: any = { ...style.base };
+              const dims = style.dims;
+
+              const metricField = style.config?.color?.field
+              const metric = metricField ? point[metricField] : undefined
+
+              if (dims) {
+                if (dims.color) {
+                  stValues.color = dims.color.get(i);
+                }
+                if (dims.size) {
+                  stValues.size = dims.size.get(i);
+                }
+                if (dims.text) {
+                  stValues.text = dims.text.get(i);
+                }
+                stValues.configExt = style.config
+              }
+
+              const fixedColor = stValues.configExt?.color?.fixed
+              const hexColor = fixedColor && theme.visualization.getColorByName(fixedColor)
+              const defaultColor = hexColor ? hexToRgba(hexColor) : undefined
+
 
               if (locName && (!vertices.hasOwnProperty(locName) || direction === 'source')) {
                 const ptId = startId + counterId /// removes duplicate pts from dataframe
@@ -164,21 +237,41 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
                     groupedByCoordinates.get(coordinatesKey).push({idx: startId + counterId, longitude, latitude});
                   }
 
+                  let annotations: any = []
+                  Object.keys(alerts).forEach(name => {
+                        const alertAnnots = alerts[name].get(locName)
+                        if (alertAnnots?.length) {
+                          annotations.push(alertAnnots)
+                        }
+                      }
+                  )
+
+                  let all_annots
+                  if (annotations.length) {
+                    all_annots = annotations
+                  }
+
+                  const properties = {
+                  ...point,
+                        locName,
+                        edgeField,
+                        style: stValues,
+                  ...(isShowBW && throughput && {bandNumber, bandWidth, throughput}),
+                        aggrType: aggrTypeField && point[aggrTypeField],
+                        metric,
+                        all_annots,
+                        colType,
+                  ...(isShowTooltip && {isShowTooltip}),
+                  ...(displayProps && {displayProps}),
+                  }
+
+                  const threshold = getThresholdForValue(properties, metric, thresholds, defaultColor)
+                  const rulesThreshold = getIconRuleForFeature(properties, svgIconRules)
                   const newFeature: Feature = {
                     id: startId + counterId,
                     type: "Feature",
                     geometry,
-                    properties: {
-                      ...point,
-                      locName,
-                      edgeField,
-                      ...(isShowBW && throughput && {bandNumber, bandWidth, throughput}),
-                      aggrType: aggrTypeField && point[aggrTypeField],
-                      metric,
-                      colType,
-                      ...(isShowTooltip && {isShowTooltip}),
-                      ...(displayProps && {displayProps}),
-                    },
+                    properties: {...properties, threshold: {...threshold, ...rulesThreshold}}
                   }
                   points.push(newFeature)
                   counterId++
@@ -211,7 +304,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
                 const parPath = getParPath(parents, counterId, null, locName)
 
                 if (parPath.filter(el => el && (typeof el === 'string' || Array.isArray(el))).length < 2) {
-                  return;
+                  return ;
                 }
 
                 pushPath(vertices, parPath, direction, lineExtraProps);
@@ -250,8 +343,17 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
 
   // Marker overlay options
   registerOptionsUI: (builder) => {
-
     builder
+        .addCustomEditor({
+          id: 'config.style',
+          path: 'config.style',
+          name: 'Primary metric styles',
+          editor: StyleEditor,
+          settings: {
+            displayRotation: true,
+          },
+          defaultValue: defaultOptions.style,
+        })
       .addBooleanSwitch({
         path: 'config.jitterPoints',
         name: 'Jitter points',

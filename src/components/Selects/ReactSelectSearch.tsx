@@ -2,7 +2,7 @@ import React, {FC, useMemo, useState} from 'react';
 import { observer } from 'mobx-react-lite';
 import {getFirstCoordinate, useRootStore} from '../../utils';
 import {searchProperties as markersSP} from "../../layers/data/markersLayer";
-import {GrafanaTheme2, SelectableValue} from "@grafana/data";
+import {GrafanaTheme2} from "@grafana/data";
 import {css} from "@emotion/css";
 import {Select, useStyles2} from "@grafana/ui";
 import {AggrTypes} from "../../store/interfaces";
