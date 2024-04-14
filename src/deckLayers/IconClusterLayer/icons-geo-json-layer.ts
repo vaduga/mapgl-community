@@ -37,6 +37,9 @@ const IconsGeoJsonLayer = (props) => {
       depthTest: false
     },
         pointType: 'circle+icon+text',
+        updateTriggers: {
+          getIcon: getSvgIcons,
+      },
         getText: (d: any) => d.properties?.style?.text,
 
       // conflicts with collision filter
@@ -112,9 +115,8 @@ const IconsGeoJsonLayer = (props) => {
         },
         //pointRadiusScale: 0.3, //1,
         getIcon: (d) => {
-          const colorCounts = {};
           const {threshold} = d.properties
-          const {color, label, iconName} = threshold
+          const {iconName} = threshold
 
           const svgIcon = getSvgIcons[iconName]
 
@@ -128,12 +130,8 @@ const IconsGeoJsonLayer = (props) => {
               id: iconName
             };
           }
-// single point no customIcon, not a cluster
-          const singleColor = color;
-          colorCounts[singleColor] = {
-            count: 1,
-            label
-          }
+
+          // no custom svg icon loaded
           return {
             url: svgToDataURL(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">  
 </svg>`),
