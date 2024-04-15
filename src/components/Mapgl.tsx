@@ -569,22 +569,7 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
                 lineLayers.push(lines)
             }
 
-            let clusterLayerData;
-
-                clusterLayerData = markers
-                    .map((el): DeckFeature | undefined => {
-                        if (el) {
-                            const pointGeometry = el.geometry as Point;
-                            return {
-                                id: el.id,
-                                coordinates: pointGeometry.coordinates,
-                                properties: el.properties,
-                            };
-                        }
-                        return undefined;
-                    })
-                    .filter((val): val is DeckFeature => val !== undefined);
-
+            let clusterLayerData = markers
             let iconLayerData = markers;
 
             if (iconLayerData?.length) {
@@ -749,7 +734,7 @@ const memoMenu = useMemo(()=> {
                         ref={deckRef}
                         style={{
                             pointerEvents: 'all',
-                            inset: 0,
+                            inset: '0px',
                             // width: '100%',
                             // height: '100%'
                             // zIndex: 1

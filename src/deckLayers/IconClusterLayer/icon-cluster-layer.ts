@@ -18,10 +18,12 @@ type params =
 
 export class IconClusterLayer extends CompositeLayer<params> {
   selectedIp;
-  //isVisible;
+  getisShowPoints
   getSelectedFeIndexes;
   time
   cluster_id
+  id
+
 
   constructor(props) {
     super(props);
@@ -38,7 +40,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
     this.cluster_id = props.hoverCluster?.object?.cluster_id
     this.id = props.id
     this.selectedIp = props.getSelectedIp;
-    //this.isVisible = props.isVisible;
+    this.getisShowPoints = props.getisShowPoints;
     this.getSelectedFeIndexes = props.getSelectedFeIndexes
     this.time = props.time
 
@@ -58,28 +60,25 @@ export class IconClusterLayer extends CompositeLayer<params> {
       });
 
       index.load(
-        props.data.map((d) => {
-          return {
-            geometry: { coordinates: d.coordinates, type: "Point" },
-            properties: {...d.properties, id: d.id },
-          };
-        }),
+        props.data
       );
       this.setState({ index });
     }
 
     const z = Math.floor(this.context.viewport.zoom + 1);
-    if ((rebuildIndex || z !== this.state.z) && z < props.maxZoom) {
+    if ((rebuildIndex || z !== this.state.z)) {  ///&& z < props.maxZoom
       this.setState({
         data: this.state.index.getClusters([-180, -85, 180, 85], z),
         z,
       });
-    } else if (z >= props.maxZoom) {
-      this.setState({
-        data: [],
-        z,
-      })
     }
+
+    // else if (z >= props.maxZoom) {
+    //   this.setState({
+    //     data: [],
+    //     z,
+    //   })
+    // }
   }
 
   getPickingInfo({ info, mode }) {
@@ -101,6 +100,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
     const { data } = this.state;
 
     return new IconLayer(this.getSubLayerProps({
+      //visible: this.getisShowPoints,
       id: colTypes.Points,
       data: data,
       getFilterValue: f => f.properties.cluster ? 1 : 0,
@@ -111,13 +111,12 @@ export class IconClusterLayer extends CompositeLayer<params> {
             getIcon: this.time,
         },
       getIcon: (d) => {
-        const isSelected = this.selectedIp === d.properties?.locName;
         const colorCounts = {};
         const annotStateCounts = {};
         let clPoints = d.properties.cluster
             ? this.state.index.getLeaves(d.properties.cluster_id, 'infinity')
             : '';
-        if (clPoints) {
+        if (Array.isArray(clPoints)) {
 
           let total = 0
           let stTotal = 0
@@ -128,7 +127,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
                 const annots: any = findClosestAnnotations(all_annots, this.time)
                 const annotState = annots?.[0]?.newState
               const state = Object.keys(ALERTING_STATES).find(st=> annotState?.startsWith(st))
-            //    console.log('state', state, closestAnnot?.newState, toJS(closestAnnot), this.time, toJS(all_annots) )
+
              if (state)
               {
 
@@ -173,7 +172,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
 //// blank svg icon if no cluster
 
 return        {
-          url: svgToDataURL(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">  
+          url: svgToDataURL(`<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1">  
 </svg>`),
           width: 1,
           height: 1,

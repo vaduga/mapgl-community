@@ -115,7 +115,6 @@ const Menu = ({setShowCenter, total}) => {
                   <Tooltip content={'swap tar-src'}>
                       <div>
                           <Switch value={getDirection === 'source'}
-                                  checked={getDirection === 'source'}
                                   title="path reverse"
                                   onChange={() => {
                                       setSelectedIp('');
