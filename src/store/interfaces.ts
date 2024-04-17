@@ -55,10 +55,12 @@ export interface Info {
       isShowTooltip?: Boolean;
       colorCounts?: { [color: string]: { count: number, label: string } }
       annotStateCounts?: { [color: string]: { count: number, label: string }}
+      objects?: [],
+      isHull: boolean
     }
     [key: string]: unknown
   } ,
-  objects?: [],
+
   prevHullData?: any,
 
 }
