@@ -6,7 +6,7 @@ function svgToDataURL(svg) {
 
 // SVG donut chart from feature properties
 
-function createDonutChart({colorCounts, annotStateCounts, allTotal, allStTotal, isHoveredCluster}) {
+function createDonutChart({colorCounts, annotStateCounts, allTotal, allStTotal}) {
   const bkColor = DEFAULT_CLUSTER_BK_COLOR
   const stOffsets: number[] = []
   const offsets: number[] = [];
@@ -88,7 +88,7 @@ function createDonutChart({colorCounts, annotStateCounts, allTotal, allStTotal, 
 
   // Drawing outer segments
   let startAngle = 0;
-  if (!isHoveredCluster) {
+
     for (let i = 0; i < counts.length; i++) {
       const endAngle = startAngle + (counts[i].count / total) * 360;
       svg += donutSegment(
@@ -100,14 +100,13 @@ function createDonutChart({colorCounts, annotStateCounts, allTotal, allStTotal, 
       );
       startAngle = endAngle;
     }
-  }
 
   //Drawing central circle filled with default color when no annotations in cluster
 
-    let fillColor = isHoveredCluster ? "rgb(240,240,240,0.1)" : bkColor //total > 1 ? bkColor : colors[0]; // singleColor
+    let fillColor = bkColor //total > 1 ? bkColor : colors[0]; // singleColor
     svg += `<circle cx="${total === 1 ? r * 3 : r}" cy="${total === 1 ? r * 3 : r}" r="${total === 1 ? r0 * 1.35 : r0}" fill="${fillColor}"  />`
 
-  if (!isHoveredCluster) {
+
     // Drawing horizontal stripes inside the donut chart
     let revertOffset = r - r0;
     let stripeOffset = revertOffset
@@ -116,13 +115,11 @@ function createDonutChart({colorCounts, annotStateCounts, allTotal, allStTotal, 
       svg += `<rect x="0" y="${stripeOffset}" width="${w}" height="${stripeHeight}" fill="${stColors[i]}" mask="url(#donutMask)"/>`;
       stripeOffset += stripeHeight;
     }
-  }
 
-  if (!isHoveredCluster) {
     svg += `<text dominant-baseline="central" transform="translate(${r}, ${r})" >
     ${allTotal + allStTotal === 1 ? '' : allTotal + allStTotal}
     </text>`
-  }
+
 
 
   svg += `</svg>`;

@@ -363,9 +363,9 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
 }
 
     useEffect(() => {
-        if (hoverCluster?.objects?.length > 2 || hoverInfo.prevHullData) {
+        if (hoverCluster?.object?.properties?.objects?.length > 2 || hoverInfo.prevHullData) {
 
-            const features = hoverCluster?.objects ?? hoverInfo.prevHullData
+            const features = hoverCluster?.object?.properties?.objects ?? hoverInfo.prevHullData
             const featureCollection = {
                 type: 'FeatureCollection',
                 features,
@@ -469,9 +469,9 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
         const lineLayers: any = []
         const clusters: any = []
 
-        if (hoverCluster?.objects?.length > 2 || hoverInfo.prevHullData) {
+        if (hoverCluster?.object?.properties?.objects?.length > 2 || hoverInfo.prevHullData) {
 
-            const features = hoverCluster?.objects ?? hoverInfo.prevHullData
+            const features = hoverCluster?.object?.properties?.objects ?? hoverInfo.prevHullData
             const featureCollection = {
                 type: 'FeatureCollection',
                 features,

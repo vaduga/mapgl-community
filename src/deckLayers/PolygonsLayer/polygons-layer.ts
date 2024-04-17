@@ -46,9 +46,10 @@ const MyPolygonsLayer = (props) => {
                 return}
 
             const features = hoverCluster?.objects ?? hoverInfo.prevHullData
-            if (hoverCluster?.object) {
-                const { cluster, colorCounts, annotStateCounts } = hoverCluster.object;
-                o.object = { ...o.object, cluster, colorCounts, annotStateCounts };
+            const props = hoverCluster?.object?.properties
+            if (props) {
+                const { cluster, colorCounts, annotStateCounts } = props;
+                o.object.properties = { ...o.object.properties, cluster, colorCounts, annotStateCounts, isHull: true};
             }
 
             flushSync(()=>{setHoverInfo({...o,

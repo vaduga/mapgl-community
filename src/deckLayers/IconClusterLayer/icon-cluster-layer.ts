@@ -18,6 +18,7 @@ type params =
 
 export class IconClusterLayer extends CompositeLayer<params> {
   selectedIp;
+  pickable;
   getisShowPoints
   getSelectedFeIndexes;
   time
@@ -31,7 +32,8 @@ export class IconClusterLayer extends CompositeLayer<params> {
         if (!o.object) {
             props.setHoverInfo({})
             return}
-        if (o.object?.cluster_id !== props.hoverCluster?.object?.cluster_id) {
+        const clusterProps = o.object.properties
+        if (clusterProps.cluster_id !== props.hoverCluster?.object?.cluster_id) {
             props.setHoverCluster(o)
         }
         props.setClosedHint(false);
@@ -40,8 +42,9 @@ export class IconClusterLayer extends CompositeLayer<params> {
     this.cluster_id = props.hoverCluster?.object?.cluster_id
     this.id = props.id
     this.selectedIp = props.getSelectedIp;
-    this.getisShowPoints = props.getisShowPoints;
-    this.getSelectedFeIndexes = props.getSelectedFeIndexes
+    this.pickable = props.pickable
+    //this.getisShowPoints = props.getisShowPoints;
+    //this.getMode = props.getMode
     this.time = props.time
 
   }
@@ -81,16 +84,16 @@ export class IconClusterLayer extends CompositeLayer<params> {
     // }
   }
 
-  getPickingInfo({ info, mode }) {
-    const pickedObject = info.object
-      if (pickedObject) {
-      const cluster_id = pickedObject.properties?.cluster_id
-      if (cluster_id) {
-        pickedObject.properties.expZoom = this.state.index.getClusterExpansionZoom(cluster_id)
-      }
-      }
-    return info;
-  }
+    getPickingInfo({ info, mode }) {
+        const pickedObject = info.object
+        if (pickedObject) {
+            const cluster_id = pickedObject.properties?.cluster_id
+            if (cluster_id) {
+                pickedObject.properties.expZoom = this.state.index.getClusterExpansionZoom(cluster_id)
+            }
+        }
+        return info;
+    }
 
   renderLayers() {
     const { data } = this.state;
@@ -158,14 +161,14 @@ export class IconClusterLayer extends CompositeLayer<params> {
           })
           d.properties.colorCounts = colorCounts
           d.properties.annotStateCounts = annotStateCounts
-          const isHoveredCluster = d.properties.cluster_id === this.cluster_id && false
+
           return {
-            url: svgToDataURL(createDonutChart({colorCounts, annotStateCounts, allTotal: total, allStTotal: stTotal, isHoveredCluster})),
+            url: svgToDataURL(createDonutChart({colorCounts, annotStateCounts, allTotal: total, allStTotal: stTotal})),
             width:  128,
             height: 128,
           };
         }
-//// blank svg icon if no cluster
+//// blank svg icon if no cluster .Fallback if above data-filtering is removed.
 
 return        {
           url: svgToDataURL(`<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1">  
@@ -192,7 +195,7 @@ return        {
         depthTest: false
       },
       extensions: [new DataFilterExtension({filterSize: 1})],
-      pickable: true,
+      pickable: this.pickable,
       autoHighlight: false,
     }))
 

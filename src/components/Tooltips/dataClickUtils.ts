@@ -67,7 +67,7 @@ export const expandTooltip = (info, event, dataClickProps) => {
             setSelectedIp(ip, lineId ? [lineId] : null)
 
 
-        } else if (properties?.objects?.length) {
+        } else if (properties?.objects?.length && !properties?.isHull) {
             // zoom on cluster click
             const featureCollection = {
                 type: 'FeatureCollection',
