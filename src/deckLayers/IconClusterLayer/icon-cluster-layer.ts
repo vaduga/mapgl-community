@@ -82,18 +82,14 @@ export class IconClusterLayer extends CompositeLayer<params> {
   }
 
   getPickingInfo({ info, mode }) {
-    const pickedObject = info.object && info.object.properties;
-    if (pickedObject) {
-      if (pickedObject.cluster) {
-        info.objects = this.state.index
-          .getLeaves(pickedObject.cluster_id, 'infinity')
-          //.map((f) => f.properties);
-        info.expZoom = this.state.index
-            .getClusterExpansionZoom(pickedObject.cluster_id)
+    const pickedObject = info.object
+      if (pickedObject) {
+      const cluster_id = pickedObject.properties?.cluster_id
+      if (cluster_id) {
+        pickedObject.properties.expZoom = this.state.index.getClusterExpansionZoom(cluster_id)
       }
-      info.object = pickedObject;
-    }
-    return info;  // clicked blank space
+      }
+    return info;
   }
 
   renderLayers() {
@@ -117,7 +113,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
             ? this.state.index.getLeaves(d.properties.cluster_id, 'infinity')
             : '';
         if (Array.isArray(clPoints)) {
-
+          d.properties.objects = clPoints
           let total = 0
           let stTotal = 0
           clPoints.forEach((p) => {

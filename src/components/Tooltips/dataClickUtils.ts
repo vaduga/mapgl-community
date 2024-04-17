@@ -32,8 +32,7 @@ export const expandTooltip = (info, event, dataClickProps) => {
     }
 
     if (info.picked) {
-        const properties = info.object?.properties || info.object // cluster/icon datasets
-        const {id} = info.object
+        const {properties, id} = info.object
         const {locName: ip, parPath} = properties
 
         if (ip) {
@@ -68,16 +67,17 @@ export const expandTooltip = (info, event, dataClickProps) => {
             setSelectedIp(ip, lineId ? [lineId] : null)
 
 
-        } else if (info.objects?.length) {
+        } else if (properties?.objects?.length) {
             // zoom on cluster click
             const featureCollection = {
                 type: 'FeatureCollection',
-                features: info.objects,
+                features: properties.objects,
             };
+
             // @ts-ignore
             const center = turfCenter(featureCollection)
             const [longitude, latitude] = center.geometry.coordinates;
-            const expansionZoom = info.expZoom
+            const expansionZoom = properties.expZoom
             const newState = {
                 longitude,
                 latitude,

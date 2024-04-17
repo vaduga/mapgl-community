@@ -46,13 +46,16 @@ export interface Info {
   layer?: any;
   x?: number,
   y?: number,
-  cluster?: boolean,
   object?: {
-    isShowTooltip?: Boolean;
-    cluster?: boolean,
-    colorCounts?: { [color: string]: { count: number, label: string } }
-    annotStateCounts?: { [color: string]: { count: number, label: string }}
-    properties?: any
+    properties: {
+      cluster?: boolean,
+      cluster_id: string,
+      guideType?: string;
+      expZoom?: number;
+      isShowTooltip?: Boolean;
+      colorCounts?: { [color: string]: { count: number, label: string } }
+      annotStateCounts?: { [color: string]: { count: number, label: string }}
+    }
     [key: string]: unknown
   } ,
   objects?: [],

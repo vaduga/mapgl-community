@@ -115,7 +115,7 @@ const {getPoints, switchMap, getisOffset, editCoords} = this.root.pointStore
                   const fixedColor = fromPoint.properties?.style?.configExt?.color?.fixed
                   const hexColor = fixedColor && theme2.visualization.getColorByName(fixedColor)
                   const defaultColor = hexColor ? hexToRgba(hexColor) : undefined
-                  threshold = getThresholdForValue({...fromPoint.properties, ...extraProps}, ownMetric, thresholds, defaultColor)
+                  threshold = isNumber(ownMetric) && getThresholdForValue({...fromPoint.properties, ...extraProps}, ownMetric, thresholds, defaultColor)
               }
 
               const parName = info.parPath?.at(-1) as string //.at(-1) as string

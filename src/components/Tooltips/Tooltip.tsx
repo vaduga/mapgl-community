@@ -227,11 +227,10 @@ if (!Object.entries(info).length) {
         );
     }
 
-    if (!object?.isShowTooltip && !object?.properties?.isShowTooltip && !object?.cluster) {return null}
-    if (object?.cluster) {
+    if (!object?.isShowTooltip && !object?.properties?.isShowTooltip && !object?.properties?.cluster) {return null}
+    if (object?.properties?.cluster) {
         if (isClosed) {return null}
-
-        const { colorCounts, annotStateCounts } = object;
+        const { colorCounts, annotStateCounts } = object.properties;
 
         if (colorCounts) {
             const colorElements = Object.entries(colorCounts).map(([rgba, item], i) => (

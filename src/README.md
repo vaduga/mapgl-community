@@ -11,7 +11,7 @@
 [//]: # ([![Change Log]&#40;https://img.shields.io/badge/Change-log-blue.svg?style=flat&#41;]&#40;https://github.com/vaduga/mapgl-community/blob/main/CHANGELOG.md&#41;)
 [//]: # ([![GitHub]&#40;https://img.shields.io/github/stars/vaduga/mapgl-community?style=social&#41;]&#40;https://github.com/vaduga/mapgl-community&#41;)
 
-extends basemap config options of Grafana Geomap with [Deck.gl](https://deck.gl/) rendering and other features:
+extends base config options of Grafana Geomap with [Deck.gl](https://deck.gl/) rendering and other features:
 * network topology with nodes, links and metrics
 * **new:** alerting states from built-in Grafana alerting rules 
 * path to source as an array of coordinates or refs to intermediate locations. Multi-source supported
