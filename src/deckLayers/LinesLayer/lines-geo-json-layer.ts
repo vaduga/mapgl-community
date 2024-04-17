@@ -21,9 +21,7 @@ export const LinesGeoJsonLayer = (props) => {
         pickable,
         autoHighlight,
         highlightColor,
-        time,
-        options,
-        theme2
+        time
     } = props;
 
     const selectedFeatureIndexes = getSelectedFeIndexes?.get(colTypes.Lines) ?? []

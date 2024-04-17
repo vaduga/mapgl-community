@@ -192,7 +192,7 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
               ///Object.keys(point)?.filter(el=> !excludes.includes(el))  - should i by default show more props?
               const includes = ['ack', 'msg']
 
-              const displayProps = (isShowTooltip && displayProperties && displayProperties?.length) ? [...displayProperties, 'ack', 'msg',, 'all_annots'] : includes
+              const displayProps = (isShowTooltip && displayProperties && displayProperties?.length) ? [...displayProperties, 'ack', 'msg', 'all_annots'] : includes
 
               const stValues: any = { ...style.base };
               const dims = style.dims;

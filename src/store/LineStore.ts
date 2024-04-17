@@ -107,15 +107,15 @@ const {getPoints, switchMap, getisOffset, editCoords} = this.root.pointStore
               // optional
                //const {parPath, properties: extraProps} = s
 
-              const {locName, metric: ptMetric} = fromPoint.properties
+              const {locName} = fromPoint.properties
               const extraProps = info?.lineExtraProps
               let threshold
-              const ownMetric = extraProps?.metric 
+              const ownMetric = extraProps?.metric
               if (ownMetric) {
                   const fixedColor = fromPoint.properties?.style?.configExt?.color?.fixed
                   const hexColor = fixedColor && theme2.visualization.getColorByName(fixedColor)
                   const defaultColor = hexColor ? hexToRgba(hexColor) : undefined
-                  getThresholdForValue({...fromPoint.properties, ...extraProps}, ownMetric, thresholds, defaultColor)
+                  threshold = getThresholdForValue({...fromPoint.properties, ...extraProps}, ownMetric, thresholds, defaultColor)
               }
 
               const parName = info.parPath?.at(-1) as string //.at(-1) as string
