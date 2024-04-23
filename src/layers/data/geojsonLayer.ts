@@ -1,28 +1,31 @@
 import {
     PanelData,
 } from '@grafana/data';
+import {hexToRgba} from '../../utils'
 
-import { getLocationMatchers } from '../../utils/location';
 import {
     ExtendMapLayerRegistryItem,
     ExtendFrameGeometrySourceMode,
     ExtendMapLayerOptions,
 } from '../../extension';
 import {colTypes, Feature} from '../../store/interfaces';
-import {Position} from "geojson";
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
-import {colorToRGBA} from "../../utils";
-import {MARKERS_LAYER_ID} from "./markersLayer";
 import {toJS} from "mobx";
+import {defaultStyleConfig, StyleConfig} from "../../editor/style/types";
+import {StyleEditor} from "../../editor/StyleEditor";
+import {getStyleDimension} from "../../editor/style/geomap_utils";
+import {getStyleConfigState} from "../../editor/style/utils";
 
 export interface GeoJsonConfig {
     startId: number,
     colIdx: number,
+    style: StyleConfig,
 }
 
 const defaultOptions: GeoJsonConfig = {
     startId: 0,
     colIdx: 0,
+    style: defaultStyleConfig,
 };
 export const GEOJSON_LAYER_ID = colTypes.GeoJson;
 
@@ -50,7 +53,7 @@ export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
      * Function that configures transformation and returns transformed points for mobX
      * @param options
      */
-    pointsUp: async (data: PanelData, options: ExtendMapLayerOptions<GeoJsonConfig>) => {
+    pointsUp: async (data: PanelData, options: ExtendMapLayerOptions<GeoJsonConfig>, theme) => {
         // Assert default values
         const config = {
             ...defaultOptions,
@@ -67,9 +70,10 @@ export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
         const displayProperties = options.geojsonDisplayProperties
         const colIdx = config.colIdx
         const colType = GEOJSON_LAYER_ID
-//@ts-ignore
-        const geoColor = colorToRGBA(options?.geojsonColor);
-// @ts-ignore
+        const geoColor = options?.geojsonColor ? hexToRgba(theme.visualization.getColorByName(options?.geojsonColor)) : undefined;
+
+        const style = await getStyleConfigState(config.style);
+        // @ts-ignore
         const thresholds = options?.config?.globalThresholdsConfig
 
 
@@ -91,28 +95,59 @@ export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
                     console.log('no geodata')
                     return []}
 
-                const points: Feature[] = geoData?.features?.map((point, id) => {
-                    const {geometry,properties: props} = point
-                    const metric = metricName && props[metricName]
-                    const threshold = getThresholdForValue(point, metric, thresholds)
-                    const color = metric ? threshold.color : geoColor
+                style.dims = getStyleDimension(undefined, style, theme);
 
-                    return {
-                        id: config.startId+id,
+                const points: Feature[] = geoData?.features?.map((point, i) => {
+                    const {geometry,properties: props} = point
+
+                    const includes = ['ack', 'msg', 'all_annots', 'liveStat']
+                    const displayProps = (isShowTooltip && displayProperties && displayProperties?.length) ? [...displayProperties, 'ack', 'msg', 'all_annots', 'liveStat']  : includes
+                    const stValues: any = { ...style.base };
+                    const dims = style.dims;
+
+                    const metricField = style.config?.color?.field
+                    const metric = metricField ? point[metricField] : undefined
+
+                    if (dims) {
+                        if (dims.color) {
+                            stValues.color = dims.color.get(i);
+                        }
+                        if (dims.size) {
+                            stValues.size = dims.size.get(i);
+                        }
+                        if (dims.text) {
+                            stValues.text = dims.text.get(i);
+                        }
+                        stValues.fixedColor = style.config?.color?.fixed
+                    }
+
+                    const fixedColor = stValues.fixedColor
+                    const hexColor = fixedColor && theme.visualization.getColorByName(fixedColor)
+                    const defaultColor = hexColor ? hexToRgba(hexColor) : undefined
+
+                    const entries = Object.entries(point);
+
+                    const properties = {
+                        ...point,
+                        locName: locName ? props[locName] : undefined,
+                        style: stValues,
+                        colType,
+                        ...(isShowTooltip && {isShowTooltip}),
+                        ...(displayProps && {displayProps}),
+                    }
+
+                    const threshold = getThresholdForValue(properties, metric, thresholds, defaultColor)
+
+                    const newFeature: any = {
+                        id: config.startId+i,
                         type: "Feature",
                         geometry,
-                        properties: {
-                            ...props,
-                            geometry,
-                            locName: locName ? props[locName] : undefined,
-                            metric,
-                            threshold: {...threshold, color},
-                            colIdx,
-                            colType,
-                            isShowTooltip,
-                            displayProps: isShowTooltip ? displayProperties : null
-                        },
-                    }}
+                        properties: {...properties, threshold}
+                    }
+
+                    return newFeature
+
+                    }
                 )
 
                 return points
@@ -123,7 +158,21 @@ export const geojsonLayer: ExtendMapLayerRegistryItem<GeoJsonConfig> = {
 
         return []
     },
+// Geojson layer overlay options
+    registerOptionsUI: (builder) => {
 
+        builder
+            .addCustomEditor({
+                id: 'config.style',
+                path: 'config.style',
+                name: 'Primary metric styles',
+                editor: StyleEditor,
+                settings: {
+                    isAuxLayer: true,
+                    displayRotation: true,
+                },
+                defaultValue: defaultOptions.style,
+            })},
     // fill in the default values
     defaultOptions,
 };

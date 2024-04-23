@@ -1,8 +1,8 @@
 import {
     toRGB4Array, findClosestAnnotations, hexToRgba
 } from '../../utils';
-import { GeoJsonLayer } from '@deck.gl/layers/typed';
-import { CollisionFilterExtension } from '@deck.gl/extensions/typed';
+import { GeoJsonLayer } from '@deck.gl/layers';
+import { CollisionFilterExtension } from '@deck.gl/extensions';
 import {
   ALERTING_STATES
 } from '../../components/defaults';

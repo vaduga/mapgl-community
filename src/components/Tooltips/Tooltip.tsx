@@ -183,7 +183,7 @@ const Tooltip = ({ info, time, timeZone, isClosed = false , setTooltipObject, se
       position: absolute;
       left: ${position - 80}px;
       top: 150px;
-      pointer-events: all;      
+      pointer-events: none;      
       text-align: left;
       user-select: text;
       cursor: text;      
@@ -201,7 +201,9 @@ const Tooltip = ({ info, time, timeZone, isClosed = false , setTooltipObject, se
       opacity: 0.95;
       ul {
       list-style-type: none }
-    `
+    `,
+        turnOnEvents: css`
+        pointer-events: all`
     });
 
     const s = useStyles2(getStyles);
@@ -221,7 +223,7 @@ if (!Object.entries(info).length) {
         return (
             /// Pinned hint
             /// onClick={() => setHoverInfo({})}
-            <div className={s.tooltip} style={{ left: x, top: y }}>
+            <div className={s.tooltip+' '+s.turnOnEvents} style={{ left: x, top: y }}>
                 {renderTooltipContent({object: ghostObject, time, timeZone, pinned: true, getSelectedIp, setSelectedIp, getDirection, setTooltipObject, setClosedHint })}
             </div>
         );

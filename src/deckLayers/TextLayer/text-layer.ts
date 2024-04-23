@@ -1,8 +1,6 @@
 
-import { TextLayer } from '@deck.gl/layers/typed';
-import { CollisionFilterExtension } from '@deck.gl/extensions/typed';
+import { TextLayer } from '@deck.gl/layers';
 import {toRGB4Array} from "../../utils";
-import {RGBAColor} from "@deck.gl/core/utils/color";
 import {colTypes} from "../../store/interfaces";
 import {toJS} from "mobx";
 

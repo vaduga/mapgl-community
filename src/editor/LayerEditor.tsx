@@ -236,14 +236,13 @@ export const LayerEditor: FC<LayerEditorProps> = ({ options, eventBus, onChange,
             },
             showIf: (opts) => opts.isShowBW,
           })
-          .addColorPicker({
-                path: 'geojsonColor',
-                name: 'Default GeoJson Color',
-                description: 'use \'CUSTOM\' tab only to set correct color',
-                //defaultValue :  [255, 0, 0, 1], //DEFAULT_OK_COLOR_RGBA,
-                showIf: (opts) => opts.type === colTypes.GeoJson,
-              }
-          )
+          // .addColorPicker({
+          //       path: 'geojsonColor',
+          //       name: 'Default GeoJson Color',
+          //       //defaultValue :  [255, 0, 0, 1], //DEFAULT_OK_COLOR_RGBA,
+          //       showIf: (opts) => opts.type === colTypes.GeoJson,
+          //     }
+          //)
           .addSelect({
             path: 'geojsonMetricName',
             name: 'Metric name GeoJson property',

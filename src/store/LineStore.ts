@@ -112,7 +112,7 @@ const {getPoints, switchMap, getisOffset, editCoords} = this.root.pointStore
               let threshold
               const ownMetric = extraProps?.metric
               if (ownMetric) {
-                  const fixedColor = fromPoint.properties?.style?.configExt?.color?.fixed
+                  const fixedColor = fromPoint.properties?.style?.fixedColor
                   const hexColor = fixedColor && theme2.visualization.getColorByName(fixedColor)
                   const defaultColor = hexColor ? hexToRgba(hexColor) : undefined
                   threshold = isNumber(ownMetric) && getThresholdForValue({...fromPoint.properties, ...extraProps}, ownMetric, thresholds, defaultColor)

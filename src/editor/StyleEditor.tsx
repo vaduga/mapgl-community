@@ -33,6 +33,7 @@ import { styleUsesText } from './style/utils';
 export interface StyleEditorOptions {
     layerInfo?: any;
     simpleFixedValues?: boolean;
+    isAuxLayer?: boolean;
     displayRotation?: boolean;
     hideSymbol?: boolean;
     frameMatcher?: FrameMatcher;
@@ -42,6 +43,8 @@ type Props = StandardEditorProps<StyleConfig, StyleEditorOptions>;
 
 export const StyleEditor = (props: Props) => {
     const { value, onChange, item } = props;
+    // @ts-ignore
+    const {isAuxLayer} = item.settings
     const context = useMemo(() => {
         if (!item.settings?.frameMatcher) {
             return props.context;
@@ -116,7 +119,7 @@ export const StyleEditor = (props: Props) => {
 
     return (
         <>
-            <Field label={'Circle size'}>
+            {!isAuxLayer && <Field label={'Circle size'}>
                 <ScaleDimensionEditor
                     value={value?.size ?? defaultStyleConfig.size}
                     context={context}
@@ -125,14 +128,14 @@ export const StyleEditor = (props: Props) => {
                         {
                             settings: {
                                 min: 1,
-                                max: 100,
+                                max: 500,
                                 filteredFieldType: 'number'
                             },
                         } as StandardEditorsRegistryItem
                     }
                 />
-            </Field>
-            <Field label={'Circle color'}>
+            </Field>}
+            <Field label={isAuxLayer ? 'Fill color' : 'Circle color'}>
                 <ColorDimensionEditor
                     value={value?.color ?? defaultStyleConfig.color}
                     context={context}
@@ -162,14 +165,14 @@ export const StyleEditor = (props: Props) => {
                     }
                 />
             </Field>
-            <Field label={'Text label'}>
+            {!isAuxLayer && <Field label={'Text label'}>
                 <TextDimensionEditor
                     value={value?.text ?? defaultTextConfig}
                     context={context}
                     onChange={onTextChange}
                     item={{} as StandardEditorsRegistryItem}
                 />
-            </Field>
+            </Field>}
 
             {hasTextLabel && (
                 <>

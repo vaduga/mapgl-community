@@ -2,12 +2,11 @@ import {
     toRGB4Array,
     getColorByMetric, findClosestAnnotations, hexToRgba,
 } from '../../utils';
-import { GeoJsonLayer } from '@deck.gl/layers/typed';
+import { GeoJsonLayer } from '@deck.gl/layers';
 import {toJS} from "mobx";
 import {flushSync} from "react-dom";
 import {Feature, GeoJsonProperties, Geometry, Point} from "geojson";
 import {AggrTypes, colTypes, PointFeatureProperties} from "../../store/interfaces";
-import {RGBAColor} from "@deck.gl/core/utils/color";
 import {ALERTING_STATES} from "../../components/defaults";
 
 

@@ -1,7 +1,6 @@
 import {toRGB4Array} from '../../utils';
-import { GeoJsonLayer } from '@deck.gl/layers/typed';
+import { GeoJsonLayer } from '@deck.gl/layers';
 import {colTypes} from "../../store/interfaces";
-import {RGBAColor} from "@deck.gl/core/utils/color";
 
 const MyGeoJsonLayer = (props) => {
     const {
@@ -23,12 +22,19 @@ const MyGeoJsonLayer = (props) => {
         filled: true,
         extruded: true,
         pointType: 'circle',
-        lineWidthScale: 20,
+        //lineWidthScale: 20,
         lineWidthMinPixels: 2,
         getFillColor: (d: any) => {
             const {threshold} = d.properties
             const {color} = threshold
-            return toRGB4Array(color)
+
+            const opacity = d.properties?.style?.opacity
+            const rgb4 = toRGB4Array(color)
+            if (opacity) {
+                rgb4[3] = Math.round(opacity * 255);
+            }
+            return rgb4
+
         },
         getLineColor: (d: any) => {
             const {threshold} = d.properties

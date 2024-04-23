@@ -245,11 +245,11 @@ const textCollection: any = []
     return textCollection.reduce((acc, curr)=> acc.concat(curr), [])
 }
 
-type CoordsAndColor = [Position[], string]
+type CoordsAndProps = [Position[], string, number]
 function genParentLine({features:lineFeatures, switchMap, lineSwitchMap, getisOffset, time
-}): [DeckLine<Geometry, PointFeatureProperties>[], CoordsAndColor[]] {
+}): [DeckLine<Geometry, PointFeatureProperties>[], CoordsAndProps[]] {
 if (!lineFeatures || !Array.isArray(lineFeatures) || lineFeatures?.length < 1) { return [[],[]]}
-    const lineStringCoords: CoordsAndColor[] = [];
+    const lineStringCoords: CoordsAndProps[] = [];
     const pLinePoints = [...lineFeatures]
 
     lineFeatures.forEach((lFeature, pathIdx ) => {
@@ -267,9 +267,10 @@ if (!lineFeatures || !Array.isArray(lineFeatures) || lineFeatures?.length < 1) {
         const lastSegment = coords[coords.length-1]
         const coords2 = lastSegment?.at(-1)
         const color = coords1 && coords2 && lFeature?.properties?.threshold?.color
+        const lineWidth = coords1 && coords2 && lFeature?.properties?.threshold?.lineWidth
 if (coords1 && coords2 && color)
         {
-            lineStringCoords.push([[coords1, coords2], color]);
+            lineStringCoords.push([[coords1, coords2], color, lineWidth]);
         }
         return
     }
@@ -285,7 +286,6 @@ if (coords1 && coords2 && color)
         let fromPrevToCurr: (string|Position)[] | null = null
         let fromCurrToPrev: (string|Position)[] | null = null
         if (pSources?.length>0 && prevPSources?.length>0) {
-
                 pSources.forEach((info, i) => {
                     const {parPath: currFeaturePath} = info
                     prevPSources.forEach((prevInfo, k) => {
@@ -312,11 +312,13 @@ if (coords1 && coords2 && color)
         const feature = typeof p === 'string' ? switchMap?.get(p) : null;   // id=0 is reserve for main real point
             pLinePoints.push(feature);
             let addFeatIconColor = feature?.properties?.threshold?.color
+            let addFeatLineWidth = feature?.properties?.threshold?.lineWidth
             const currType = feature?.properties.aggrType;
 
         const prevFeature = typeof prevP === 'string' ? switchMap?.get(prevP): null;
         const prevType = prevFeature?.properties?.aggrType
         let addPrevFeatIconColor = prevFeature?.properties?.threshold?.color
+        let addPrevFeatLineWidth = prevFeature?.properties?.threshold?.lineWidth
 
         if (
             (typeof p === 'string' && typeof prevP === 'string') ||
@@ -326,10 +328,10 @@ if (coords1 && coords2 && color)
             if (AggrTypes.includes(prevType) &&
                 AggrTypes.includes(currType)
             ) {
-
                 if (fromPrevToCurr || fromCurrToPrev) {
                     const path = fromPrevToCurr ? fromPrevToCurr : fromCurrToPrev ?? []
                     const iconColor = addPrevFeatIconColor ? addPrevFeatIconColor : addFeatIconColor
+                    const lineWidth = addPrevFeatLineWidth ? addPrevFeatLineWidth : addFeatLineWidth
                     const addon: Position[] = []
                         path?.forEach((a) => {
 
@@ -352,17 +354,18 @@ if (coords1 && coords2 && color)
                         return
                     })
                     //console.log('addon', addon)
-                    lineStringCoords.push([addon, iconColor ])  //?? lFeature.properties?.threshold?.color
+                    lineStringCoords.push([addon, iconColor, lineWidth])  //?? lFeature.properties?.threshold?.color
                     if (path) {
                         continue
                     }
                 }
 
             }
-            let featIconColor, prevFeatIconColor
+            let featIconColor, featLineWidth, prevFeatIconColor, prevFeatLineWidth
             if (typeof p === 'string') {
                 const feature = lineSwitchMap?.get(p) ?? lineSwitchMap?.get(p+parDelimiter+0);
                 featIconColor = feature?.properties?.threshold?.color
+                featLineWidth = feature?.properties?.threshold?.lineWidth
                 const geometry = feature?.geometry as Point;
                 coordinates = (geometry?.coordinates?.length > 0)
                     ? geometry.coordinates[0][0] : switchMap?.get(p)?.geometry.coordinates ?? null
@@ -370,11 +373,11 @@ if (coords1 && coords2 && color)
                 coordinates = p
             }
 
-
             let prevCoordinates;
             if (typeof prevP === 'string') {
                 const prevFeature = lineSwitchMap?.get(prevP) ?? lineSwitchMap?.get(prevP+parDelimiter+0);
                 prevFeatIconColor = prevFeature?.properties?.threshold?.color
+                prevFeatLineWidth = prevFeature?.properties?.threshold?.lineWidth
                 const prevGeometry = prevFeature?.geometry as Point;
                 prevCoordinates = (prevGeometry && prevGeometry.coordinates && prevGeometry.coordinates.length > 0)
                     ? prevGeometry.coordinates[0][0] : switchMap?.get(prevP)?.geometry.coordinates ?? null
@@ -383,13 +386,11 @@ if (coords1 && coords2 && color)
             }
 
             lineStringCoords.push([[prevCoordinates, coordinates], (AggrTypes.includes(prevType) &&
-            AggrTypes.includes(currType)) ? prevFeatIconColor : lFeature?.properties?.threshold?.color]);
+            AggrTypes.includes(currType)) ? prevFeatIconColor : lFeature?.properties?.threshold?.color, (AggrTypes.includes(prevType)) ? prevFeatLineWidth : lFeature?.properties?.threshold?.lineWidth]);
         }
     }
 })
         return [pLinePoints.filter(el=> el !== null), lineStringCoords.filter(el=> el[0].every(l=> l !== null))]
-
-
 }
 
 function genExtendedPLine({features, switchMap, lineSwitchMap, getisOffset, time}) {

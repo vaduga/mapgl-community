@@ -31,13 +31,14 @@ export class IconClusterLayer extends CompositeLayer<params> {
     this.onHover = (o) => {
         if (!o.object) {
             props.setHoverInfo({})
-            return}
+            return false}
         const clusterProps = o.object.properties
         if (clusterProps.cluster_id !== props.hoverCluster?.object?.cluster_id) {
             props.setHoverCluster(o)
         }
         props.setClosedHint(false);
         props.setHoverInfo(o)
+        return true
     }
     this.cluster_id = props.hoverCluster?.object?.cluster_id
     this.id = props.id
@@ -70,7 +71,9 @@ export class IconClusterLayer extends CompositeLayer<params> {
 
     const z = Math.floor(this.context.viewport.zoom + 1);
     if ((rebuildIndex || z !== this.state.z)) {  ///&& z < props.maxZoom
-      this.setState({
+
+        this.setState({
+            // @ts-ignore
         data: this.state.index.getClusters([-180, -85, 180, 85], z),
         z,
       });
@@ -89,6 +92,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
         if (pickedObject) {
             const cluster_id = pickedObject.properties?.cluster_id
             if (cluster_id) {
+                // @ts-ignore
                 pickedObject.properties.expZoom = this.state.index.getClusterExpansionZoom(cluster_id)
             }
         }
@@ -112,7 +116,9 @@ export class IconClusterLayer extends CompositeLayer<params> {
       getIcon: (d) => {
         const colorCounts = {};
         const annotStateCounts = {};
-        let clPoints = d.properties.cluster
+
+          let clPoints = d.properties.cluster
+              // @ts-ignore
             ? this.state.index.getLeaves(d.properties.cluster_id, 'infinity')
             : '';
         if (Array.isArray(clPoints)) {

@@ -17,7 +17,6 @@ import {StyleEditor} from "../../editor/StyleEditor";
 import {defaultStyleConfig, StyleConfig} from "../../editor/style/types";
 import {getStyleConfigState} from "../../editor/style/utils";
 import {getStyleDimension} from "../../editor/style/geomap_utils";
-import {isNumber} from "lodash";
 import {getThresholdForValue} from "../../editor/Thresholds/data/threshold_processor";
 import {getIconRuleForFeature} from "../../editor/IconsSVG/data/rules_processor";
 import {Threshold} from "../../editor/Thresholds/threshold-types";
@@ -210,10 +209,11 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
                 if (dims.text) {
                   stValues.text = dims.text.get(i);
                 }
-                stValues.configExt = style.config
               }
 
-              const fixedColor = stValues.configExt?.color?.fixed
+              const fixedColor = style.config?.color?.fixed
+              stValues.fixedColor = fixedColor
+
               const hexColor = fixedColor && theme.visualization.getColorByName(fixedColor)
               const defaultColor = hexColor ? hexToRgba(hexColor) : undefined
 
@@ -258,7 +258,6 @@ export const markersLayer: ExtendMapLayerRegistryItem<MarkersConfig> = {
                         style: stValues,
                   ...(isShowBW && throughput && {bandNumber, bandWidth, throughput}),
                         aggrType: aggrTypeField && point[aggrTypeField],
-                        metric,
                         all_annots,
                         colType,
                   ...(isShowTooltip && {isShowTooltip}),

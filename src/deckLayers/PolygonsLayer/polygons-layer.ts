@@ -1,5 +1,5 @@
 import {toRGB4Array} from '../../utils';
-import {PolygonLayer} from '@deck.gl/layers/typed';
+import {PolygonLayer} from '@deck.gl/layers';
 import {colTypes} from "../../store/interfaces";
 import {flushSync} from "react-dom";
 import {DARK_HULL_HIGHLIGHT, LIGHT_HULL_HIGHLIGHT} from "../../components/defaults";
@@ -63,7 +63,7 @@ const MyPolygonsLayer = (props) => {
             setTooltipObject({});
         },
         selectedFeatureIndexes: getSelectedFeIndexes?.[colTypes.Polygons] ?? [],
-        getPolygon: d => {
+        getPolygon: (d: any) => {
             return d.geometry.coordinates
         },
         getIcon: () => 'marker',
@@ -77,12 +77,24 @@ const MyPolygonsLayer = (props) => {
 
             const {threshold} = d.properties
             const {color} = threshold
-            return toRGB4Array(color)
+
+            const opacity = d.properties?.style?.opacity
+            const rgb4 = toRGB4Array(color)
+            if (opacity) {
+                rgb4[3] = Math.round(opacity * 255);
+            }
+
+            return rgb4
         },
         extruded: false,
         // lineWidthMaxPixels: 1,
         // getLineWidth: 1,
-        // getLineColor: [42, 89, 191],
+        getLineColor: (d)=>{
+            const {threshold} = d.properties
+            const {color} = threshold
+            const rgb4 = toRGB4Array(color)
+            return rgb4
+        },
         getLineWidth: (d)=> d.properties?.threshold?.lineWidth,
     });
 };

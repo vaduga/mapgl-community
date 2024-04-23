@@ -1,5 +1,5 @@
 import {toRGB4Array} from '../../utils';
-import { IconLayer } from '@deck.gl/layers/typed';
+import { IconLayer } from '@deck.gl/layers';
 import {toJS} from "mobx";
 import iconAtlas from '/img/location-icon-atlas.png';
 import { colTypes } from '../../store/interfaces';

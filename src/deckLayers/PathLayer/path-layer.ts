@@ -1,13 +1,13 @@
-import {makeColorDarker, makeColorLighter, toRGB4Array} from '../../utils';
-import { PathLayer } from '@deck.gl/layers/typed';
+import {findClosestAnnotations, makeColorDarker, makeColorLighter, toRGB4Array} from '../../utils';
+import { PathLayer } from '@deck.gl/layers';
 import {DeckLine, Feature, colTypes} from "../../store/interfaces";
-import {SEL_LINE_WIDTH_MULTIPLIER} from "../../components/defaults";
+import {ALERTING_STATES, SEL_LINE_WIDTH_MULTIPLIER} from "../../components/defaults";
 import {PathStyleExtension} from "@deck.gl/extensions";
 import {toJS} from "mobx";
 
 // @ts-ignore
 function MyPathLayer(props)   {
-    const {onHover, highlightColor, getSelFeature, data, type, theme2 } = props
+    const {onHover, highlightColor, getSelFeature, data, type, theme2, time } = props
 
     // @ts-ignore
     return new PathLayer({
@@ -50,20 +50,20 @@ function MyPathLayer(props)   {
                     color =  theme2.isDark ? makeColorLighter(d[1]) : makeColorDarker(d[1])//d[1] // color
                     break
                 default:
-                    color =  d.properties?.threshold?.color
+                    const {threshold} = d.properties
+                    color = threshold.color
+
             }
-            return Array.from(toRGB4Array(color)) as | [number, number, number]
-                | [number, number, number, number]
+            return toRGB4Array(color)
         },
         widthScale: 1.1,
         getWidth: (d) => {
-            const base = getSelFeature?.properties?.threshold?.lineWidth * SEL_LINE_WIDTH_MULTIPLIER
             switch (type) {
                 case 'par-path-extension':
-                    return base / 10
+                    return d[2] * SEL_LINE_WIDTH_MULTIPLIER
                     break
                 case 'par-path-line':
-                    return base
+                    return d[2] * SEL_LINE_WIDTH_MULTIPLIER
                     break
                 default:
                     return d?.properties?.threshold?.lineWidth ?? 1

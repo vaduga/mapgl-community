@@ -24,7 +24,7 @@ import {
 
 import {Tooltip} from './Tooltips/Tooltip';
 import {Point} from "geojson";
-import {WebMercatorViewport} from "@deck.gl/core/typed";
+import {WebMercatorViewport} from "@deck.gl/core";
 import {geomapLayerRegistry} from "../layers/registry";
 import {MapCenterID} from "../view";
 import {LineTextLayer} from "../deckLayers/TextLayer/text-layer";
