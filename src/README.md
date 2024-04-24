@@ -13,7 +13,7 @@
 
 extends base config options of Grafana Geomap with [Deck.gl](https://deck.gl/) rendering and other features:
 * network topology with nodes, links and metrics
-* **new:** alerting states from built-in Grafana alerting rules 
+* **new:** plot alert states from built-in Grafana alerting rules
 * path to source as an array of coordinates or refs to intermediate locations. Multi-source supported
 * bidirectional tar-src paths for selected node. Declare dashboard variable 'locRole' to save state
 * donut chart clusters based on the number of color labels typed by metric thresholds and overrides for custom properties
@@ -23,7 +23,7 @@ extends base config options of Grafana Geomap with [Deck.gl](https://deck.gl/) r
 * aggregation typed nodes and offset for overlapping lines.
 * stat1/stat2 switch to show straight path with secondary metric as a label
 * optimized rendering of large datasets using WebGL
-* multi layers support of Polygon, GeoJson from url, LineString layers 
+* multi layers support of Polygon, GeoJson from url, LineString layers
 * tooltips with customizable fields
 * customizable nodes search
 

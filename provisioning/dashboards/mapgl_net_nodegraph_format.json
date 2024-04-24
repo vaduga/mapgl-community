@@ -1,0 +1,464 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "b6c1a5f4-6225-4788-8ed6-540fb078e8bc"
+      },
+      "gridPos": {
+        "h": 22,
+        "w": 19,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "basemap": {
+          "config": {},
+          "type": "default"
+        },
+        "common": {
+          "isShowLegend": true,
+          "locLabelName": "instance"
+        },
+        "dataLayers": [
+          {
+            "aggrTypeField": "aggrType",
+            "bandNumber": 1000000,
+            "config": {
+              "colIdx": 0,
+              "direction": "source",
+              "jitterPoints": true,
+              "searchProperties": [],
+              "show": true,
+              "startId": 0,
+              "style": {
+                "color": {
+                  "field": "metricReduced",
+                  "fixed": "dark-green"
+                },
+                "size": {
+                  "field": "bps",
+                  "fixed": 5,
+                  "max": 20,
+                  "min": 5
+                },
+                "text": {
+                  "field": "target",
+                  "fixed": "",
+                  "mode": "field"
+                }
+              },
+              "vertices": {}
+            },
+            "displayProperties": [
+              "city",
+              "model",
+              "aggrType",
+              "metricReduced",
+              "bps"
+            ],
+            "edgeLabelField": "bps",
+            "isShowBW": true,
+            "isShowTooltip": true,
+            "locField": "target",
+            "location": {
+              "geojson": "geojson",
+              "mode": "geojson"
+            },
+            "metricField": "metricReduced",
+            "metricName": "metric",
+            "name": "Switches",
+            "parField": "srcPath",
+            "parentName": "source",
+            "searchProperties": [
+              "city"
+            ],
+            "throughputField": "bps",
+            "type": "markers"
+          }
+        ],
+        "globalThresholdsConfig": [
+          {
+            "color": "rgb(224, 47, 68)",
+            "label": "down",
+            "lineWidth": 0.6,
+            "overrides": [],
+            "value": 0
+          },
+          {
+            "color": "rgb(50, 116, 217)",
+            "label": "node",
+            "lineWidth": 0.6,
+            "overrides": [
+              {
+                "name": "aggrType",
+                "type": "string",
+                "value": "node, connector"
+              }
+            ],
+            "value": 1
+          },
+          {
+            "color": "rgb(65, 41, 245)",
+            "label": "upstream",
+            "lineWidth": 0.6,
+            "overrides": [
+              {
+                "name": "target",
+                "type": "string",
+                "value": "TTK"
+              },
+              {
+                "name": "aggrType",
+                "type": "string",
+                "value": "node"
+              }
+            ],
+            "value": 1
+          },
+          {
+            "color": "rgb(143, 59, 184)",
+            "label": "connector",
+            "lineWidth": 0.6,
+            "overrides": [
+              {
+                "name": "aggrType",
+                "type": "string",
+                "value": "connector"
+              }
+            ],
+            "value": 1
+          },
+          {
+            "color": "rgb(86, 166, 75)",
+            "label": "up",
+            "lineWidth": 0.6,
+            "overrides": [],
+            "value": 1
+          },
+          {
+            "color": "rgba(210, 118, 43, 0.72)",
+            "label": "exception color",
+            "lineWidth": 0.6,
+            "overrides": [
+              {
+                "name": "target",
+                "type": "string",
+                "value": "U29"
+              }
+            ],
+            "value": 1
+          },
+          {
+            "color": "rgba(92, 170, 204, 0.92)",
+            "label": "info",
+            "lineWidth": 0.6,
+            "overrides": [],
+            "value": 2
+          },
+          {
+            "color": "rgb(224, 180, 0)",
+            "label": "danger",
+            "lineWidth": 0.6,
+            "overrides": [],
+            "value": 3
+          }
+        ],
+        "svgIconsConfig": [
+          {
+            "iconName": "cisco/server-switch",
+            "iconRuleCollapsed": true,
+            "iconSize": 20,
+            "iconVOffset": -5,
+            "overrides": [
+              {
+                "name": "aggrType",
+                "type": "string",
+                "value": "node"
+              }
+            ]
+          },
+          {
+            "iconName": "networking/atm-switch",
+            "iconRuleCollapsed": true,
+            "iconSize": 20,
+            "iconVOffset": -5,
+            "overrides": [
+              {
+                "name": "aggrType",
+                "type": "string",
+                "value": "node"
+              },
+              {
+                "name": "target",
+                "type": "string",
+                "value": "U24, U27, U42, U16, U13"
+              }
+            ]
+          }
+        ],
+        "view": {
+          "id": "auto",
+          "lat": 0,
+          "lon": 0,
+          "zoom": 1
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "b6c1a5f4-6225-4788-8ed6-540fb078e8bc"
+          },
+          "queryText": "select * from nodes_nodegraph_ds;",
+          "queryType": "table",
+          "rawQueryText": "select * from nodes_nodegraph_ds;",
+          "refId": "nodes",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        },
+        {
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "b6c1a5f4-6225-4788-8ed6-540fb078e8bc"
+          },
+          "hide": false,
+          "queryText": "select * from edges_nodegraph_ds;",
+          "queryType": "table",
+          "rawQueryText": "select * from edges_nodegraph_ds;",
+          "refId": "edges",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Panel Title",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "target",
+            "mode": "outerTabular"
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "metricReduced",
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "metric 1",
+                "metric 2"
+              ],
+              "reducer": "lastNotNull"
+            }
+          }
+        }
+      ],
+      "type": "vaduga-mapgl-panel"
+    },
+    {
+      "datasource": {
+        "type": "marcusolsson-static-datasource",
+        "uid": "d02c7074-3fbc-4174-ad36-f549f4cd4174"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false,
+            "minWidth": 50
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "variable"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 91
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 19,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "marcusolsson-static-datasource",
+            "uid": "d02c7074-3fbc-4174-ad36-f549f4cd4174"
+          },
+          "frame": {
+            "fields": [
+              {
+                "config": {},
+                "name": "variable",
+                "type": "string",
+                "values": [
+                  "target",
+                  "source",
+                  "locRole"
+                ]
+              },
+              {
+                "config": {},
+                "name": "value",
+                "type": "string",
+                "values": [
+                  "$target",
+                  "$source",
+                  "$locRole"
+                ]
+              }
+            ],
+            "meta": {}
+          },
+          "refId": "A"
+        }
+      ],
+      "transparent": true,
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "target",
+          "value": "target"
+        },
+        "hide": 2,
+        "includeAll": false,
+        "multi": false,
+        "name": "locRole",
+        "options": [
+          {
+            "selected": true,
+            "text": "target",
+            "value": "target"
+          },
+          {
+            "selected": false,
+            "text": "source",
+            "value": "source"
+          }
+        ],
+        "query": "target, source",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {},
+        "hide": 2,
+        "name": "target",
+        "options": [],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {},
+        "hide": 2,
+        "name": "source",
+        "options": [],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {},
+        "hide": 2,
+        "name": "lineIds",
+        "options": [],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Mapgl network nodeGraph format",
+  "uid": "d3492b26-a612-4130-9a83-b63205950e34",
+  "version": 3,
+  "weekStart": ""
+}

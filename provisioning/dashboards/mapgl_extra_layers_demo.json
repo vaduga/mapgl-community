@@ -27,7 +27,7 @@
         "uid": "b6c1a5f4-6225-4788-8ed6-540fb078e8bc"
       },
       "gridPos": {
-        "h": 25,
+        "h": 22,
         "w": 19,
         "x": 0,
         "y": 0
@@ -39,6 +39,7 @@
           "type": "default"
         },
         "common": {
+          "isShowLegend": true,
           "locLabelName": "instance"
         },
         "dataLayers": [
@@ -191,6 +192,6 @@
   "timezone": "",
   "title": "Mapgl extra layers: LineString, Polygon, GeoJson",
   "uid": "cc774c67-a0ea-4d2d-8c1d-adc2dcd6f869",
-  "version": 2,
+  "version": 7,
   "weekStart": ""
 }

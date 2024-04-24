@@ -13,7 +13,7 @@
 
 extends base config options of Grafana Geomap with [Deck.gl](https://deck.gl/) rendering and other features:
 * network topology with nodes, links and metrics
-* **new:** alerting states from built-in Grafana alerting rules
+* **new:** plot alert states from built-in Grafana alerting rules
 * path to source as an array of coordinates or refs to intermediate locations. Multi-source supported
 * bidirectional tar-src paths for selected node. Declare dashboard variable 'locRole' to save state
 * donut chart clusters based on the number of color labels typed by metric thresholds and overrides for custom properties
@@ -27,7 +27,6 @@ extends base config options of Grafana Geomap with [Deck.gl](https://deck.gl/) r
 * tooltips with customizable fields
 * customizable nodes search
 
-<br/>
 Explore panel and datasource config examples at the [Playground](https://play.mapgl.org)<br/>
 [Tutorial: Observing Zabbix events on a geospatial map](https://mapgl.org/zabbix)<br/>
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.0
+* cluster legend-filter
+* fullscreen and compass widgets
+* migrate to deck.gl 9 (with WebGPU support in the near future) 
+
 ## 1.5.0 
 * point circle and text label dimensions
 * svg icon rules collapsible + resource picker 
