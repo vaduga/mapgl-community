@@ -124,7 +124,7 @@ function makeColorLighter(color) {
         colorArr.push('1');
     }
     const lightenedColorArr = colorArr.map((value, index) => {
-        if (index === 3) return Math.min(Number(value), 1); // don't lighten opacity
+        if (index === 3) {return Math.min(Number(value), 1);} // don't lighten opacity
         return Math.min(Number(value) + 45, 255); // lighten RGB values
     });
     return `rgba(${lightenedColorArr.join(", ")})`
@@ -139,7 +139,7 @@ function makeColorDarker(color) {
         colorArr.push('1');
     }
     const darkenedColorArr = colorArr.map((value, index) => {
-        if (index === 3) return Math.min(Number(value), 1); // don't darken opacity
+        if (index === 3) {return Math.min(Number(value), 1);} // don't darken opacity
         return Math.max(Number(value) - 45, 0); // darken RGB values
     });
     return `rgba(${darkenedColorArr.join(", ")})`;
