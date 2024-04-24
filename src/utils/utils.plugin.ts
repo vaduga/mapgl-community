@@ -116,17 +116,33 @@ function toHex(rgbaColor) {
 }
 
 function makeColorLighter(color) {
-    if (!color) {return `rgb(${[100,100,0].join(", ")})`;}
-    const colorArr = color.match(/\d+/g); // extract the RGB values as an array
-    const lightenedColorArr = colorArr.map(value => Math.min(Number(value) + 45, 255)); // add 45 to each value, ensuring the result is at most 255
-    return `rgb(${lightenedColorArr.join(", ")})`; // convert the array back to a string and return it
+    if (!color) {
+        return `rgba(${[100, 100, 0, 1].join(", ")})`; // default to opaque yellow if color is not provided
+    }
+    const colorArr = color.match(/\d+(\.\d+)?/g);
+    if (colorArr.length === 3) {
+        colorArr.push('1');
+    }
+    const lightenedColorArr = colorArr.map((value, index) => {
+        if (index === 3) return Math.min(Number(value), 1); // don't lighten opacity
+        return Math.min(Number(value) + 45, 255); // lighten RGB values
+    });
+    return `rgba(${lightenedColorArr.join(", ")})`
 }
 
 function makeColorDarker(color) {
-    if (!color) {return `rgb(${[100,100,0].join(", ")})`;}
-    const colorArr = color.match(/\d+/g); // extract the RGB values as an array
-    const lightenedColorArr = colorArr.map(value => Math.max(Number(value) - 45, 0)); // deduct 25 from each value, ensuring the result is at most 255
-    return `rgb(${lightenedColorArr.join(", ")})`; // convert the array back to a string and return it
+    if (!color) {
+        return `rgba(${[100, 100, 0, 1].join(", ")})`; // default to opaque yellow if color is not provided
+    }
+    const colorArr = color.match(/\d+(\.\d+)?/g);
+    if (colorArr.length === 3) { // if only RGB values are provided, assume opacity 1 (fully opaque)
+        colorArr.push('1');
+    }
+    const darkenedColorArr = colorArr.map((value, index) => {
+        if (index === 3) return Math.min(Number(value), 1); // don't darken opacity
+        return Math.max(Number(value) - 45, 0); // darken RGB values
+    });
+    return `rgba(${darkenedColorArr.join(", ")})`;
 }
 
 function invertColor(color){
