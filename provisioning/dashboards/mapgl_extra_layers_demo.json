@@ -46,8 +46,19 @@
             "config": {
               "colIdx": 0,
               "globalThresholdsConfig": [],
-              "startId": 0
+              "startId": 0,
+              "style": {
+                "color": {
+                  "field": "metric",
+                  "fixed": "dark-green"
+                },
+                "opacity": 0.2
+              }
             },
+            "displayProperties": [
+              "metric",
+              "geojson"
+            ],
             "isShowTooltip": true,
             "locField": "name",
             "location": {
@@ -66,8 +77,18 @@
             "config": {
               "colIdx": 0,
               "globalThresholdsConfig": [],
-              "startId": 0
+              "startId": 0,
+              "style": {
+                "color": {
+                  "fixed": "#f2cc0cc4"
+                },
+                "opacity": 0.4
+              }
             },
+            "displayProperties": [
+              "metric",
+              "geojson"
+            ],
             "isShowTooltip": true,
             "locField": "name",
             "location": {
@@ -85,7 +106,13 @@
           {
             "config": {
               "colIdx": 0,
-              "startId": 0
+              "startId": 0,
+              "style": {
+                "color": {
+                  "fixed": "semi-dark-orange"
+                },
+                "opacity": 0.3
+              }
             },
             "geojsonColor": "#b7b840",
             "geojsonLocName": "name",
@@ -98,7 +125,15 @@
             "type": "geojson"
           }
         ],
-        "globalThresholdsConfig": [],
+        "globalThresholdsConfig": [
+          {
+            "color": "rgb(163, 82, 204)",
+            "label": "",
+            "lineWidth": 0.3,
+            "overrides": [],
+            "value": 2
+          }
+        ],
         "view": {
           "id": "coords",
           "lat": 55.549817,
@@ -156,6 +191,6 @@
   "timezone": "",
   "title": "Mapgl extra layers: LineString, Polygon, GeoJson",
   "uid": "cc774c67-a0ea-4d2d-8c1d-adc2dcd6f869",
-  "version": 4,
+  "version": 2,
   "weekStart": ""
 }

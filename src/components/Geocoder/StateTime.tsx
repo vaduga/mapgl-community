@@ -11,18 +11,19 @@ export const StateTime = ({time}) => {
 
     return (
         <div className={s.stateTime}>
-                    alert state time: {fTime}
+                    annots time: {fTime}
                 </div>
     );
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
-    stateTime: css`          
-          position: absolute;
-          z-index: 1;               
-      font-size: small;
-      bottom: 5px;
-      right: 1%;
+    stateTime: css`
+        margin-bottom: 0px;
+        margin-right: ${theme.spacing(1)};
+        z-index: 1;               
+      font-size: x-small;
+      //bottom: 5px;
+      //right: 1%;
       //transform: translateX(100%);
     `
 

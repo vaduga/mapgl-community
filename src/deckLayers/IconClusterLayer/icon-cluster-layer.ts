@@ -24,6 +24,7 @@ export class IconClusterLayer extends CompositeLayer<params> {
   time
   cluster_id
   id
+  legendItems
 
 
   constructor(props) {
@@ -46,7 +47,9 @@ export class IconClusterLayer extends CompositeLayer<params> {
     this.pickable = props.pickable
     //this.getisShowPoints = props.getisShowPoints;
     //this.getMode = props.getMode
+    this.legendItems = props.legendItems
     this.time = props.time
+
 
   }
   shouldUpdateState({ changeFlags }) {
@@ -100,23 +103,29 @@ export class IconClusterLayer extends CompositeLayer<params> {
     }
 
   renderLayers() {
+      const categories: string[] = []
+
+      this.legendItems?.forEach(item=> {
+          if (!item.disabled) {
+              categories.push(item.label)
+          }
+      })
     const { data } = this.state;
 
     return new IconLayer(this.getSubLayerProps({
       //visible: this.getisShowPoints,
       id: colTypes.Points,
       data: data,
+        updateTriggers: {
+            getIcon: this.time,
+        },
       getFilterValue: f => f.properties.cluster ? 1 : 0,
       filterRange: [1, 1],
       selectedFeatureIndexes:   this.getSelectedFeIndexes?.get(colTypes.Points) ?? [],
       getPosition: d => d.geometry.coordinates,
-        updateTriggers: {
-            getIcon: this.time,
-        },
       getIcon: (d) => {
         const colorCounts = {};
         const annotStateCounts = {};
-
           let clPoints = d.properties.cluster
               // @ts-ignore
             ? this.state.index.getLeaves(d.properties.cluster_id, 'infinity')
@@ -127,8 +136,11 @@ export class IconClusterLayer extends CompositeLayer<params> {
           let stTotal = 0
           clPoints.forEach((p) => {
             const { color, label } = p.properties?.threshold;
+            if (categories.length && !categories.includes(label)) {
+                return
+            }
             const {all_annots} = p.properties
-            if (all_annots) {
+            if (all_annots && !this.legendItems.at(-1)?.disabled) {
                 const annots: any = findClosestAnnotations(all_annots, this.time)
                 const annotState = annots?.[0]?.newState
               const state = Object.keys(ALERTING_STATES).find(st=> annotState?.startsWith(st))
@@ -168,11 +180,18 @@ export class IconClusterLayer extends CompositeLayer<params> {
           d.properties.colorCounts = colorCounts
           d.properties.annotStateCounts = annotStateCounts
 
-          return {
-            url: svgToDataURL(createDonutChart({colorCounts, annotStateCounts, allTotal: total, allStTotal: stTotal})),
-            width:  128,
-            height: 128,
-          };
+            if (total>1) {
+                return {
+                    url: svgToDataURL(createDonutChart({
+                        colorCounts,
+                        annotStateCounts,
+                        allTotal: total,
+                        allStTotal: stTotal
+                    })),
+                    width: 128,
+                    height: 128,
+                };
+            }
         }
 //// blank svg icon if no cluster .Fallback if above data-filtering is removed.
 

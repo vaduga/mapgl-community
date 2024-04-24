@@ -1,7 +1,9 @@
+import {FullscreenWidget, CompassWidget} from '@deck.gl/widgets';
+import 'img/stylesheet.css';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {BusEventWithPayload} from '@grafana/data';
+import {BusEventWithPayload, GrafanaTheme2} from '@grafana/data';
 import convex from '@turf/convex'
-import {useTheme2} from '@grafana/ui';
+import {LegendDisplayMode, useStyles2, useTheme2, VizLegend, VizLegendItem} from '@grafana/ui';
 import {observer} from 'mobx-react-lite';
 import DeckGL from '@deck.gl/react';
 import MapLibre, {AttributionControl} from 'react-map-gl/maplibre';
@@ -41,17 +43,30 @@ import {
     DEFAULT_COMMENT_COLOR,
     LIGHT_AUTO_HIGHLIGHT,
     LIGHT_CENTER_PLOT,
-    DARK_CENTER_PLOT,
+    DARK_CENTER_PLOT, ALERTING_STATES,
 } from "./defaults";
 import {IconsGeoJsonLayer} from "../deckLayers/IconClusterLayer/icons-geo-json-layer";
 import {StateTime} from "./Geocoder/StateTime";
 import {expandTooltip} from "./Tooltips/dataClickUtils";
+import {css} from "@emotion/css";
 
 export class BasemapChangeEvent extends BusEventWithPayload<number> {
     static type = 'mapType';
 }
 export class MapViewChangeEvent extends BusEventWithPayload<number> {
     static type = 'mapView';
+}
+
+export class PanelEditEnteredEvent extends BusEventWithPayload<number> {
+    static type = 'panel-edit-started';
+}
+
+export class PanelEditExitedEvent extends BusEventWithPayload<number> {
+    static type = 'panel-edit-finished';
+}
+
+export class ThresholdChangeEvent extends BusEventWithPayload<number> {
+    static type = 'thresholdType';
 }
 
 
@@ -62,6 +77,8 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
     thresholds = options.globalThresholdsConfig
     const svgIconRules = options.svgIconsConfig
     const locLabelName = options.common?.locLabelName
+    const isShowLegend = options.common?.isShowLegend
+    const s = useStyles2(getStyles);
     const theme2 = useTheme2()
 
     const {
@@ -96,6 +113,8 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
     const {getisShowLines, getEditableLines, getLineSwitchMap , getDirection, setDirection, setVertices} = lineStore;
 
     const deckRef = useRef(null);
+    const containerRef = useRef(null);
+
     const mapRef: any = useRef(null);
     const [hoverInfo, setHoverInfo] = useState(getTooltipObject);
     const [closedHint, setClosedHint] = useState(false);
@@ -111,15 +130,42 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
     const [hoverCluster,setHoverCluster] = useState<any>()
     const timeZone = replaceVariables('$__timezone')
     const [time, setTime] = useState<any>(data.timeRange.to.unix()*1000);
-    const [hasAnnots, setHasAnnots] = useState(data?.annotations?.length)
     const [total,setTotal] = useState(0)
+    const hasAnnots = !!data.annotations?.length
+
+
+    const initLegendItems = useMemo(() => {
+        const arr: VizLegendItem[] = []
+        thresholds?.forEach((t, i) => arr.push({
+            color: t.color,
+            label: t.label,
+            yAxis: 1,
+            disabled: false
+        }))
+        return arr
+    }, []);
+
+    const [legendItems, setItems] = useState<VizLegendItem[]>(initLegendItems)
+
 
     useEffect(() => {
         if (data.timeRange) {
             setTime(data.timeRange.to.unix()*1000)
-            setHasAnnots(data.annotations?.length)
+
+            const label = 'annotations & alerts query (built-in)'
+            if (hasAnnots && legendItems?.at(-1)?.label !== label ) {
+                const alertsItem = {
+                    color: ALERTING_STATES.Alerting,
+                    label: 'annotations & alerts query (built-in)',
+                    yAxis: 1,
+                    disabled: false
+                }
+                setItems(prev=> [...prev, alertsItem])
+            }
+
         }
-    }, [data]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data])
 
 
     useEffect(() => {
@@ -141,10 +187,60 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
 
         })
 
+        const sub3 = eventBus.subscribe(ThresholdChangeEvent, (evt) => {
+            if (evt.payload?.thresholds) {
+                const arr: VizLegendItem[] = []
+                evt.payload.thresholds?.forEach((t, i) => arr.push({
+                    color: t.color,
+                    label: t.label,
+                    yAxis: 1,
+                    disabled: false
+                }))
+
+                const label = 'annotations & alerts query (built-in)'
+                if (hasAnnots && legendItems?.at(-1)?.label !== label ) {
+                    const alertsItem = {
+                        color: ALERTING_STATES.Alerting,
+                        label: 'annotations & alerts query (built-in)',
+                        yAxis: 1,
+                        disabled: false
+                    }
+                    arr.push(alertsItem)
+                }
+                setItems(arr)
+
+            }}  )
+
+        const sub6 = eventBus.subscribe(ThresholdChangeEvent, (evt) => {
+            if (evt.payload?.thresholds) {
+                const arr: VizLegendItem[] = []
+                evt.payload.thresholds?.forEach((t, i) => arr.push({
+                    color: t.color,
+                    label: t.label,
+                    yAxis: 1,
+                    disabled: false
+                }))
+
+                const label = 'annotations & alerts query (built-in)'
+                if (hasAnnots && legendItems?.at(-1)?.label !== label ) {
+                    const alertsItem = {
+                        color: ALERTING_STATES.Alerting,
+                        label: 'annotations & alerts query (built-in)',
+                        yAxis: 1,
+                        disabled: false
+                    }
+                    arr.push(alertsItem)
+                }
+                setItems(arr)
+
+            }}  )
+
         return () => {
             //sub0.unsubscribe();
             sub1.unsubscribe()
             sub2.unsubscribe()
+            sub3.unsubscribe()
+            sub6.unsubscribe()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [eventBus]);
@@ -445,6 +541,7 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
         hoverCluster,
         hoverInfo,
         setHoverCluster,
+        legendItems
     };
 
     const lineLayersProps = {
@@ -690,6 +787,7 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
         getLayers();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
+        legendItems,
         getSvgIcons,
         getTooltipObject,
         getClusterMaxZoom,
@@ -724,20 +822,37 @@ const memoMenu = useMemo(()=> {
     // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [total])
 
+    const onLabelClick = useCallback((clickItem: VizLegendItem, e) => {
+        setItems(prev=> prev?.map((item) => {
+                if (item !== clickItem) {
+                    return item;
+                } else {
+                    return {
+                        ...item,
+                        disabled: !item.disabled,
+                    };
+                }
+            })
+        )
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
 
     if (!source || !localViewState) {
         return null
     }
+
+
     return (
-            <>
+            <div className={s.container} ref={containerRef}>
                 <DeckGL
+                    widgets={[new FullscreenWidget({id:'myfull', container: containerRef.current ?? undefined, placement: 'top-right',
+                        className: s.fullscreen }), new CompassWidget({id:'compass',  placement: 'top-right', className: s.compass})]}
                         ref={deckRef}
                         style={{
                             pointerEvents: 'all',
                             inset: '0px',
-                            // width: '100%',
-                            // height: '100%'
-                            // zIndex: 1
                         }}
                         layers={layers}
                         initialViewState={localViewState}
@@ -755,18 +870,97 @@ const memoMenu = useMemo(()=> {
                             ref={mapRef}
                             mapStyle={source}
                             attributionControl={false}>
-                            <AttributionControl style={{ position: 'absolute', bottom: 0, left: 0 }} />
+                            <AttributionControl style={{ position: 'absolute', top: -20, right: 10 }} />
                         </MapLibre>
-                    </DeckGL>
-                         <PositionTracker/>
-                        {!!hasAnnots && <StateTime time={time}/>}
+                    </DeckGL><div className={s.timeNcoords}>
+                <PositionTracker/>
+                {!!hasAnnots && <StateTime time={time}/>}
+            </div>
+
                         <Tooltip time={time} timeZone={timeZone} position={0} info={hoverInfo} isClosed={closedHint} setTooltipObject={setTooltipObject} setClosedHint={setClosedHint}
                         />
+                {isShowLegend && <div className={s.legend}>
+                    <VizLegend displayMode={LegendDisplayMode.List} placement="bottom" items={legendItems}
+                               onLabelClick={onLabelClick}/>
+                </div>}
+
                 {memoMenu}
 
-          </>
+            </div>
     );
 }
 
 export default observer(Mapgl);
+
+
+    const getStyles = (theme: GrafanaTheme2) => ({
+        page: css`
+          padding: ${theme.spacing(3)};
+          background-color: ${theme.colors.background.secondary};
+          display: flex;
+          justify-content: center;
+        `,
+        container: css` 
+          z-index: -2;  
+        `,
+        yamap: css`
+          width: 100%;
+          height: 100%;
+          z-index: -1;
+          position: absolute;
+          isolation: isolate;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+        `,
+        geocoder: css`
+          display: flex;
+          flex-direction: row-reverse;
+          //width: 10%;
+          position:absolute;
+          right: ${theme.spacing(1.7)};
+          top: ${theme.spacing(2)};
+        `,
+        textBox: css`
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          padding: 10px;
+        `,
+        fullscreen: css`
+          z-index: 2;
+          position: absolute;
+          top: ${theme.spacing(5)};
+          right: 0px;
+          
+          overflow: hidden;
+          pointer-events: all;
+        `,
+        compass: css`
+          z-index: 2;
+          position: absolute;
+          top: ${theme.spacing(10)};
+          right: 0px;   
+          overflow: hidden;
+          pointer-events: all;
+        `,
+        legend: css`
+          z-index: 2;
+            position: absolute;            
+            bottom: 0;// ${theme.spacing(3)};
+            //left: ${theme.spacing(10)};
+            //width: 20%;
+            padding-bottom: 5px;
+            pointer-events: all;
+            background: ${theme.isDark ? theme.colors.background.secondary : '#EAEAEA'};
+        `,
+        timeNcoords: css`            
+            position: absolute;
+            z-index: 1;
+            font-size: small;
+            bottom: 5px;
+            right: 1%;                        
+        `
+
+    })
 

@@ -18,7 +18,8 @@ interface Props {
   context: any
 }
 export const ThresholdsEditor: React.FC<Props> = (options) => {
-
+  const {context} = options
+  const eventBus = context.eventBus;
   const s = useStyles2(thresholdFieldStyles);
   const [tracker, _setTracker] = useState((): ThresholdTracker[] => {
     if (!options.thresholds) {
@@ -45,6 +46,7 @@ export const ThresholdsEditor: React.FC<Props> = (options) => {
     v.forEach((element) => {
       allThresholds.push(element.threshold);
     });
+    eventBus?.publish({type: 'thresholdType', payload: {thresholds: allThresholds}})
     options.setter(allThresholds);
   };
 

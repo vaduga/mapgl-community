@@ -20,11 +20,13 @@ const IconsGeoJsonLayer = (props) => {
     getSvgIcons,
     getisShowPoints,
     getSelectedIp,
+    pickable,
     time,
     onHover,
     highlightColor,
     options,
-      theme2
+      theme2,
+      legendItems
   } = props;
 
   return new GeoJsonLayer({
@@ -62,50 +64,65 @@ const IconsGeoJsonLayer = (props) => {
             return [offsetX,offsetY]
 
         },
-        // @ts-ignore
-        getTextColor: (d) => {
+      getTextColor: (d) => {
           // @ts-ignore
-            const {threshold, cluster, all_annots} = d.properties
-            if (cluster) {return [0,0,0]}
-            const annots: any = findClosestAnnotations(all_annots, time)
-            const annotState = annots?.[0]?.newState
-            const {color: thresholdColor} = threshold
-            const color = annotState ? annotState.startsWith('Normal') ? ALERTING_STATES.Normal : annotState === 'Alerting'? ALERTING_STATES.Alerting : ALERTING_STATES.Pending : thresholdColor
+          const {threshold, cluster, all_annots} = d.properties
+          if (cluster) {return [0,0,0]}
+          const {color: thresholdColor} = threshold
+          if (all_annots && !legendItems.at(-1)?.disabled) {
+              const annots: any = findClosestAnnotations(all_annots, time)
+              const annotState = annots?.[0]?.newState
 
-            return toRGB4Array(color)
-        },
+              const color = annotState?.startsWith('Normal') ? ALERTING_STATES.Normal : annotState === 'Alerting' ? ALERTING_STATES.Alerting : ALERTING_STATES.Pending
+              return toRGB4Array(color)
+          }
+          return toRGB4Array(thresholdColor)
+      },
         getTextSize: (d)=> {
             const size = d.properties?.style?.textConfig?.fontSize
         return size ?? 12
         },
-        //@ts-ignore
-        getFillColor: (d: any) => {
+      getFillColor: (d: any) => {
 
-            const {threshold, all_annots} = d.properties
-            const annots: any = findClosestAnnotations(all_annots, time)
-            const annotState = annots?.[0]?.newState
-            const {color: thresholdColor} = threshold
-            const color = annotState ? annotState.startsWith('Normal') ? ALERTING_STATES.Normal : annotState === 'Alerting'? ALERTING_STATES.Alerting : ALERTING_STATES.Pending : thresholdColor
+          const {threshold, all_annots} = d.properties
+          const {color: thresholdColor} = threshold
+          if (all_annots && !legendItems.at(-1)?.disabled) {
+              const annots: any = findClosestAnnotations(all_annots, time)
+              const annotState = annots?.[0]?.newState
+              const color = annotState?.startsWith('Normal') ? ALERTING_STATES.Normal : annotState === 'Alerting' ? ALERTING_STATES.Alerting : ALERTING_STATES.Pending
+              return toRGB4Array(color)
+          }
 
-            const opacity = d.properties?.style?.opacity
-            const rgb4 = toRGB4Array(color)
-            if (opacity) {
-            rgb4[3] = Math.round(opacity * 255);
-            }
+          const opacity = d.properties?.style?.opacity
+          const rgb4 = toRGB4Array(thresholdColor)
+          if (opacity) {
+              rgb4[3] = Math.round(opacity * 255);
+          }
 
-            return rgb4
-        },
+          return rgb4
+
+      },
       stroke: true,
       getLineWidth: 0.5,
       // @ts-ignore
       getLineColor: (d: any) => {
-        const {threshold, all_annots} = d.properties
-        const annots: any = findClosestAnnotations(all_annots, time)
-        const annotState = annots?.[0]?.newState
-        const {color: thresholdColor} = threshold
-        const color = annotState ? annotState.startsWith('Normal') ? ALERTING_STATES.Normal : annotState === 'Alerting'? ALERTING_STATES.Alerting : ALERTING_STATES.Pending : thresholdColor
-        return toRGB4Array(color).slice(0,3)
-    },
+          const {threshold, all_annots} = d.properties
+
+          const {color: thresholdColor} = threshold
+          if (all_annots && !legendItems?.at(-1)?.disabled) {
+              const annots: any = findClosestAnnotations(all_annots, time)
+              const annotState = annots?.[0]?.newState
+              const color = annotState?.startsWith('Normal') ? ALERTING_STATES.Normal : annotState === 'Alerting' ? ALERTING_STATES.Alerting : ALERTING_STATES.Pending
+              return toRGB4Array(color).slice(0,3)
+          }
+
+          const opacity = d.properties?.style?.opacity
+          const rgb4 = toRGB4Array(thresholdColor)
+          if (opacity) {
+              rgb4[3] = Math.round(opacity * 255);
+          }
+          return rgb4
+      },
         getPointRadius: (d) => {
           const isHead = getSelectedIp === d.properties?.locName
 
@@ -153,7 +170,6 @@ const IconsGeoJsonLayer = (props) => {
         },
         getIconSize: (d) => {
           const isSelected = getSelectedIp === d.properties?.locName;
-          // @ts-ignore
           const {cluster, threshold} = d.properties
           if (cluster) {
             return 40
@@ -205,7 +221,7 @@ const IconsGeoJsonLayer = (props) => {
     filled: true,
 
     // Interactive props
-    pickable: true,
+    pickable,
     pickingDepth: 0,
     autoHighlight: true,
   })

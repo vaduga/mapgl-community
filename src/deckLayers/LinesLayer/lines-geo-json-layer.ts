@@ -20,7 +20,8 @@ export const LinesGeoJsonLayer = (props) => {
         pickable,
         autoHighlight,
         highlightColor,
-        time
+        time,
+        legendItems
     } = props;
 
     const selectedFeatureIndexes = getSelectedFeIndexes?.get(colTypes.Lines) ?? []
@@ -66,12 +67,15 @@ export const LinesGeoJsonLayer = (props) => {
 
             /// in aggr mode
             const {threshold, all_annots} = d.properties
-            const annots: any = findClosestAnnotations(all_annots, time)
-            const annotState = annots?.[0]?.newState
-
             const {color: thresholdColor} = threshold
-            const color = annotState ? annotState.startsWith('Normal') ? ALERTING_STATES.Normal : annotState === 'Alerting'? ALERTING_STATES.Alerting : ALERTING_STATES.Pending : thresholdColor
-            return toRGB4Array(color)
+            if (all_annots && !legendItems?.at(-1)?.disabled) {
+                const annots: any = findClosestAnnotations(all_annots, time)
+                const annotState = annots?.[0]?.newState
+                const color = annotState?.startsWith('Normal') ? ALERTING_STATES.Normal : annotState === 'Alerting' ? ALERTING_STATES.Alerting : ALERTING_STATES.Pending
+                return toRGB4Array(color).slice(0,3)
+            }
+            const rgb4 = toRGB4Array(thresholdColor)
+            return rgb4
         },
 
         // Styles

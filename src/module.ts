@@ -40,25 +40,26 @@ export const plugin = new PanelPlugin<PanelOptions>(Panel)
             name: 'Data layers',
             editor: DataLayersEditor,
         })
-        builder.addCustomEditor({
-            category: ['Alerts & Annotations'],
-            id: 'common',
-            path: 'common',
-            name: 'Alerts & Annotations',
-            editor: AlertsEditor,
-        })
-
-        builder.addCustomEditor({
+        builder.addTextInput({
+            category: ['Other settings'],
+                path: 'common.locLabelName',
+                name: 'Location name label in alert annotation',
+                //description: '',
+                settings: {},
+            })
+            .addBooleanSwitch({
+                category: ['Other settings'],
+                path: 'common.isShowLegend',
+                name: 'Show legend',
+                defaultValue: true,
+            })
+            .addCustomEditor({
             category: ['Svg icons'],
             id: 'svgIconsConfig',
             path: 'svgIconsConfig',
             name: 'Svg icons',
             editor: GlobalSvgRulesEditor,
-        })
-
-
-
-        builder.addCustomEditor({
+        }).addCustomEditor({
         name: 'Color and line-width thresholds',
         id: 'globalThresholdsConfig',
         path: 'globalThresholdsConfig',

@@ -1,5 +1,6 @@
 import { MapCenterID } from './view';
 import { ExtendMapLayerOptions } from 'extension';
+import {Threshold} from "./editor/Thresholds/threshold-types";
 
 export interface MapViewConfig {
   id: string; // placename > lookup
@@ -18,6 +19,7 @@ export const defaultView: MapViewConfig = {
 };
 
 export interface PanelOptions {
+  globalThresholdsConfig: Threshold[];
   common: any;
   svgIconsConfig: any;
   view: MapViewConfig;
