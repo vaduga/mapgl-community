@@ -775,8 +775,9 @@ const Mapgl = ({options, data,width, height, eventBus}) => {
 
     useEffect(() => {
         /// get some proves that data was specified at least somewhere and needs some time to load.
-        if (!options.dataLayers?.some(el=> el?.query) && !data.request?.targets?.some(el=> el?.queryType === 'snapshot')
-        && !data.series?.some(el=>el?.meta?.transformations?.length)
+        if (!options.dataLayers?.some(el=> el?.query) && !data.request?.targets
+        //?.some(el=> el?.queryType === 'snapshot')
+        //&& !data.series?.some(el=>el?.meta?.transformations?.length)
         ) {return}
         if (!data?.series?.length) {return}
 
@@ -853,6 +854,7 @@ const memoMenu = useMemo(()=> {
                         style={{
                             pointerEvents: 'all',
                             inset: '0px',
+                            zIndex: '1'
                         }}
                         layers={layers}
                         initialViewState={localViewState}
@@ -870,7 +872,7 @@ const memoMenu = useMemo(()=> {
                             ref={mapRef}
                             mapStyle={source}
                             attributionControl={false}>
-                            <AttributionControl style={{ position: 'absolute', top: -20, right: 10 }} />
+                            <AttributionControl style={{ zIndex: '2', position: 'absolute', top: 0, right: theme2.spacing(1) }} />
                         </MapLibre>
                     </DeckGL><div className={s.timeNcoords}>
                 <PositionTracker/>
