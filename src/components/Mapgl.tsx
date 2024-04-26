@@ -902,8 +902,10 @@ export default observer(Mapgl);
           display: flex;
           justify-content: center;
         `,
-        container: css` 
-          z-index: -2;  
+        container: css`
+            .maplibregl-ctrl-attrib-button {
+                display: none;
+            }
         `,
         yamap: css`
           width: 100%;

@@ -197,7 +197,7 @@ const Tooltip = ({ info, time, timeZone, isClosed = false , setTooltipObject, se
       //overflow-y: hidden;
       margin: 5px;
       padding: 8px;
-      z-index: 2;
+      z-index: 3;
       opacity: 0.95;
       ul {
       list-style-type: none }
