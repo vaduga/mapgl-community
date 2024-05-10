@@ -203,6 +203,26 @@ const Tooltip = ({ info, time, timeZone, isClosed = false , setTooltipObject, se
       list-style-type: none }
     `,
         turnOnEvents: css`
+ position: absolute;
+      left: ${position - 80}px;
+      top: 150px;
+      text-align: left;
+      user-select: text;
+      cursor: text;      
+      font-size: 1em;
+      border-radius: 5px;
+      border: ${theme.isDark ? 'none' : 'solid #c7c3c3'};
+      background: ${theme.isDark ? theme.colors.background.primary : '#EAEAEA'}; 
+      color: ${theme.colors.getContrastText(theme.colors.background.canvas)}; 
+      min-width: 25px;
+      max-width: 400px;
+      //overflow-y: hidden;
+      margin: 5px;
+      padding: 8px;
+      z-index: 10;
+      opacity: 0.95;
+      ul {
+      list-style-type: none }
         pointer-events: all`
     });
 
@@ -223,7 +243,7 @@ if (!Object.entries(info).length) {
         return (
             /// Pinned hint
             /// onClick={() => setHoverInfo({})}
-            <div className={s.tooltip+' '+s.turnOnEvents} style={{ left: x, top: y }}>
+            <div className={s.turnOnEvents} style={{ left: x, top: y }}>
                 {renderTooltipContent({object: ghostObject, time, timeZone, pinned: true, getSelectedIp, setSelectedIp, getDirection, setTooltipObject, setClosedHint })}
             </div>
         );
