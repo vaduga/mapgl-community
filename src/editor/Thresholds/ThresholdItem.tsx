@@ -108,8 +108,8 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
 
   return (
 
-      <Tooltip content={'metric threshold value'} >
       <Input
+          title={'metric threshold value'}
           disabled={options.disabled}
           type="number"
           step="1.0"
@@ -137,9 +137,9 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
               {/*      enableNamedColors={true}*/}
               {/*  />*/}
               {/*</div>*/}
-              <Tooltip content={'line width'} >
               <div>
                 <Select
+                    title={'line width'}
                     disabled={options.disabled}
                     menuShouldPortal={true}
                     value={lineWidth}
@@ -154,13 +154,12 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
                     width="auto"
                 />
               </div>
-              </Tooltip>
             </div>
           }
           suffix={
             <>
-              <Tooltip content={'color label'} >
               <AutoSizeInput
+                  title={'color label'}
                   disabled={false}
                   onCommitChange={(v) => {
                     options.labelSetter(options.index, v.currentTarget.value);
@@ -168,7 +167,6 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
                   defaultValue={options.threshold.label}
                   placeholder = {'label'}
               />
-              </Tooltip>
               {oTracker &&
                   oTracker.map((tracker: OverrideTracker, index: number) => {
                     return (
@@ -206,7 +204,7 @@ export const ThresholdItem: React.FC<ThresholdItemProps> = (options: ThresholdIt
             </>
           }
       />
-      </Tooltip>
+
   );
 };
 
