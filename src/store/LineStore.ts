@@ -9,7 +9,6 @@ import {findChildLines, hexToRgba} from "../utils";
 import lineOffset from "@turf/line-offset";
 import lineString from "turf-linestring";
 import {parDelimiter} from "../components/defaults";
-import {MultiLineString} from "@turf/helpers";
 import {CoordsConvert, get2MiddleCoords, getMiddleCoords} from "../utils/utils.turf";
 import {getThresholdForValue} from "../editor/Thresholds/data/threshold_processor";
 import {thresholds} from "../components/Mapgl";
@@ -224,7 +223,7 @@ if (!line) {
             const attachedToAggrType = switchMap?.get(parPath[dirPos])?.properties.aggrType
             if (!AggrTypes.includes(attachedToAggrType as string)) {return}
 
-            const geom = line?.geometry as MultiLineString
+            const geom = line?.geometry
             const coords = geom.coordinates
             if (coords && coords?.length>0) {
                 const first = editedMultiLine[0]

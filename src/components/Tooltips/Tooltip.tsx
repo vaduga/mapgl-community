@@ -3,7 +3,7 @@ import {findClosestAnnotations, useRootStore} from '../../utils';
 import {toJS} from "mobx";
 import {css} from "@emotion/css";
 import {IconButton as IconGrafanaButton, useStyles2, useTheme2} from "@grafana/ui";
-import {dateTime, dateTimeParse, Field, formattedValueToString, GrafanaTheme2, Vector} from "@grafana/data";
+import {dateTime, GrafanaTheme2} from "@grafana/data";
 import {Info} from '../../store/interfaces'
 import {locationService} from "@grafana/runtime";
 import {ALERTING_STATES, blankHoverInfo} from "../defaults";

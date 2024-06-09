@@ -1,5 +1,4 @@
-import {Geometry, Position, GeoJsonProperties} from 'geojson'
-import {MultiLineString} from "@turf/helpers";
+import {Geometry, Position, GeoJsonProperties, MultiLineString} from 'geojson'
 
 export const AggrTypes = ['node', 'connector']
 

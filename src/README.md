@@ -1,5 +1,5 @@
 
-## Nodes and edges on geo map with metrics & alert states
+## Nodes and edges geomap with metrics & alert states
 
 [![Downloads](https://img.shields.io/badge/dynamic/json?logo=grafana&amp;color=blue&amp;label=downloads&amp;query=%24.items%5B%3F%28%40.slug%20%3D%3D%20%22vaduga-mapgl-panel%22%29%5D.downloads&amp;url=https%3A%2F%2Fgrafana.com%2Fapi%2Fplugins)](https://grafana.com/grafana/plugins/vaduga-mapgl-panel)
 [![Change Log](https://img.shields.io/badge/Change-log-blue.svg?style=flat)](https://github.com/vaduga/mapgl-community/blob/main/CHANGELOG.md)
@@ -11,14 +11,15 @@
 [//]: # ([![Change Log]&#40;https://img.shields.io/badge/Change-log-blue.svg?style=flat&#41;]&#40;https://github.com/vaduga/mapgl-community/blob/main/CHANGELOG.md&#41;)
 [//]: # ([![GitHub]&#40;https://img.shields.io/github/stars/vaduga/mapgl-community?style=social&#41;]&#40;https://github.com/vaduga/mapgl-community&#41;)
 
-extends base config options of Grafana Geomap with [Deck.gl](https://deck.gl/) rendering and other features:
+extends base config options of Grafana Geomap with Deck.gl rendering and other features:
 * network topology with nodes, links and metrics
-* **new:** plot alert states from built-in Grafana alerting rules
-* path to source as an array of coordinates or refs to intermediate locations. Multi-source supported
-* bidirectional tar-src paths for selected node. Declare dashboard variable 'locRole' to save state
-* donut chart clusters based on the number of color labels typed by metric thresholds and overrides for custom properties
+* plot alert states from built-in Grafana alert rules
+* path (multipaths) to source as an array of coordinates or refs to intermediate locations 
+* list paths for selected node in both directions (tar-src). Declare dashboard variable 'locRole' to save state
+* extended thresholds processor for metric values with overrides
+* donut chart icon for clusters listing color labels by thresholds
 * svg icons, text labels with collision filter
-* data-links: icon in tooltip to set values for 'target' and 'source' dashboard variables. Lets you show charts dynamically in other panels.
+* data-links: icon button in tooltip sets values for 'target' and 'source' dashboard variables to show charts dynamically in other panels.
 * comment icons for intermediate coordinates from inlined text and color (ex.: [37.560447,55.550818, 0, "comment", "green"])
 * aggregation typed nodes and offset for overlapping lines.
 * stat1/stat2 switch to show straight path with secondary metric as a label

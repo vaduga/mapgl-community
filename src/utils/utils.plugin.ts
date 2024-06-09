@@ -1,6 +1,6 @@
 import bearing from "@turf/bearing";
 import turfbbox from "@turf/bbox";
-import {Geometry, Point, Position} from "geojson";
+import {Geometry, LineString, Point, Position} from "geojson";
 import {toJS} from "mobx";
 import {ALERTING_STATES, DEFAULT_NUMS_COLOR, parDelimiter} from "../components/defaults";
 import {
@@ -13,9 +13,9 @@ import {
     Sources,
     Vertices
 } from "../store/interfaces";
-import {MultiLineString} from "@turf/helpers";
+
 import {SelectableValue} from "@grafana/data";
-import {lastIndexOf} from "lodash";
+
 
 
 function parseObjFromString(str) {
@@ -220,7 +220,7 @@ function getBounds(points) {
         type: 'FeatureCollection',
         features: points,
     };
-    const bounds = turfbbox(featureCollection)
+    const bounds = turfbbox(featureCollection as any)
     return bounds;
 }
 
@@ -277,7 +277,7 @@ if (!lineFeatures || !Array.isArray(lineFeatures) || lineFeatures?.length < 1) {
         const lastFeature = lineSwitchMap.get(parPath.at(-1))
         pLinePoints.push(lFeature)
         pLinePoints.push(lastFeature)
-        const geom = lFeature?.geometry as MultiLineString
+        const geom = lFeature?.geometry
         const coords = geom?.coordinates
         const coords1 = coords[0]?.[0]
         const lastSegment = coords[coords.length-1]

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.1
+* fix cluster labels edit in thresholds to comply with braking < Tooltip > component since Grafana 10.3.0
+* fix tooltip css classes for pointerEvents:all 
+* ncu u: bump deck.gl & luma.gl versions
+
 ## 1.6.0
 * cluster legend-filter
 * fullscreen and compass widgets
