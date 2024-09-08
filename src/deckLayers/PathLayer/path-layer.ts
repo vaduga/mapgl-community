@@ -53,6 +53,15 @@ function MyPathLayer(props)   {
                     const {threshold} = d.properties
                     color = threshold.color
 
+                const opacity = d.properties?.style?.opacity
+                    const rgb4 = toRGB4Array(color)
+                    if (opacity) {
+                        rgb4[3] = Math.round(opacity * 255);
+                    }
+
+                    return rgb4
+
+
             }
             return toRGB4Array(color)
         },
