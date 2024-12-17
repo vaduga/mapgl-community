@@ -1,4 +1,4 @@
-import {PanelPlugin} from '@grafana/data';
+import {FieldConfigProperty, PanelPlugin} from '@grafana/data';
 import { PanelOptions, defaultView} from './types';
 import { Panel } from './Panel';
 import { GlobalThresholdEditor } from './editor/Thresholds/GlobalThresholdEditor';
@@ -11,7 +11,22 @@ import {AlertsEditor} from "./editor/AlertsEditor";
 
 export const plugin = new PanelPlugin<PanelOptions>(Panel)
     .setNoPadding()
-    //.useFieldConfig()
+    .useFieldConfig({
+        disableStandardOptions: [
+            FieldConfigProperty.Thresholds,
+            FieldConfigProperty.Color,
+            FieldConfigProperty.Decimals,
+            FieldConfigProperty.DisplayName,
+            FieldConfigProperty.Max,
+            FieldConfigProperty.Min,
+            //FieldConfigProperty.Links,
+            FieldConfigProperty.NoValue,
+            //FieldConfigProperty.Unit,
+        ],
+        standardOptions: {
+            [FieldConfigProperty.Mappings]: {},
+        },
+    })
     .setPanelOptions((builder) => {
         let category = ['Map view'];
         builder.addCustomEditor({
@@ -60,7 +75,7 @@ export const plugin = new PanelPlugin<PanelOptions>(Panel)
             name: 'Svg icons',
             editor: GlobalSvgRulesEditor,
         }).addCustomEditor({
-        name: 'Color and line-width thresholds',
+        name: 'Default thresholds to be applied to all metrics that do not have an override',
         id: 'globalThresholdsConfig',
         path: 'globalThresholdsConfig',
         description: 'for primary metric (stat1)',
