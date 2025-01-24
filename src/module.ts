@@ -11,22 +11,7 @@ import {AlertsEditor} from "./editor/AlertsEditor";
 
 export const plugin = new PanelPlugin<PanelOptions>(Panel)
     .setNoPadding()
-    .useFieldConfig({
-        disableStandardOptions: [
-            FieldConfigProperty.Thresholds,
-            FieldConfigProperty.Color,
-            FieldConfigProperty.Decimals,
-            FieldConfigProperty.DisplayName,
-            FieldConfigProperty.Max,
-            FieldConfigProperty.Min,
-            //FieldConfigProperty.Links,
-            FieldConfigProperty.NoValue,
-            //FieldConfigProperty.Unit,
-        ],
-        standardOptions: {
-            [FieldConfigProperty.Mappings]: {},
-        },
-    })
+    //.useFieldConfig()
     .setPanelOptions((builder) => {
         let category = ['Map view'];
         builder.addCustomEditor({
