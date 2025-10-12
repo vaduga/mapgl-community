@@ -86,7 +86,7 @@
     "@turf/line-offset": "^7.2.0",
     "ajv": "^8.17.1",
     "ajv-keywords": "^5.1.0",
-    "deck.gl": "^9.2.1",
+    "deck.gl": "9.1.15",
     "lodash": "^4.17.21",
     "maplibre-gl": "^5.9.0",
     "mobx": "^6.15.0",

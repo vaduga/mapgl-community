@@ -18,16 +18,16 @@ const config = async (env): Promise<Configuration> => {
         output: {
             asyncChunks: true,
         },
-        module: {
-    rules: [
-        {
-            test: /\.m?js/,
-            resolve: {
-                fullySpecified: false,
-            },
-        },
-    ]
-        }
+    //     module: {
+    // rules: [
+    //     {
+    //         test: /\.m?js/,
+    //         resolve: {
+    //             fullySpecified: false,
+    //         },
+    //     },
+    // ]
+    //     }
 
 
     });
