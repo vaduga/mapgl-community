@@ -1,0 +1,8 @@
+deleteRules:
+  # <int> organization ID, default = 1
+  - orgId: 1
+    # <string, required> unique identifier for the rule
+    uid: f82510bb-8fc4-4c4a-b408-62e41ccc268e
+  - orgId: 1
+    uid: b0e9dacd-db33-4d3f-99b5-c93164b7f566
+
