@@ -1,4 +1,17 @@
 
+v.2 will be published in another repo https://github.com/vaduga/mapgl
+It is a complete rewrite of the core and panel config. It is published in Grafana catalog.
+**New features**: 
+
+-Node Graph with autolayout and spline edge routing that respects node boundary curves. In addition to Geo mode.  
+-Arc sections on nodes for any metrics.  
+-Style config extends Grafana Geomap styles-from-dimensions concept with overrides for user-defined node groups  
+-Native Grafana Field config support: Thresholds, Mappings, Units, Overrides, Data links.  
+-Bi-metric Arcs (ex., for TX/RX)  
+-Ad-hoc filters by layers, node groups in the legend  
+-Unified (Graph+Geo) single dataframe for nodes and edges (same as in v.1) avoids hardcoded dataframe requirements of the native Geomap/NodeGraph.
+
+
 ## Nodes and edges geomap with metrics & alert states
 
 [![Downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgrafana.com%2Fapi%2Fplugins%2Fvaduga-mapgl-panel&query=%24.downloads&logo=grafana&label=downloads
