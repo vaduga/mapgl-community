@@ -1,7 +1,8 @@
 
 v.2 will be published in another repo https://github.com/vaduga/mapgl  
 It is a complete rewrite of the core and panel config.
-It is also published in Grafana catalog.
+It is also published in Grafana catalog.  
+
 **New features**: 
 
 -Node Graph with autolayout and spline edge routing that respects node boundary curves. In addition to Geo mode.  
